@@ -1,8 +1,7 @@
 ﻿namespace _Debug
 {
-    public interface IShowMe
+    public class ShowMe
     {
-        public int num;
         public string text;
         public object val;
     } 
