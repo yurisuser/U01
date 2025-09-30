@@ -14,17 +14,6 @@ namespace _Project.Debug
 
         private void Awake()
         {
-            if (_instance == null)
-            {
-                _instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
-
             // Очистим все строки при старте
             for (int i = 0; i < lines.Length; i++)
             {
