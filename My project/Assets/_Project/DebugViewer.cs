@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
-using CoreClass = _Project.Core;   // алиас для удобного доступа к Core
 
-namespace _Project.Debug
+namespace _Project
 {
     public class DebugViewer : MonoBehaviour
     {
@@ -21,24 +20,21 @@ namespace _Project.Debug
                     lines[i].text = "";
             }
         }
-
         private void Start()
         {
-            if (panel != null)
-                panel.SetActive(false); // панель изначально выключена
-        }
-
-        private void OnEnable()
-        {
+            if (panel != null) panel.SetActive(false); // панель изначально выключена
             if (!Application.isPlaying) return;
-            CoreClass.Instance.Input.Subscribe(Key.F1, TogglePanel);
+            if (Core.Instance != null) 
+                Core.Instance.Input.Subscribe(Key.F1, TogglePanel);
+            Debug.Log("enabled");
         }
 
         private void OnDisable()
         {
             if (!Application.isPlaying) return;
-            if (CoreClass.Instance != null)
-                CoreClass.Instance.Input.Unsubscribe(Key.F1, TogglePanel);
+            if (Core.Instance != null)
+                Core.Instance.Input.Unsubscribe(Key.F1, TogglePanel);
+            Debug.Log("dis");
         }
 
         public void ShowMe(int num, string text, object val)
@@ -50,6 +46,7 @@ namespace _Project.Debug
 
         private void TogglePanel()
         {
+            Debug.Log($"F1 pressed, panel => {(!panel.activeSelf)}");
             if (panel != null)
                 panel.SetActive(!panel.activeSelf);
         }
