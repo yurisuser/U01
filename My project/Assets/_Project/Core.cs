@@ -22,7 +22,7 @@ namespace _Project
         
         private IEnumerator LoadMainMenuDelayed()
         {
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(1f);
             SceneController.Load(SceneId.MainMenu); // статический вызов
         }
     }
