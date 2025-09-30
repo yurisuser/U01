@@ -1,0 +1,37 @@
+﻿# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+[Aa]ssets/AssetStoreTools*
+
+# Addressables (генерация)
+[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*
+
+# Rider / VS
+.idea/
+.vs/
+*.sln
+*.csproj
+*.unityproj
+*.pidb
+*.svd
+*.suo
+*.user
+*.userprefs
+*.dbmdl
+*.sln.docstates
+
+# JetBrains plugin auto-generated
+Assets/Plugins/Editor/JetBrains*
+
+# Crashlytics
+crashlytics-build.properties
+
+# Builds (на всякий)
+[Bb]uild/
+[Bb]uilds/
