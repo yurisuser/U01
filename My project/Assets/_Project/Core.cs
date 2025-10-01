@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using _Project.Galaxy;
+using _Project.Galaxy.Obj;
 
 namespace _Project
 {
@@ -7,12 +9,17 @@ namespace _Project
     {
         public static Core Instance { get; private set; }
         public SceneController Scenes { get; } = new SceneController();
+        public  static StarSys[] Galaxy { get; private set; }
         public InputController  Input  { get; } = new InputController();
         private void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            //
+            Galaxy = GalaxyCreator.Create();
+            Debug.Log($"Core: Galaxy generated. Stars = {Galaxy.Length}");
+            //
             StartCoroutine(LoadMainMenuDelayed());///////////////////////////////////////
         }
         private void Update()
@@ -23,7 +30,7 @@ namespace _Project
         private IEnumerator LoadMainMenuDelayed()
         {
             yield return new WaitForSeconds(1f);
-            SceneController.Load(SceneId.MainMenu); // статический вызов
+            SceneController.Load(SceneId.GalaxyMap); // статический вызов
         }
     }
 }

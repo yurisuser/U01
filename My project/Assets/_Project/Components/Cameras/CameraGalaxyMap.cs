@@ -15,7 +15,7 @@ namespace _Project.Components.Cameras
         [Header("Zoom")]
         public float minZoom = 10f;
         public float maxZoom = 200f;
-        public float zoomSpeed = 1.0f;
+        public float zoomSpeed = 20f;
 
         [Header("Drag")]
         public float dragDamp = 1.0f;
@@ -39,12 +39,15 @@ namespace _Project.Components.Cameras
             if (Mathf.Abs(scroll) > 0.01f)
             {
                 Vector3 mouseWorldBefore = ScreenToWorld(Mouse.current.position.ReadValue());
+
+                // ЛИНЕЙНЫЙ зум — без deltaTime и без экспоненты
                 _cam.orthographicSize = Mathf.Clamp(
-                    _cam.orthographicSize * Mathf.Exp(-scroll * zoomSpeed * Time.deltaTime),
+                    _cam.orthographicSize - scroll * zoomSpeed,  // <-- zoomSpeed ~ 5..50
                     minZoom, maxZoom
                 );
+
                 Vector3 mouseWorldAfter = ScreenToWorld(Mouse.current.position.ReadValue());
-                Vector3 delta = mouseWorldBefore - mouseWorldAfter;   // сохранить под курсором
+                Vector3 delta = mouseWorldBefore - mouseWorldAfter;
                 transform.position = ClampPos(transform.position + delta);
             }
 

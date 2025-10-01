@@ -7,7 +7,7 @@ namespace _Project
     {
         Boot,
         MainMenu,
-        Level01,
+        GalaxyMap,
         Level02
     }
 
@@ -45,7 +45,7 @@ namespace _Project
             {
                 case SceneId.Boot: return "Boot";
                 case SceneId.MainMenu: return "MainMenu";
-                case SceneId.Level01: return "Level_01";
+                case SceneId.GalaxyMap: return "GalaxyMap";
                 case SceneId.Level02: return "Level_02";
                 default: return "MainMenu";
             }
