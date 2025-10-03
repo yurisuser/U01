@@ -10,38 +10,91 @@ namespace _Project.Galaxy
         private const int   StarCount                 = 1000;
         private const float GalaxyRadius              = 100f;
         private const float GalaxyStarLayer           = 0f;
-
         private const float DensityArms               = 4.2f;
         private const float WidthArms                 = 10f;
-
         private const float MinStarInterval           = 1f;
         private const float CentralBlackHoleIntervalK = 7f;
-
         private const int   MaxAttemptsPerStar        = 64;
+        const int GlobalSeed = 1337;
 
         // внутреннее
         private static float _lastRawX;
         private static float _lastRawY;
 
         // — точка входа, как просил —
-        public static StarSys[] Create()
+// — точка входа, как просил —
+public static StarSys[] Create()
+{
+    StarSys[] galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
+
+    for (int si = 0; si < galaxy.Length; si++)
+    {
+        // сид для системы — все последующие генераторы в системе будут детерминированы
+        UnityEngine.Random.InitState(Seed(GlobalSeed, si, 0, 0));
+
+        // 1) Звезда
+        Star star = StarCreator.Create();
+        PlanetSysCreator.ResetPerSystem();
+
+        // 2) Планеты: только номера орбит (int[]), без радиусов
+        int[] planetOrbits = PlanetOrbitCreator.Create(star);
+
+        // 3) Для каждой планеты — свой сид на основе (seed, systemIndex, planetOrbit)
+        for (int pj = 0; pj < planetOrbits.Length; pj++)
         {
-            return CreateSpiralGalaxy(StarCount, GalaxyStarLayer);
+            int planetOrbit = planetOrbits[pj];
+
+            UnityEngine.Random.InitState(Seed(GlobalSeed, si, planetOrbit, 0));
+            Planet planet = PlanetCreator.Create(planetOrbit);
+
+            // 4) Луны: только номера орбит
+            int[] moonOrbits = MoonOrbitCreator.Create(planet);
+
+            // 5) Для каждой луны — сид на основе (seed, systemIndex, planetOrbit, moonOrbit)
+            for (int mk = 0; mk < moonOrbits.Length; mk++)
+            {
+                int moonOrbit = moonOrbits[mk];
+
+                UnityEngine.Random.InitState(Seed(GlobalSeed, si, planetOrbit, moonOrbit));
+                Moon moon = MoonCreator.Create(star, planetOrbit, planet, moonOrbit);
+
+                // Оставляю как у тебя: PlanetSysCreator вызывается на каждой луне
+                PlanetSys planetSys = PlanetSysCreator.Create(star, planetOrbit, planet, moon);
+            }
         }
 
+        // 6) Собираем звёздную систему и кладём её в массив (фикс: присваиваем в galaxy[si])
+        StarSys starSys = StarSysCreator.Create(galaxy[si], star, planetOrbits);
+        galaxy[si] = starSys;
+    }
+
+    return galaxy;
+
+    // Локальная детерминированная мешалка для сидов
+    static int Seed(int globalSeed, int systemIndex, int planetOrbit, int moonOrbit)
+    {
+        unchecked
+        {
+            int h = globalSeed;
+            h = h * 31 + systemIndex;
+            h = h * 31 + planetOrbit;
+            h = h * 31 + moonOrbit;
+            return h;
+        }
+    }
+}
         private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
         {
             if (count <= 0) return Array.Empty<StarSys>();
             var arr = new StarSys[count];
-
             // центр
-            arr[0] = new StarSys
+            arr[0] = new StarSys //Центральная черная дыра
             {
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
                 OldY = 0f
             };
-
+            //Другие системы
             for (int i = 1; i < count; i++)
             {
                 var sys = new StarSys();
@@ -64,7 +117,6 @@ namespace _Project.Galaxy
 
             return arr;
         }
-
         // — старое распределение, но без NaN от Pow —
         private static Vector3 GenerateStarsNoGaussianDistr(float zLayer)
         {
@@ -108,13 +160,7 @@ namespace _Project.Galaxy
             return new Vector3(x, y, GalaxyStarLayer);
         }
 
-        private static Vector3 PlaceWithMinDistance(
-            int index,
-            StarSys[] placed,
-            Func<Vector3> sampleFunc,
-            float baseMinDist,
-            float centerExtraK,
-            int maxAttempts)
+        private static Vector3 PlaceWithMinDistance(int index, StarSys[] placed, Func<Vector3> sampleFunc, float baseMinDist, float centerExtraK, int maxAttempts)
         {
             Vector3 lastSample = default;
 

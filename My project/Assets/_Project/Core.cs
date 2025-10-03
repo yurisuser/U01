@@ -18,7 +18,7 @@ namespace _Project
             DontDestroyOnLoad(gameObject);
             //
             Galaxy = GalaxyCreator.Create();
-            Debug.Log($"Core: Galaxy generated. Stars = {Galaxy.Length}");
+            Debug.Log($"Core: Galaxy generated. Stars = {Galaxy}");
             //
             StartCoroutine(LoadMainMenuDelayed());///////////////////////////////////////
         }
