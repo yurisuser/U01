@@ -160,18 +160,31 @@ namespace _Project.Components
         {
             if (targetCamera && targetCamera.isActiveAndEnabled) return targetCamera;
 
+            // 1) если скрипт висит на камере — берём её
+            var selfCam = GetComponent<Camera>();
+            if (selfCam && selfCam.isActiveAndEnabled) { targetCamera = selfCam; return targetCamera; }
+
+            // 2) MainCamera по тегу
             var main = Camera.main;
             if (main && main.isActiveAndEnabled) { targetCamera = main; return targetCamera; }
 
-            var cams = Object.FindObjectsOfType<Camera>(true); // с неактивными
+            // 3) Любая активная камера в сцене (с учётом неактивных объектов)
+            var cams = Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
             for (int i = 0; i < cams.Length; i++)
-                if (cams[i] && cams[i].isActiveAndEnabled) { targetCamera = cams[i]; return targetCamera; }
+            {
+                if (cams[i] && cams[i].isActiveAndEnabled)
+                {
+                    targetCamera = cams[i];
+                    return targetCamera;
+                }
+            }
 
             if (!targetCamera)
-                Debug.LogWarning("[GalaxyMapRenderer] Камера не найдена (нет MainCamera и активных камер). " +
-                                 "Поставь Tag=MainCamera на свою камеру или перетащи её в поле Target Camera.");
+                Debug.LogWarning("[GalaxyMapRenderer] Камера не найдена. Повесь скрипт на камеру или укажи Target Camera.");
             return null;
         }
+
 
         private GameObject GetPrefabFor(StarType t)
         {
