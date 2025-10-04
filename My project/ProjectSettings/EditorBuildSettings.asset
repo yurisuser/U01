@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/GalaxyMap.unity
     guid: ed46306fc8a4c6b438cf4815b9f817ea
+  - enabled: 1
+    path: Assets/_Project/Scenes/SystemMap.unity
+    guid: c749dae8148152746884d805505bbf5f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
