@@ -31,7 +31,7 @@ namespace _Project.Galaxy.Obj
             int roll = Random.Range(0, total);
             if ((roll -= CONST.StarRedWeight) < 0) return StarType.Red;
             if ((roll -= CONST.StarOrangeWeight) < 0) return StarType.Orange;
-            if ((roll -= CONST.StarYelloWeight) < 0) return StarType.Yello;
+            if ((roll -= CONST.StarYelloWeight) < 0) return StarType.Yellow;
             if ((roll -= CONST.StarWhiteWeight) < 0) return StarType.White;
             if ((roll -= CONST.StarBlueWeight) < 0) return StarType.Blue;
             if ((roll -= CONST.StarNeutronWeight) < 0) return StarType.Neutron;
@@ -52,7 +52,7 @@ namespace _Project.Galaxy.Obj
                     return StarSize.Supergiant;
 
                 case StarType.Orange:
-                case StarType.Yello:
+                case StarType.Yellow:
                 case StarType.White:
                     total = CONST.SolarDwarfWeight + CONST.SolarNormalWeight + CONST.SolarGiantWeight + CONST.SolarSuperGiantWeight;
                     roll = Random.Range(0, total);
@@ -85,7 +85,7 @@ namespace _Project.Galaxy.Obj
             {
                 StarType.Red     => CONST.TempRed,
                 StarType.Orange  => CONST.TempOrange,
-                StarType.Yello   => CONST.TempYello,
+                StarType.Yellow   => CONST.TempYello,
                 StarType.White   => CONST.TempWhite,
                 StarType.Blue    => CONST.TempBlue,
                 StarType.Neutron => CONST.TempNeutron,

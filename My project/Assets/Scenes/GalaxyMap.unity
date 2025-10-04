@@ -562,8 +562,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccfcea16e29b4b63991bbd6d280f6308, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.GalaxyMapRenderer
-  starPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
+  redPrefab: {fileID: 7116236054248093868, guid: 5917416a601a2244aae38997cc5a373e, type: 3}
+  orangePrefab: {fileID: 7116236054248093868, guid: b029797a808943d46823cbc6c060808e, type: 3}
+  yellowPrefab: {fileID: 7116236054248093868, guid: 42c04e92096688144bc00fdf8e3de4bd, type: 3}
+  whitePrefab: {fileID: 7116236054248093868, guid: 4ef853a3a66bccc46807e55d27520c3d, type: 3}
+  bluePrefab: {fileID: 7116236054248093868, guid: 1cab694d0900f58448bac831d6b64a25, type: 3}
+  neutronPrefab: {fileID: 7116236054248093868, guid: 3874f6df18c10994f8869fdf9843411c, type: 3}
+  blackPrefab: {fileID: 7116236054248093868, guid: 3e7ea3f72db18de47b9fbc3cd3d87b60, type: 3}
+  defaultPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
   starsRoot: {fileID: 1830487893}
+  renderOnStart: 1
+  clearBeforeRender: 1
 --- !u!4 &1830487893
 Transform:
   m_ObjectHideFlags: 0

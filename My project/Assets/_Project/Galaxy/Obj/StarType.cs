@@ -3,7 +3,7 @@
     public enum StarType
     {
         Red = 0,
-        Yello,
+        Yellow,
         Orange,
         White,
         Blue,
