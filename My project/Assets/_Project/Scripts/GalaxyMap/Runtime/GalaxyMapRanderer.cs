@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+﻿﻿using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
-
-// StarSys, StarType, StarSize
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
@@ -17,7 +15,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private GameObject bluePrefab;
         [SerializeField] private GameObject neutronPrefab;
         [SerializeField] private GameObject blackPrefab;
-        [SerializeField] private GameObject defaultPrefab; // можно оставить пустым
+        [SerializeField] private GameObject defaultPrefab;
 
         [Header("Скейл по размеру (если не нужен — поставь все = 1)")]
         [SerializeField] private float dwarfMul      = 0.7f;
@@ -65,7 +63,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 var s = systems[i];
 
                 var prefab = GetPrefabFor(s.Star.type) ?? defaultPrefab;
-                if (!prefab) continue; // слот не задан — пропускаем
+                if (!prefab) continue;
 
                 var go = Instantiate(prefab, s.GalaxyPosition, Quaternion.identity, starsRoot);
                 go.name = string.IsNullOrWhiteSpace(s.Name) ? $"SYS-{i:0000}" : s.Name;
@@ -73,6 +71,15 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 // масштаб по размеру из данных генерации
                 var mul = GetSizeMul(s.Star.size) * Mathf.Max(0.0001f, globalScale);
                 go.transform.localScale = go.transform.localScale * mul;
+
+                // если на префабе есть кликер — прокидываем данные
+                var click = go.GetComponent<StarGalaxyMapClick>();
+                if (click != null)
+                {
+                    click.type       = s.Star.type;
+                    click.systemName = go.name;
+                    click.System     = s;          // передаём саму систему
+                }
 
                 _spawned.Add(go);
             }

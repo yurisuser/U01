@@ -8,7 +8,7 @@ namespace _Project.Scripts.Core.Scene
         Boot,
         MainMenu,
         GalaxyMap,
-        Level02
+        SystemMap
     }
 
     public class SceneController
@@ -46,7 +46,7 @@ namespace _Project.Scripts.Core.Scene
                 case SceneId.Boot: return "Boot";
                 case SceneId.MainMenu: return "MainMenu";
                 case SceneId.GalaxyMap: return "GalaxyMap";
-                case SceneId.Level02: return "Level_02";
+                case SceneId.SystemMap: return "SystemMap";
                 default: return "MainMenu";
             }
         }

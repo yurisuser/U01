@@ -1,10 +1,7 @@
-﻿using _Project.Scripts.Galaxy.Data;
+﻿﻿using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-// новый Input System
-
-// StarType
+using _Project.Scripts.Core.Scene;
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
@@ -12,9 +9,13 @@ namespace _Project.Scripts.GalaxyMap.Runtime
     [RequireComponent(typeof(Collider))]
     public class StarGalaxyMapClick : MonoBehaviour
     {
-        [Header("Данные (заполняй из рендерера/префаба)")]
+        [SerializeField] private string systemMapSceneName = "SystemMap";
+        [SerializeField] private bool   logClick = true;
+
+        [Header("Данные (заполняет рендерер/префаб)")]
         public StarType type;
-        public string systemName;
+        public string   systemName;
+        public StarSys? System;
 
         [Header("Камера (если пусто — возьмёт MainCamera)")]
         [SerializeField] private Camera cam;
@@ -29,11 +30,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void Update()
         {
-            // Мышь
             if (Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame)
                 TryClick(Mouse.current.position.ReadValue());
 
-            // Тач (ВАЖНО: у TouchControl нет wasReleasedThisFrame — читаем через press)
             if (Touchscreen.current != null)
             {
                 var touch = Touchscreen.current.primaryTouch;
@@ -50,9 +49,17 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             var ray = c.ScreenPointToRay(screenPos);
             if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, ~0)) return;
 
-            // засчитываем только попадание по нашему объекту/его детям
             if (hit.collider == _col || hit.collider.transform.IsChildOf(transform))
-                Debug.Log($"[Star] {systemName} → {type}");
+            {
+                if (logClick) Debug.Log($"[Star] {systemName} → {type}");
+
+                if (System.HasValue)
+                    { 
+                        SelectedSystemBus.Selected = System.Value;
+                        SelectedSystemBus.HasValue = true;
+                    }
+                SceneController.Load(SceneId.SystemMap);
+            }
         }
 
 #if UNITY_EDITOR
