@@ -7,12 +7,12 @@ namespace _Project.Galaxy
     public static class GalaxyCreator
     {
         // === настройки ===
-        private const int   StarCount                 = 1000;
+        private const int   StarCount                 = 1300;
         private const float GalaxyRadius              = 100f;
         private const float GalaxyStarLayer           = 0f;
         private const float DensityArms               = 4.2f;
         private const float WidthArms                 = 10f;
-        private const float MinStarInterval           = 1f;
+        private const float MinStarInterval           = 1.5f;
         private const float CentralBlackHoleIntervalK = 7f;
         private const int   MaxAttemptsPerStar        = 64;
         const int GlobalSeed = 1337;
@@ -31,6 +31,14 @@ public static StarSys[] Create()
     {
         // сид для системы — все последующие генераторы в системе будут детерминированы
         UnityEngine.Random.InitState(Seed(GlobalSeed, si, 0, 0));
+        if (si == 0)
+        {
+            // Центральный объект: чёрная дыра, без планет
+            var starBH = new Star { type = StarType.Black, size = StarSize.Supergiant }; // size по желанию
+            int[] noPlanets = Array.Empty<int>();
+            galaxy[si] = StarSysCreator.Create(galaxy[si], starBH, noPlanets);
+            continue;
+        }
 
         // 1) Звезда
         Star star = StarCreator.Create();

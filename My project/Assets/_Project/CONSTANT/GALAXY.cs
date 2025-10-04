@@ -4,13 +4,13 @@
         // Орбиты
         public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
         // Типы звёзд (вес)
-        public const int StarRedWeight     = 75; // красные
+        public const int StarRedWeight     = 10; // красные
         public const int StarOrangeWeight  = 10; // оранжевые
-        public const int StarYelloWeight   = 8;  // жёлтые
-        public const int StarWhiteWeight   = 4;  // белые
-        public const int StarBlueWeight    = 2;  // синие
-        public const int StarNeutronWeight = 1;  // нейтронные
-        public const int StarBlackWeight   = 0;  // чёрные дыры
+        public const int StarYelloWeight   = 10;  // жёлтые
+        public const int StarWhiteWeight   = 7;  // белые
+        public const int StarBlueWeight    = 5;  // синие
+        public const int StarNeutronWeight = 3;  // нейтронные
+        public const int StarBlackWeight   = 3;  // чёрные дыры
         // Размеры звёзд Red
         public const int RedDwarfWeight      = 70; // карлик
         public const int RedNormalWeight     = 25; // обычная
