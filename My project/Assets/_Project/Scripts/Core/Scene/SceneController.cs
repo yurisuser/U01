@@ -30,7 +30,7 @@ namespace _Project.Scripts.Core.Scene
         /// Загрузить сцену через заданное время (секунды).
         public static async Task LoadWithDelay(SceneId id, float delaySeconds, bool async = true)
         {
-            int ms = (int)(delaySeconds * 1000);
+            int ms = (int)(delaySeconds * 1);
             await Task.Delay(ms);
 
             if (async)
