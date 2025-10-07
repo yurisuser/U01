@@ -34,37 +34,7 @@ namespace _Project.Scripts.Galaxy.Data
 
         private static int EstimateMoonCount(Planet p)
         {
-            string t = (p.Type ?? "rocky").ToLowerInvariant();
-
-            // Базовые коридоры по типам
-            (int min, int max) range = t switch
-            {
-                "gas_giant" => (3, 7),
-                "ice_giant" => (2, 5),
-                "rocky"     => (0, 2),
-                "ocean"     => (0, 2),
-                "desert"    => (0, 2),
-                "lava"      => (0, 1),
-                "toxic"     => (0, 1),
-                "frozen"    => (0, 2),
-                "dwarf"     => (0, 1),
-                _           => (0, 2)
-            };
-
-            // Небольшая поправка от массы: чем тяжелее — тем больше шанс на лишнюю луну
-            // Масса у тебя в условных ед.; считаем «тяжёлой» > 1.5
-            int bonus = (p.Mass > 3f) ? 2 : (p.Mass > 1.5f ? 1 : 0);
-
-            int min = range.min;
-            int max = range.max + bonus;
-
-            // Не вылезаем за количество доступных «слотов» орбит
-            max = Mathf.Clamp(max, 0, Mathf.Max(0, OrbitSlots));
-
-            if (max <= 0) return 0;
-            if (min > max) min = max;
-
-            return UnityEngine.Random.Range(min, max + 1); // верхняя граница включительно
+            return 4;
         }
     }
 }

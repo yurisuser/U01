@@ -95,42 +95,41 @@ namespace _Project.Scripts.Galaxy.Data
             int wCaptured= MoonCapturedWeight;
 
             // поправки по типу планеты
-            string pt = (planet.Type ?? "rocky").ToLowerInvariant();
-            switch (pt)
+            switch (planet.Type)
             {
-                case "gas_giant":
+                case PlanetType.GasGiant:
                     wIcy      = Scale(wIcy,      1.8f);
                     wCaptured = Scale(wCaptured, 2.0f);
                     wRocky    = Scale(wRocky,    1.2f);
                     wOcean    = Scale(wOcean,    0.6f);
                     break;
-                case "ice_giant":
+                case PlanetType.IceGiant:
                     wIcy      = Scale(wIcy,      1.7f);
                     wCaptured = Scale(wCaptured, 1.6f);
                     break;
-                case "rocky":
+                case PlanetType.Stone:
                     wRocky    = Scale(wRocky,    1.5f);
                     wVolc     = Scale(wVolc,     (moonOrbit <= 3) ? 1.8f : 1.2f);
                     break;
-                case "ocean":
+                case PlanetType.Ocean:
                     wOcean    = Scale(wOcean,    1.6f);
                     wIcy      = Scale(wIcy,      1.2f);
                     break;
-                case "lava":
+                case PlanetType.Lava:
                     wVolc     = Scale(wVolc,     2.0f);
                     wIcy      = Scale(wIcy,      0.6f);
                     break;
-                case "frozen":
+                case PlanetType.Frozen:
                     wIcy      = Scale(wIcy,      2.0f);
                     wOcean    = Scale(wOcean,    0.5f);
                     break;
-                case "desert":
+                case PlanetType.Desert:
                     wDesert   = Scale(wDesert,   1.6f);
                     break;
-                case "toxic":
+                case PlanetType.Toxic:
                     wCaptured = Scale(wCaptured, 1.4f);
                     break;
-                case "dwarf":
+                case PlanetType.Blasted:
                     wCaptured = Scale(wCaptured, 1.8f);
                     wRocky    = Scale(wRocky,    1.2f);
                     wOcean    = Scale(wOcean,    0.5f);
@@ -154,7 +153,7 @@ namespace _Project.Scripts.Galaxy.Data
 
         private static MoonSize PickSize(Planet planet, MoonType type)
         {
-            bool isGiantPlanet = planet.Type is "gas_giant" or "ice_giant";
+            bool isGiantPlanet = planet.Type is PlanetType.GasGiant or PlanetType.IceGiant;
             // базовая шкала
             int wTiny, wSmall, wMedium, wLarge;
             if (isGiantPlanet)
