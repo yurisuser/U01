@@ -20,9 +20,7 @@ namespace _Project.Scripts.Galaxy.Generation
         // внутреннее
         private static float _lastRawX;
         private static float _lastRawY;
-
-        // — точка входа, как просил —
-// — точка входа, как просил —
+        
 public static StarSys[] Create()
 {
     StarSys[] galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
@@ -53,7 +51,7 @@ public static StarSys[] Create()
             int planetOrbit = planetOrbits[pj];
 
             UnityEngine.Random.InitState(Seed(GlobalSeed, si, planetOrbit, 0));
-            Planet planet = PlanetCreator.Create(planetOrbit);
+            Planet planet = PlanetCreator.Create(planetOrbit, star);
 
             // 4) Луны: только номера орбит
             int[] moonOrbits = MoonOrbitCreator.Create(planet);

@@ -93,7 +93,8 @@ namespace _Project.Scripts.SystemMap
 
                 if (pid < 0 || pid >= planetPrefabs.Length)
                     continue;
-
+                Debug.Log(pid);
+                Debug.Log(planet.Type);
                 var prefab = planetPrefabs[pid];
                 if (prefab == null)
                     continue;

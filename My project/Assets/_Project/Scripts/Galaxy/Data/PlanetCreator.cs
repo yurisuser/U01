@@ -1,18 +1,21 @@
 ﻿using System;
+using Unity.VisualScripting;
 using UnityEngine;
-using static _Project.CONSTANT.GALAXY; // твои константы: PlanetRockyWeight и т.д.
+using Random = System.Random;
 
 namespace _Project.Scripts.Galaxy.Data
 {
     public static class PlanetCreator
     {
-        public static Planet Create(int orbitIndex)
+        private static readonly PlanetType[] PlanetTypeValues = (PlanetType[])Enum.GetValues(typeof(PlanetType));
+        public static Planet Create(int orbitIndex, Star star)
         {
+            //Debug.Log($"Create planet {PlanetTypeValues.Length} of {star.name}");
             return new Planet
             {
-                Name             = "name",
+                Name             = $"/{star.name} {orbitIndex}",
                 Mass             = 5,
-                Type             = PlanetType.GasGiant,
+                Type             = GetPlanetType(star.type, orbitIndex),
                 Atmosphere       = 1,
                 Radius           = 2,
                 OrbitalDistance  = 2,
@@ -21,9 +24,13 @@ namespace _Project.Scripts.Galaxy.Data
                 Gravity          = 2,
             };
         }
+        
+        private static PlanetType GetPlanetType(StarType starType, int orbit)
+        {
+            return PlanetType.GasGiant;
+            int a = UnityEngine.Random.Range(0, 8);
+            return PlanetTypeValues[a];
+        }
 
-        // ----------------- helpers -----------------
-
-        // Выбор типа планеты: базовые веса из констант + лёгкий сдвиг по орбите
     }
 }

@@ -9,7 +9,6 @@ namespace _Project.Scripts.GalaxyMap.Runtime
     [RequireComponent(typeof(Collider))]
     public class StarGalaxyMapClick : MonoBehaviour
     {
-        [SerializeField] private string systemMapSceneName = "SystemMap";
         [SerializeField] private bool   logClick = true;
 
         [Header("Данные (заполняет рендерер/префаб)")]

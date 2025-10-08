@@ -156,14 +156,23 @@ MonoBehaviour:
   neutronPrefab: {fileID: 5232491077732590000, guid: a116d2f1ab777be4abf5e02a080ecb52, type: 3}
   blackPrefab: {fileID: 5232491077732590000, guid: 8ff1a38a9c4c50f4aa34de1da6248902, type: 3}
   defaultStarPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
-  planetPrefab: {fileID: 7116236054248093868, guid: 3874f6df18c10994f8869fdf9843411c, type: 3}
   orbitMaterial: {fileID: 0}
   orbitSegments: 128
   starScale: 1.5
   firstOrbitRadius: 3
   orbitStep: 2
   planetScale: 0.6
-  root: {fileID: 0}
+  planetPrefabs:
+  - {fileID: 4298940278040418173, guid: 23eea45864374fc46a9b6abe88425c71, type: 3}
+  - {fileID: 4298940278040418173, guid: 7e46da7625855944bbe8b09eb3de43a7, type: 3}
+  - {fileID: 4298940278040418173, guid: 4cf7cc0e8eccea8498df676db53954db, type: 3}
+  - {fileID: 4298940278040418173, guid: 3a3e4186e8e5abb43bc1a37ce9dc5130, type: 3}
+  - {fileID: 4298940278040418173, guid: 83dccffa078f4324f9a675465c1e58bd, type: 3}
+  - {fileID: 4298940278040418173, guid: c0bf9980a8b02c24c89a53ec4289f988, type: 3}
+  - {fileID: 4298940278040418173, guid: c62c0e393d5293a4182aab56c645e624, type: 3}
+  - {fileID: 4298940278040418173, guid: ec79074ea7bb24f4ba8eb0bd0825012b, type: 3}
+  - {fileID: 4298940278040418173, guid: a4d99ca7257b9754bbf9c867c53a2771, type: 3}
+  root: {fileID: 200395029}
 --- !u!4 &200395029
 Transform:
   m_ObjectHideFlags: 0

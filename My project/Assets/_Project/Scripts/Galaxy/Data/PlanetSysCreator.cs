@@ -48,7 +48,8 @@ namespace _Project.Scripts.Galaxy.Data
                 MotherStar    = motherStar,
                 OrbitIndex    = planetOrbit,
                 OrbitPosition = angleDeg,
-                Moons         = list.ToArray()
+                Moons         = list.ToArray(),
+                Planet = planet
             };
         }
 
