@@ -1,186 +1,201 @@
-﻿using UnityEngine;
-using static _Project.CONSTANT.GALAXY; // Moon*Weight, OrbitSlots, Moon* profiles
+﻿using System;
+using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Data
 {
     public static class MoonCreator
     {
-        /// <summary>
-        /// Простой генератор луны.
-        /// Держимся твоей модели: только номера орбит, круговые орбиты, детерминизм задаёшь Random. InitState(...) снаружи.
-        /// </summary>
-        public static Moon Create(Star star, int planetOrbit, Planet planet, int moonOrbit)
+        // =========================
+        // ТЮНИНГ (все веса 0–100)
+        // =========================
+
+        // Классификация размера планеты по радиусу (в земных радиусах)
+        private enum PSize { Small, Medium, Large }
+        private static PSize ClassifyPlanet(float rRe)
         {
-            // орбитальные «абстрактные» величины
-            int   orbitIndex     = Mathf.Clamp(moonOrbit, 1, Mathf.Max(1, OrbitSlots));
-            float orbitDistance  = orbitIndex;                // без радиусов — просто индекс
-            float orbitPeriod    = Mathf.Pow(orbitDistance, 1.4f) * 0.3f; // чуть быстрее, чем у планет
+            if (rRe >= 4f) return PSize.Large;
+            if (rRe >= 1.5f) return PSize.Medium;
+            return PSize.Small;
+        }
 
-            // тип и размер
-            var type = PickType(planet, orbitIndex);
-            var size = PickSize(planet, type);
-
-            // масса/радиус по профилям
-            var (mMin, mMax, rMin, rMax) = size switch
+        // Базовые веса типов лун по ТИПУ ПЛАНЕТЫ
+        // (Stone/Desert/Toxic/Frozen/Ocean/GasGiant/IceGiant/Blasted/Lava в твоём PlanetType наборе — лунные типы здесь)
+        private static (MoonType t, int w)[] WeightsByPlanetType(PlanetType p) => p switch
+        {
+            PlanetType.GasGiant => new[]
             {
-                MoonSize.Tiny   => MoonTiny,
-                MoonSize.Small  => MoonSmall,
-                MoonSize.Medium => MoonMedium,
-                MoonSize.Large  => MoonLarge,
-                _               => MoonSmall
-            };
-            float mass   = Rand(mMin, mMax);
-            float radius = Rand(rMin, rMax);
-
-            // атмосфера (луны в основном «тонкие»; исключения — крупные и «океанические»)
-            float atmosphere = type switch
+                (MoonType.Icy, 40), (MoonType.Ocean, 10), (MoonType.Stone, 10),
+                (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 10), (MoonType.Blasted, 20)
+            },
+            PlanetType.IceGiant => new[]
             {
-                MoonType.Ocean     => Rand(0.2f, size == MoonSize.Large ? 1.0f : 0.6f),
-                MoonType.Volcanic  => Rand(0.0f, 0.3f),
-                MoonType.Icy       => Rand(0.0f, 0.15f),
-                MoonType.Captured  => Rand(0.0f, 0.05f),
-                MoonType.Desert    => Rand(0.0f, 0.2f),
-                _ /*Rocky*/        => Rand(0.0f, size == MoonSize.Large ? 0.4f : 0.2f)
-            };
-
-            // наклон: «захваченные» чаще наклонные
-            float inclination = (type == MoonType.Captured)
-                ? Rand(10f, 40f)
-                : Rand(0f, 12f);
-
-            // температура: от температуры планеты с поправками по типу
-            float baseTemp = Mathf.Clamp(planet.Temperature + Rand(-35f, 25f), 30f, 800f);
-            baseTemp *= type switch
+                (MoonType.Icy, 45), (MoonType.Ocean, 15), (MoonType.Stone, 10),
+                (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 15)
+            },
+            PlanetType.Ocean => new[]
             {
-                MoonType.Volcanic => 1.20f,
-                MoonType.Icy      => 0.75f,
-                MoonType.Ocean    => 0.95f,
-                _                 => 1.0f
+                (MoonType.Ocean, 25), (MoonType.Icy, 25), (MoonType.Stone, 20),
+                (MoonType.Desert, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 10)
+            },
+            PlanetType.Stone => new[]
+            {
+                (MoonType.Stone, 35), (MoonType.Icy, 25), (MoonType.Desert, 15),
+                (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 5), (MoonType.Blasted, 5)
+            },
+            PlanetType.Desert => new[]
+            {
+                (MoonType.Desert, 35), (MoonType.Stone, 25), (MoonType.Icy, 20),
+                (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
+            },
+            PlanetType.Frozen => new[]
+            {
+                (MoonType.Icy, 45), (MoonType.Stone, 20), (MoonType.Ocean, 10),
+                (MoonType.Desert, 10), (MoonType.Lava, 3), (MoonType.Toxic, 2), (MoonType.Blasted, 10)
+            },
+            PlanetType.Lava => new[]
+            {
+                (MoonType.Lava, 35), (MoonType.Stone, 25), (MoonType.Desert, 15),
+                (MoonType.Icy, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
+            },
+            PlanetType.Toxic => new[]
+            {
+                (MoonType.Toxic, 30), (MoonType.Stone, 25), (MoonType.Desert, 20),
+                (MoonType.Icy, 10), (MoonType.Ocean, 5), (MoonType.Lava, 5), (MoonType.Blasted, 5)
+            },
+            PlanetType.Blasted => new[]
+            {
+                (MoonType.Blasted, 40), (MoonType.Stone, 20), (MoonType.Desert, 15),
+                (MoonType.Icy, 10), (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 0)
+            },
+            _ => new[]
+            {
+                (MoonType.Stone, 30), (MoonType.Icy, 30), (MoonType.Desert, 15),
+                (MoonType.Ocean, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 5)
+            }
+        };
+
+        // Модификатор по ЗВЕЗДЕ (жёсткие — усиливают Blasted/Toxic, душат Ocean)
+        private static void ApplyStarHazard(StarType star, ref (MoonType t, int w)[] weights)
+        {
+            if (star == StarType.Neutron || star == StarType.Black)
+            {
+                for (int i = 0; i < weights.Length; i++)
+                {
+                    if (weights[i].t == MoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 20);
+                    if (weights[i].t == MoonType.Toxic)   weights[i].w = Mathf.Min(100, weights[i].w + 10);
+                    if (weights[i].t == MoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 20);
+                }
+            }
+            else if (star == StarType.Blue || star == StarType.White)
+            {
+                for (int i = 0; i < weights.Length; i++)
+                {
+                    if (weights[i].t == MoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 10);
+                    if (weights[i].t == MoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 10);
+                }
+            }
+        }
+
+        // Модификатор по ОРБИТЕ ЛУНЫ (близко — больше Lava/Stone/Desert; далеко — Icy/Ocean/Blasted)
+        private static void ApplyMoonOrbitBias(int moonOrbitIndex, int planetOrbitIndex, ref (MoonType t, int w)[] weights)
+        {
+            // u ~ «удалённость луны»: чем больше индекс, тем холоднее
+            float u = Mathf.Clamp01((moonOrbitIndex - 1) / 8f); // 1..~9 нормализуем в 0..1
+
+            for (int i = 0; i < weights.Length; i++)
+            {
+                switch (weights[i].t)
+                {
+                    case MoonType.Lava:
+                        weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.6f * (1f - u)), 0f, 100f));
+                        break;
+                    case MoonType.Stone:
+                    case MoonType.Desert:
+                        weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.3f * (1f - u)), 0f, 100f));
+                        break;
+                    case MoonType.Icy:
+                    case MoonType.Ocean:
+                        weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.4f * u), 0f, 100f));
+                        break;
+                    case MoonType.Blasted:
+                        // чуть чаще на внешних орбитах
+                        weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.2f * u), 0f, 100f));
+                        break;
+                    case MoonType.Toxic:
+                        // слабая зависимость
+                        break;
+                }
+            }
+        }
+
+        // Веса размеров лун по КЛАССУ РАЗМЕРА ПЛАНЕТЫ
+        private static int[] SizeWeights(PSize host)
+        {
+            // порядок: Tiny, Small, Medium, Large (см. MoonSize) :contentReference[oaicite:4]{index=4}
+            return host switch
+            {
+                PSize.Small  => new[] { 50, 35, 15, 0 },  // маленькие планеты — мелкие луны
+                PSize.Medium => new[] { 25, 40, 30, 5 },
+                PSize.Large  => new[] { 10, 30, 40, 20 }, // гиганты — крупные луны чаще
+                _ => new[] { 30, 40, 25, 5 }
             };
-            float temperature = Mathf.Clamp(baseTemp, 30f, 800f);
+        }
 
-            // «поверхностная» гравитация ~ m / r^2
-            float gravity = Mathf.Clamp(mass / Mathf.Max(0.05f, radius * radius), 0.01f, 0.7f);
+        // =========================
+        // ПУБЛИЧНЫЙ API
+        // =========================
+        public static Moon Create(Star star, int planetOrbitIndex, Planet planet, int moonOrbitIndex)
+        {
+            // 1) Тип
+            var w = WeightsByPlanetType(planet.Type);
+            ApplyStarHazard(star.type, ref w);
+            ApplyMoonOrbitBias(moonOrbitIndex, planetOrbitIndex, ref w);
+            MoonType mType = PickWeighted(w);
 
-            // имя
-            string name = $"M{planetOrbit}.{orbitIndex}-{Random.Range(100, 999)}";
+            // 2) Размер
+            var hostClass = ClassifyPlanet(Mathf.Max(planet.Radius, 0.1f));
+            MoonSize mSize = PickSizeWeighted(SizeWeights(hostClass));
 
+            // 3) Сборка Moon (минимально необходимое; остальное ты уже сам довесишь при надобности)
             return new Moon
             {
-                Name           = name,
-                Type           = type,
-                Size           = size,
-                OrbitIndex     = orbitIndex,
-                Mass           = mass,
-                Radius         = radius,
-                OrbitDistance  = orbitDistance,
-                OrbitPeriod    = orbitPeriod,
-                Inclination    = inclination,
-                Atmosphere     = atmosphere,
-                Temperature    = temperature,
-                Gravity        = gravity
+                Name = null,
+                Type = mType,              // из твоего enum MoonType :contentReference[oaicite:5]{index=5}
+                Size = mSize,              // из твоего enum MoonSize :contentReference[oaicite:6]{index=6}
+                OrbitIndex = moonOrbitIndex
+                // Остальные поля (Mass, Radius, OrbitDistance, …) оставляю по умолчанию — под твои генераторы.
             };
         }
 
-        // ---------------- helpers ----------------
-
-        private static MoonType PickType(Planet planet, int moonOrbit)
+        // =========================
+        // ВНУТРЕНКА
+        // =========================
+        private static MoonType PickWeighted((MoonType t, int w)[] items)
         {
-            // базовые веса из констант
-            int wRocky   = MoonRockyWeight;
-            int wIcy     = MoonIcyWeight;
-            int wVolc    = MoonVolcanicWeight;
-            int wDesert  = MoonDesertWeight;
-            int wOcean   = MoonOceanWeight;
-            int wCaptured= MoonCapturedWeight;
-
-            // поправки по типу планеты
-            switch (planet.Type)
+            int total = 0;
+            for (int i = 0; i < items.Length; i++) total += Mathf.Max(0, items[i].w);
+            int r = UnityEngine.Random.Range(0, Math.Max(1, total));
+            int acc = 0;
+            for (int i = 0; i < items.Length; i++)
             {
-                case PlanetType.GasGiant:
-                    wIcy      = Scale(wIcy,      1.8f);
-                    wCaptured = Scale(wCaptured, 2.0f);
-                    wRocky    = Scale(wRocky,    1.2f);
-                    wOcean    = Scale(wOcean,    0.6f);
-                    break;
-                case PlanetType.IceGiant:
-                    wIcy      = Scale(wIcy,      1.7f);
-                    wCaptured = Scale(wCaptured, 1.6f);
-                    break;
-                case PlanetType.Stone:
-                    wRocky    = Scale(wRocky,    1.5f);
-                    wVolc     = Scale(wVolc,     (moonOrbit <= 3) ? 1.8f : 1.2f);
-                    break;
-                case PlanetType.Ocean:
-                    wOcean    = Scale(wOcean,    1.6f);
-                    wIcy      = Scale(wIcy,      1.2f);
-                    break;
-                case PlanetType.Lava:
-                    wVolc     = Scale(wVolc,     2.0f);
-                    wIcy      = Scale(wIcy,      0.6f);
-                    break;
-                case PlanetType.Frozen:
-                    wIcy      = Scale(wIcy,      2.0f);
-                    wOcean    = Scale(wOcean,    0.5f);
-                    break;
-                case PlanetType.Desert:
-                    wDesert   = Scale(wDesert,   1.6f);
-                    break;
-                case PlanetType.Toxic:
-                    wCaptured = Scale(wCaptured, 1.4f);
-                    break;
-                case PlanetType.Blasted:
-                    wCaptured = Scale(wCaptured, 1.8f);
-                    wRocky    = Scale(wRocky,    1.2f);
-                    wOcean    = Scale(wOcean,    0.5f);
-                    break;
+                acc += Mathf.Max(0, items[i].w);
+                if (r < acc) return items[i].t;
             }
-
-            // рулетка
-            int sum = wRocky + wIcy + wVolc + wDesert + wOcean + wCaptured;
-            if (sum <= 0) return MoonType.Rocky;
-
-            int roll = Random.Range(0, sum);
-            int acc  = 0;
-
-            if ((acc += wRocky)    > roll) return MoonType.Rocky;
-            if ((acc += wIcy)      > roll) return MoonType.Icy;
-            if ((acc += wVolc)     > roll) return MoonType.Volcanic;
-            if ((acc += wDesert)   > roll) return MoonType.Desert;
-            if ((acc += wOcean)    > roll) return MoonType.Ocean;
-            return MoonType.Captured;
+            return items[0].t;
         }
 
-        private static MoonSize PickSize(Planet planet, MoonType type)
+        private static MoonSize PickSizeWeighted(int[] w)
         {
-            bool isGiantPlanet = planet.Type is PlanetType.GasGiant or PlanetType.IceGiant;
-            // базовая шкала
-            int wTiny, wSmall, wMedium, wLarge;
-            if (isGiantPlanet)
-            {
-                wTiny = 10; wSmall = 30; wMedium = 35; wLarge = 25;
-            }
-            else
-            {
-                wTiny = 40; wSmall = 45; wMedium = 12; wLarge = 3;
-            }
-
-            // небольшие поправки по типу луны
-            if (type == MoonType.Volcanic) { wTiny += 5; wSmall += 5; }
-            if (type == MoonType.Ocean)    { wSmall += 5; wMedium += 5; }
-            if (type == MoonType.Captured) { wLarge = Mathf.Max(0, wLarge - 10); }
-
-            int sum = wTiny + wSmall + wMedium + wLarge;
-            int roll = Random.Range(0, sum);
+            int total = 0;
+            for (int i = 0; i < w.Length; i++) total += Mathf.Max(0, w[i]);
+            int r = UnityEngine.Random.Range(0, Math.Max(1, total));
             int acc = 0;
 
-            if ((acc += wTiny)   > roll) return MoonSize.Tiny;
-            if ((acc += wSmall)  > roll) return MoonSize.Small;
-            if ((acc += wMedium) > roll) return MoonSize.Medium;
+            // порядок должен соответствовать MoonSize: Tiny, Small, Medium, Large :contentReference[oaicite:7]{index=7}
+            if ((acc += w[0]) > r) return MoonSize.Tiny;
+            if ((acc += w[1]) > r) return MoonSize.Small;
+            if ((acc += w[2]) > r) return MoonSize.Medium;
             return MoonSize.Large;
         }
-
-        private static int   Scale(int w, float f)   => Mathf.Max(0, Mathf.RoundToInt(w * f));
-        private static float Rand(float a, float b)  => Random.Range(a, b);
     }
 }

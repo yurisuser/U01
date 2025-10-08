@@ -15,7 +15,6 @@ namespace _Project.Scripts.Galaxy.Generation
         private const float MinStarInterval           = 1.5f;
         private const float CentralBlackHoleIntervalK = 7f;
         private const int   MaxAttemptsPerStar        = 64;
-        const int GlobalSeed = 1337;
 
         // внутреннее
         private static float _lastRawX;
@@ -23,73 +22,41 @@ namespace _Project.Scripts.Galaxy.Generation
         
 public static StarSys[] Create()
 {
-    StarSys[] galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
-
-    for (int si = 0; si < galaxy.Length; si++)
+    var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
+    for (int i = 0; i < galaxy.Length; i++) // для каждой звезды на карте делаю следующее
     {
-        // сид для системы — все последующие генераторы в системе будут детерминированы
-        UnityEngine.Random.InitState(Seed(GlobalSeed, si, 0, 0));
-        if (si == 0)
+        if (i == 0)
         {
+            //к этой херне вернуться потом
+            //
             // Центральный объект: чёрная дыра, без планет
-            var starBh = new Star { type = StarType.Black, size = StarSize.Supergiant }; // size по желанию
-            int[] noPlanets = Array.Empty<int>();
-            galaxy[si] = StarSysCreator.Create(galaxy[si], starBh, noPlanets);
+            //var starBh = new Star { type = StarType.Black, size = StarSize.Supergiant }; // size по желанию
+            //int[] noPlanets = Array.Empty<int>();
+            //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
             continue;
         }
-
-        // 1) Звезда
-        Star star = StarCreator.Create();
-        PlanetSysCreator.ResetPerSystem();
-
-        // 2) Планеты: только номера орбит (int[]), без радиусов
-        int[] planetOrbits = PlanetOrbitCreator.Create(star);
-
-        // 3) Для каждой планеты — свой сид на основе (seed, systemIndex, planetOrbit)
-        for (int pj = 0; pj < planetOrbits.Length; pj++)
+        var star = StarCreator.Create(); //создаю звезду
+        var planetOrbits = PlanetOrbitCreator.Create(star); //Используемые планетами орбиты
+        var planetsArr = new Planet[planetOrbits.Length]; //на каждой орбите по планете
+        var planetSysArr = new PlanetSys[planetOrbits.Length]; //и не только, а целая планетная система
+        for (var j = 0; j < planetOrbits.Length; j++) //перебираем орбиты с планетными системами
         {
-            int planetOrbit = planetOrbits[pj];
-
-            UnityEngine.Random.InitState(Seed(GlobalSeed, si, planetOrbit, 0));
-            Planet planet = PlanetCreator.Create(planetOrbit, star);
-
-            // 4) Луны: только номера орбит
-            int[] moonOrbits = MoonOrbitCreator.Create(planet);
-
-            // 5) Для каждой луны — сид на основе (seed, systemIndex, planetOrbit, moonOrbit)
-            for (int mk = 0; mk < moonOrbits.Length; mk++)
+            planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //для каждой планетной системы делаю планету
+            var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]); // прикидываю сколько будет орбит для лун
+            var moonsArr = new Moon[moonOrbits.Length]; // делаю столько же и лун
+            for (var k = 0; k < moonOrbits.Length; k++) //для каждой луннной орбиты
             {
-                int moonOrbit = moonOrbits[mk];
-
-                UnityEngine.Random.InitState(Seed(GlobalSeed, si, planetOrbit, moonOrbit));
-                Moon moon = MoonCreator.Create(star, planetOrbit, planet, moonOrbit);
-
-                // Оставляю как у тебя: PlanetSysCreator вызывается на каждой луне
-                PlanetSys planetSys = PlanetSysCreator.Create(star, planetOrbit, planet, moon);
-            }
+                moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //создаю луну
+            } 
+            planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //и все что получилось - в планетную систему. 
         }
 
-        // 6) Собираем звёздную систему и кладём её в массив (фикс: присваиваем в galaxy[si])
-        StarSys starSys = StarSysCreator.Create(galaxy[si], star, planetOrbits);
-        galaxy[si] = starSys;
+        galaxy[i] = StarSysCreator.Create(galaxy[i], star, planetSysArr, planetOrbits); //планетные системы и звезду упаковываю в звездную систему
     }
 
     return galaxy;
-
-    // Локальная детерминированная мешалка для сидов
-    static int Seed(int globalSeed, int systemIndex, int planetOrbit, int moonOrbit)
-    {
-        unchecked
-        {
-            int h = globalSeed;
-            h = h * 31 + systemIndex;
-            h = h * 31 + planetOrbit;
-            h = h * 31 + moonOrbit;
-            return h;
-        }
-    }
 }
-        private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
+private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
         {
             if (count <= 0) return Array.Empty<StarSys>();
             var arr = new StarSys[count];
@@ -123,7 +90,6 @@ public static StarSys[] Create()
 
             return arr;
         }
-        // — старое распределение, но без NaN от Pow —
         private static Vector3 GenerateStarsNoGaussianDistr(float zLayer)
         {
             // семя X в [-1;1], избегаем точного нуля (для Atan(y/x))

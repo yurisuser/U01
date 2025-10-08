@@ -2,9 +2,9 @@
 {
     public enum StarSize
     {
-        Dwarf,
-        Normal,
-        Giant,
-        Supergiant
+        Dwarf = 0,
+        Normal = 1,
+        Giant = 2,
+        Supergiant = 3
     }
 }

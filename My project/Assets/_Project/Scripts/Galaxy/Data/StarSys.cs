@@ -9,6 +9,7 @@ namespace _Project.Scripts.Galaxy.Data
         public Vector3 GalaxyPosition;
         public Star Star;
         public PlanetSys[] PlanetSysArr;
+        public int[] PlanetOrbits;
         public int[] HyperlansIds;
         public float OldX;
         public float OldY;

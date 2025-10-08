@@ -4,89 +4,128 @@ using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Data
 {
-    // Генератор дискретных орбит планет для звезды.
-    // Выход: массив индексов орбит (без радиусов/физики).
     public static class PlanetOrbitCreator
     {
-        // Параметры сетки орбит (индексы условных колец)
-        private const int InnerForbiddenOrbit = 2;   // 0..1 заняты звёздной короной/опасной зоной
-        private const int MaxOrbitIndex       = 40;  // максимальный индекс орбиты
-        private const int MinOrbitGap         = 1;   // минимальный зазор между планетами (в индексах)
+        // ==== ТЮНИНГ (если захочешь — правь числа здесь) ====
 
-        // Вероятность одного «большого разрыва» (например, пояс астероидов)
-        private const float BigGapChance     = 0.25f;
-        private const int   BigGapExtraSpace = 2;
+        // Внутренняя граница по размеру звезды (первая допустимая орбита 1-based)
+        private static int InnerCutoff(StarSize size) => size switch
+        {
+            StarSize.Dwarf      => 1,
+            StarSize.Normal     => 2,
+            StarSize.Giant      => 3,
+            StarSize.Supergiant => 4,
+            _ => 2
+        };
 
+        // Внешняя граница по типу звезды (последняя допустимая орбита 1-based)
+        private static int OuterLimit(StarType type) => type switch
+        {
+            StarType.Red     => 18,
+            StarType.Orange  => 18,
+            StarType.Yellow  => 22,
+            StarType.White   => 20,
+            StarType.Blue    => 14,
+            StarType.Neutron => 8,
+            StarType.Black   => 8,
+            _ => 20
+        };
+
+        // Минимальный разрыв между занятыми орбитами (в «ячейках»)
+        private static int MinGap(StarSize size) => size switch
+        {
+            StarSize.Dwarf      => 1,
+            StarSize.Normal     => 2,
+            StarSize.Giant      => 3,
+            StarSize.Supergiant => 4,
+            _ => 2
+        };
+
+        // Диапазоны количества планет по типу (база)
+        private static (int min, int max) BasePlanetCount(StarType type) => type switch
+        {
+            StarType.Red     => (3, 7),
+            StarType.Orange  => (3, 6),
+            StarType.Yellow  => (2, 5),
+            StarType.White   => (1, 4),
+            StarType.Blue    => (0, 3),
+            StarType.Neutron => (0, 1),
+            StarType.Black   => (0, 1),
+            _ => (2, 5)
+        };
+
+        // Модификатор по размеру
+        private static int CountModifier(StarSize size) => size switch
+        {
+            StarSize.Dwarf      => +2,
+            StarSize.Normal     => 0,
+            StarSize.Giant      => -1,
+            StarSize.Supergiant => -2,
+            _ => 0
+        };
+
+        // ==== ПУБЛИЧНО ====
+
+        /// <summary>
+        /// Возвращает массив занятых планетами орбит (1-based индексы).
+        /// </summary>
         public static int[] Create(Star star)
         {
-            int targetCount = SamplePlanetCount(star);
-            if (targetCount <= 0) return Array.Empty<int>();
+            // Границы и ограничения
+            int inner = InnerCutoff(star.size);
+            int outer = OuterLimit(star.type);
+            if (outer < inner) return Array.Empty<int>();
 
-            List<int> orbits = new List<int>(targetCount);
+            // Сколько планет хотим
+            var (minBase, maxBase) = BasePlanetCount(star.type);
+            int delta = CountModifier(star.size);
+            int wantMin = Mathf.Max(0, minBase + delta);
+            int wantMax = Mathf.Max(wantMin, maxBase + delta);
 
-            int nextOrbit = Mathf.Max(InnerForbiddenOrbit, 0);
+            int want = UnityEngine.Random.Range(wantMin, wantMax + 1);
+            if (want == 0) return Array.Empty<int>();
 
-            bool willUseBigGap = UnityEngine.Random.value < BigGapChance;
-            int bigGapAfterIdx = willUseBigGap && targetCount >= 3
-                ? UnityEngine.Random.Range(1, targetCount - 1)
-                : -1;
+            // Кандидаты и жадный отбор с зазором
+            int gap = MinGap(star.size);
+            var candidates = new List<int>(outer - inner + 1);
+            for (int o = inner; o <= outer; o++) candidates.Add(o);
 
-            for (int i = 0; i < targetCount && nextOrbit <= MaxOrbitIndex; i++)
+            var picked = new List<int>(want);
+            // перемешаем кандидатов, чтобы не брать всегда одинаково
+            Shuffle(candidates);
+
+            foreach (int o in candidates)
             {
-                int noise = UnityEngine.Random.Range(0, 2); // 0..1
-                int chosenOrbit = nextOrbit + noise;
-
-                if (orbits.Count > 0)
+                if (IsFarEnough(o, picked, gap))
                 {
-                    int last = orbits[orbits.Count - 1];
-                    if (chosenOrbit - last < MinOrbitGap)
-                        chosenOrbit = last + MinOrbitGap;
+                    picked.Add(o);
+                    if (picked.Count >= want) break;
                 }
-
-                if (chosenOrbit > MaxOrbitIndex)
-                    break;
-
-                orbits.Add(chosenOrbit);
-
-                int step = MinOrbitGap + 1 + UnityEngine.Random.Range(0, 2); // 2..3
-                if (i == bigGapAfterIdx)
-                    step += BigGapExtraSpace + UnityEngine.Random.Range(0, 2);
-
-                nextOrbit = chosenOrbit + step;
             }
 
-            return orbits.ToArray();
+            picked.Sort();
+            return picked.ToArray();
         }
 
-        private static int SamplePlanetCount(Star star)
+        // ==== ВНУТРЕНКА ====
+
+        private static bool IsFarEnough(int orbit, List<int> taken, int gap)
         {
-            // Базово 3..8, с лёгкой вариативностью и влиянием «массы» звезды (если есть)
-            int baseMin = 3;
-            int baseMax = 8;
-
-            float massFactor = 1f;
-            try
+            for (int i = 0; i < taken.Count; i++)
             {
-                // Допускаем наличие свойства Mass у Star. Если его нет — используем 1.
-                float m = (star.mass == 0f) ? 1f : star.mass;
-                massFactor = Mathf.Clamp(m, 0.7f, 1.3f);
+                if (Mathf.Abs(taken[i] - orbit) < gap) return false;
             }
-            catch
+            return true;
+        }
+
+        private static void Shuffle(List<int> list)
+        {
+            // простой Фишер–Йетс на Unity Random
+            for (int i = list.Count - 1; i > 0; i--)
             {
-                massFactor = 1f;
+                int j = UnityEngine.Random.Range(0, i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
             }
-
-            int minC = Mathf.RoundToInt(baseMin * massFactor);
-            int maxC = Mathf.RoundToInt(baseMax * massFactor);
-            if (minC > maxC) (minC, maxC) = (maxC, minC);
-
-            int count = UnityEngine.Random.Range(minC, maxC + 1);
-
-            // Небольшой шанс уменьшить/увеличить на 1
-            if (UnityEngine.Random.value < 0.15f && count > 0) count -= 1;
-            if (UnityEngine.Random.value < 0.15f) count += 1;
-
-            return Mathf.Clamp(count, 0, 10);
         }
     }
 }

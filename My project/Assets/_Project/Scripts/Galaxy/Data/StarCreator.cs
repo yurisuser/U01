@@ -1,115 +1,178 @@
-﻿using Random = UnityEngine.Random;
-using  CONST = _Project.CONSTANT.GALAXY;
+﻿using UnityEngine;
+
 namespace _Project.Scripts.Galaxy.Data
 {
     public static class StarCreator
     {
-        public static Star Create(StarType? forcedType = null, StarSize? forcedSize = null)
+        // === веса типов звёзд (0–100) ===
+        private static readonly int[] TypeWeights = {
+            20, // Red
+            20, // Orange
+            10,  // Yellow
+            7, // White
+            3,  // Blue
+            2,  // Neutron
+            1   // Black
+        };
+
+        // === веса размеров звёзд по типу (в процентах суммарно 100) ===
+        private static readonly int[] RedSizeWeights     = { 85, 14, 1, 0 };
+        private static readonly int[] OrangeSizeWeights  = { 65, 30, 5, 0 };
+        private static readonly int[] YellowSizeWeights  = { 40, 50, 9, 1 };
+        private static readonly int[] WhiteSizeWeights   = { 20, 55, 22, 3 };
+        private static readonly int[] BlueSizeWeights    = { 0, 25, 45, 30 };
+        private static readonly int[] NeutronSizeWeights = { 100, 0, 0, 0 };
+        private static readonly int[] BlackSizeWeights   = { 0, 10, 45, 45 };
+
+        // === диапазоны физических параметров ===
+        private static readonly Vector2 TempKRed     = new(2400f, 3600f);
+        private static readonly Vector2 TempKOrange  = new(3600f, 5200f);
+        private static readonly Vector2 TempKYellow  = new(5200f, 6000f);
+        private static readonly Vector2 TempKWhite   = new(6500f, 10000f);
+        private static readonly Vector2 TempKBlue    = new(10000f, 30000f);
+        private static readonly Vector2 TempKNeutron = new(6e5f, 1e6f);
+        private static readonly Vector2 TempKBlack   = new(2f, 10f);
+
+        private static readonly Vector2 MassRed     = new(0.1f, 0.7f);
+        private static readonly Vector2 MassOrange  = new(0.7f, 0.9f);
+        private static readonly Vector2 MassYellow  = new(0.9f, 1.2f);
+        private static readonly Vector2 MassWhite   = new(1.2f, 2.5f);
+        private static readonly Vector2 MassBlue    = new(5f, 40f);
+        private static readonly Vector2 MassNeutron = new(1.1f, 2.3f);
+        private static readonly Vector2 MassBlack   = new(5f, 30f);
+
+        private static readonly Vector2 RadRed     = new(0.1f, 0.7f);
+        private static readonly Vector2 RadOrange  = new(0.7f, 0.9f);
+        private static readonly Vector2 RadYellow  = new(0.9f, 1.2f);
+        private static readonly Vector2 RadWhite   = new(1.2f, 2.0f);
+        private static readonly Vector2 RadBlue    = new(3f, 10f);
+        private static readonly Vector2 RadNeutron = new(1e-5f, 2e-5f);
+        private static readonly Vector2 RadBlack   = new(1e-5f, 1e-3f);
+
+        // множители размеров
+        private const float MulDwarf      = 0.7f;
+        private const float MulNormal     = 1.0f;
+        private const float MulGiant      = 10f;
+        private const float MulSupergiant = 50f;
+
+        // === Публичный API ===
+        public static Star Create()
         {
-            Star star = new Star();
-
-            // Тип
-            StarType type = forcedType ?? GetRandomStarType();
-            star.type = type;
-
-            // Размер
-            StarSize size = forcedSize ?? GetRandomStarSize(type);
-            star.size = size;
-
-            // Физика
-            ApplyPhysics(ref star);
-
-            return star;
+            var type = PickStarTypeWeighted();
+            return Create(type);
         }
 
-        private static StarType GetRandomStarType()
+        public static Star Create(StarType forcedType)
         {
-            int total = CONST.StarRedWeight + CONST.StarOrangeWeight + CONST.StarYelloWeight +
-                        CONST.StarWhiteWeight + CONST.StarBlueWeight + CONST.StarNeutronWeight +
-                        CONST.StarBlackWeight;
-
-            int roll = Random.Range(0, total);
-            if ((roll -= CONST.StarRedWeight) < 0) return StarType.Red;
-            if ((roll -= CONST.StarOrangeWeight) < 0) return StarType.Orange;
-            if ((roll -= CONST.StarYelloWeight) < 0) return StarType.Yellow;
-            if ((roll -= CONST.StarWhiteWeight) < 0) return StarType.White;
-            if ((roll -= CONST.StarBlueWeight) < 0) return StarType.Blue;
-            if ((roll -= CONST.StarNeutronWeight) < 0) return StarType.Neutron;
-            return StarType.Black;
+            var size = PickStarSizeWeighted(forcedType);
+            return BuildStar(forcedType, size);
         }
 
-        private static StarSize GetRandomStarSize(StarType type)
+        // === внутренние методы ===
+        private static Star BuildStar(StarType type, StarSize size)
         {
-            int roll, total;
-            switch (type)
+            float temperature = PickTemp(type);
+            float mass = PickByType(type, MassRed, MassOrange, MassYellow, MassWhite, MassBlue, MassNeutron, MassBlack);
+            float radius = PickByType(type, RadRed, RadOrange, RadYellow, RadWhite, RadBlue, RadNeutron, RadBlack) * SizeMultiplier(size);
+            float luminosity = Mathf.Clamp(Mathf.Pow(mass, 3.5f), 0.001f, 1e6f);
+
+            float age = Random.Range(0.1f, 12f);
+            float metallicity = Random.Range(0.0f, 1.0f);
+            float stability = Mathf.Clamp01(1f - (mass / 40f) + Random.Range(-0.1f, 0.1f));
+
+            return new Star
             {
-                case StarType.Red:
-                    total = CONST.RedDwarfWeight + CONST.RedNormalWeight + CONST.RedGiantWeight + CONST.RedSuperGiantWeight;
-                    roll = Random.Range(0, total);
-                    if ((roll -= CONST.RedDwarfWeight) < 0) return StarSize.Dwarf;
-                    if ((roll -= CONST.RedNormalWeight) < 0) return StarSize.Normal;
-                    if ((roll -= CONST.RedGiantWeight) < 0) return StarSize.Giant;
-                    return StarSize.Supergiant;
+                id = 0,
+                name = null,
+                type = type,
+                size = size,
+                temperature = temperature,
+                mass = mass,
+                radius = radius,
+                luminosity = luminosity,
+                age = age,
+                metallicity = metallicity,
+                stability = stability
+            };
+        }
 
-                case StarType.Orange:
-                case StarType.Yellow:
-                case StarType.White:
-                    total = CONST.SolarDwarfWeight + CONST.SolarNormalWeight + CONST.SolarGiantWeight + CONST.SolarSuperGiantWeight;
-                    roll = Random.Range(0, total);
-                    if ((roll -= CONST.SolarDwarfWeight) < 0) return StarSize.Dwarf;
-                    if ((roll -= CONST.SolarNormalWeight) < 0) return StarSize.Normal;
-                    if ((roll -= CONST.SolarGiantWeight) < 0) return StarSize.Giant;
-                    return StarSize.Supergiant;
-
-                case StarType.Blue:
-                    total = CONST.BlueDwarfWeight + CONST.BlueNormalWeight + CONST.BlueGiantWeight + CONST.BlueSuperGiantWeight;
-                    roll = Random.Range(0, total);
-                    if ((roll -= CONST.BlueDwarfWeight) < 0) return StarSize.Dwarf;
-                    if ((roll -= CONST.BlueNormalWeight) < 0) return StarSize.Normal;
-                    if ((roll -= CONST.BlueGiantWeight) < 0) return StarSize.Giant;
-                    return StarSize.Supergiant;
-
-                case StarType.Neutron:
-                    return StarSize.Dwarf; // фикс размер
-
-                case StarType.Black:
-                    return StarSize.Supergiant; // фикс размер
+        private static StarType PickStarTypeWeighted()
+        {
+            int total = 0;
+            for (int i = 0; i < TypeWeights.Length; i++) total += TypeWeights[i];
+            int r = Random.Range(0, total);
+            int acc = 0;
+            for (int i = 0; i < TypeWeights.Length; i++)
+            {
+                acc += TypeWeights[i];
+                if (r < acc) return (StarType)i;
             }
-            return StarSize.Normal;
+            return StarType.Red;
         }
 
-        private static void ApplyPhysics(ref Star star)
+        private static StarSize PickStarSizeWeighted(StarType t)
         {
-            // Температура
-            (float min, float max) tempRange = star.type switch
+            int[] w = t switch
             {
-                StarType.Red     => CONST.TempRed,
-                StarType.Orange  => CONST.TempOrange,
-                StarType.Yellow   => CONST.TempYello,
-                StarType.White   => CONST.TempWhite,
-                StarType.Blue    => CONST.TempBlue,
-                StarType.Neutron => CONST.TempNeutron,
-                StarType.Black   => CONST.TempBlack,
-                _ => (0f, 0f)
+                StarType.Red     => RedSizeWeights,
+                StarType.Orange  => OrangeSizeWeights,
+                StarType.Yellow  => YellowSizeWeights,
+                StarType.White   => WhiteSizeWeights,
+                StarType.Blue    => BlueSizeWeights,
+                StarType.Neutron => NeutronSizeWeights,
+                StarType.Black   => BlackSizeWeights,
+                _ => YellowSizeWeights
             };
-            star.temperature = Random.Range(tempRange.min, tempRange.max);
 
-            // Масса / Радиус / Светимость
-            (float mMin, float mMax, float rMin, float rMax, float lMin, float lMax) prof = star.size switch
-            {
-                StarSize.Dwarf      => CONST.ProfDwarf,
-                StarSize.Normal     => CONST.ProfNormal,
-                StarSize.Giant      => CONST.ProfGiant,
-                StarSize.Supergiant => CONST.ProfSuper,
-                _ => CONST.ProfNormal
-            };
-            star.mass       = Random.Range(prof.mMin, prof.mMax);
-            star.radius     = Random.Range(prof.rMin, prof.rMax);
-            star.luminosity = Random.Range(prof.lMin, prof.lMax);
-            star.age         = Random.Range(0.1f, 13.5f); // 0.1–13.5 млрд лет
-            star.metallicity = Random.Range(0f, 1f);      // от бедных до богатых металлами
-            star.stability   = Random.Range(0f, 1f);      // условная стабильность
-            star.habitability= Random.Range(0f, 1f);      // пригодность для жизни
+            int total = w[0] + w[1] + w[2] + w[3];
+            int r = Random.Range(0, total);
+            if (r < w[0]) return StarSize.Dwarf;
+            r -= w[0];
+            if (r < w[1]) return StarSize.Normal;
+            r -= w[1];
+            if (r < w[2]) return StarSize.Giant;
+            return StarSize.Supergiant;
         }
+
+        private static float PickTemp(StarType t)
+        {
+            var range = t switch
+            {
+                StarType.Red     => TempKRed,
+                StarType.Orange  => TempKOrange,
+                StarType.Yellow  => TempKYellow,
+                StarType.White   => TempKWhite,
+                StarType.Blue    => TempKBlue,
+                StarType.Neutron => TempKNeutron,
+                StarType.Black   => TempKBlack,
+                _ => TempKYellow
+            };
+            return Random.Range(range.x, range.y);
+        }
+
+        private static float PickByType(StarType t, Vector2 red, Vector2 orange, Vector2 yellow, Vector2 white, Vector2 blue, Vector2 neutron, Vector2 black)
+        {
+            Vector2 range = t switch
+            {
+                StarType.Red     => red,
+                StarType.Orange  => orange,
+                StarType.Yellow  => yellow,
+                StarType.White   => white,
+                StarType.Blue    => blue,
+                StarType.Neutron => neutron,
+                StarType.Black   => black,
+                _ => yellow
+            };
+            return Random.Range(range.x, range.y);
+        }
+
+        private static float SizeMultiplier(StarSize s) => s switch
+        {
+            StarSize.Dwarf      => MulDwarf,
+            StarSize.Normal     => MulNormal,
+            StarSize.Giant      => MulGiant,
+            StarSize.Supergiant => MulSupergiant,
+            _ => MulNormal
+        };
     }
 }
