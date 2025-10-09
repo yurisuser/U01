@@ -148,21 +148,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9b7188c53614ff88b7514d7a9c7183f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapRenderer
-  redPrefab: {fileID: 5232491077732590000, guid: 17eb67ceb950ff44c85f9a47dfdf475e, type: 3}
-  orangePrefab: {fileID: 5232491077732590000, guid: 28cf82f561a330243bf49410ada7bcd5, type: 3}
-  yellowPrefab: {fileID: 5232491077732590000, guid: 418a03e892b1dcb4a8c1f8a5ea023086, type: 3}
-  whitePrefab: {fileID: 5232491077732590000, guid: 665ca3354f0828f49b0d4e38dc1b58a2, type: 3}
-  bluePrefab: {fileID: 5232491077732590000, guid: 2bd75ab5be2782d4aa0cd65900bece5e, type: 3}
-  neutronPrefab: {fileID: 5232491077732590000, guid: a116d2f1ab777be4abf5e02a080ecb52, type: 3}
-  blackPrefab: {fileID: 5232491077732590000, guid: 8ff1a38a9c4c50f4aa34de1da6248902, type: 3}
-  defaultStarPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
   orbitMaterial: {fileID: 0}
-  orbitSegments: 128
-  starScale: 1.5
-  firstOrbitRadius: 3
-  orbitStep: 2
-  planetScale: 0.6
-  planetPrefabs:
+  planetOrbitColor: {r: 1, g: 0.8397133, b: 0, a: 0.35}
+  moonOrbitColor: {r: 1, g: 0.83921576, b: 0, a: 0.34901962}
+  segments: 128
+  orbitUnitPlanet: 10
+  orbitUnitMoon: 1.5
+  lineWidthAtRefZoom: 0.015
+  referenceOrthoSize: 10
+  targetCamera: {fileID: 1020303310}
+  starPrefabsByType:
+  - {fileID: 5232491077732590000, guid: 17eb67ceb950ff44c85f9a47dfdf475e, type: 3}
+  - {fileID: 5232491077732590000, guid: 418a03e892b1dcb4a8c1f8a5ea023086, type: 3}
+  - {fileID: 5232491077732590000, guid: 28cf82f561a330243bf49410ada7bcd5, type: 3}
+  - {fileID: 5232491077732590000, guid: 665ca3354f0828f49b0d4e38dc1b58a2, type: 3}
+  - {fileID: 5232491077732590000, guid: 2bd75ab5be2782d4aa0cd65900bece5e, type: 3}
+  - {fileID: 5232491077732590000, guid: a116d2f1ab777be4abf5e02a080ecb52, type: 3}
+  - {fileID: 5232491077732590000, guid: 8ff1a38a9c4c50f4aa34de1da6248902, type: 3}
+  planetPrefabsByType:
   - {fileID: 4298940278040418173, guid: 23eea45864374fc46a9b6abe88425c71, type: 3}
   - {fileID: 4298940278040418173, guid: 7e46da7625855944bbe8b09eb3de43a7, type: 3}
   - {fileID: 4298940278040418173, guid: 4cf7cc0e8eccea8498df676db53954db, type: 3}
@@ -172,7 +175,6 @@ MonoBehaviour:
   - {fileID: 4298940278040418173, guid: c62c0e393d5293a4182aab56c645e624, type: 3}
   - {fileID: 4298940278040418173, guid: ec79074ea7bb24f4ba8eb0bd0825012b, type: 3}
   - {fileID: 4298940278040418173, guid: a4d99ca7257b9754bbf9c867c53a2771, type: 3}
-  root: {fileID: 200395029}
 --- !u!4 &200395029
 Transform:
   m_ObjectHideFlags: 0
