@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using _Project.Scripts.Core.Scene;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -11,6 +13,10 @@ namespace _Project.Scripts.SystemMap
     /// </summary>
     public class SystemMapRenderer : MonoBehaviour
     {
+        
+        private bool _isExiting;
+        private Core.Core _core; 
+        
         [Header("Материал и цвет орбит")]
         [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new Color(0.6f, 0.8f, 1f, 0.35f);
@@ -61,6 +67,32 @@ namespace _Project.Scripts.SystemMap
 
             DrawSystem(sys);
         }
+        private void OnEnable()
+        {
+            if (_core?.Input != null)
+                _core.Input.Subscribe(Key.Escape, OnEscPressed);
+        }
+
+        private void OnDisable()
+        {
+            if (_core?.Input != null)
+                _core.Input.Unsubscribe(Key.Escape, OnEscPressed);
+        }
+
+        private void Awake()
+        {
+            _core = FindFirstObjectByType<Core.Core>();
+        }
+
+        
+        private async void OnEscPressed()
+        {
+            if (_isExiting) return;
+            _isExiting = true;
+
+            await SceneController.LoadAsync(SceneId.GalaxyMap);
+        }
+
         public void DrawSystem(StarSys system)
         {
             EnsureCamera();
