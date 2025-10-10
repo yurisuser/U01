@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 8307571554890770189}
   - component: {fileID: 7983019661018328711}
   - component: {fileID: 6448087062905843240}
-  - component: {fileID: 1492797996157972249}
   - component: {fileID: -6353280950905396145}
   m_Layer: 0
   m_Name: WhiteStarGalaxyMap
@@ -113,21 +112,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1492797996157972249
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7116236054248093868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ef2aef3be104258b5a2d1099ea5997f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Project.StarGalaxyMapScaller
-  mainCamera: {fileID: 0}
-  baseScale: 0.05
-  scaleFactor: 0.002
 --- !u!114 &-6353280950905396145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caa8a19ac2744debae867ed3b18e3886, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.StarGalaxyMapClick
-  Type: 0
-  SystemName: 
+  logClick: 1
+  type: 0
+  systemName: 
   cam: {fileID: 0}

@@ -7,14 +7,15 @@ namespace _Project.Scripts.Galaxy.Generation
     public static class GalaxyCreator
     {
         // === настройки ===
-        private const int   StarCount                 = 1300;
-        private const float GalaxyRadius              = 100f;
-        private const float GalaxyStarLayer           = 0f;
-        private const float DensityArms               = 4.2f;
-        private const float WidthArms                 = 10f;
-        private const float MinStarInterval           = 1.5f;
-        private const float CentralBlackHoleIntervalK = 7f;
-        private const int   MaxAttemptsPerStar        = 64;
+        private const int   StarCount                 = 1300;  // количество звёзд в галактике 
+        private const float GalaxyRadius              = 500f;  // радиус галактики (юниты)
+        private const float GalaxyStarLayer           = 0f;    // смещение звёзд по Z
+        private const float DensityArms               = 3f;  // плотность вдоль рукавов
+        private const float WidthArms                 = 60f;  // ширина рукавов
+        private const float MinStarInterval           = 3.5f;  // минимальное расстояние между звёздами
+        private const float CentralBlackHoleIntervalK = 10f;   // отступ от центра (чёрной дыры)
+        private const int   MaxAttemptsPerStar        = 64;    // максимум попыток разместить звезду
+
 
         // внутреннее
         private static float _lastRawX;
