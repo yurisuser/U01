@@ -31,6 +31,8 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private GameObject[] starPrefabsByType;
         [Tooltip("Индекс = (int)PlanetType. Если элемент null — планету не рисуем.")]
         [SerializeField] private GameObject[] planetPrefabsByType;
+        [Tooltip("Индекс = (int)MoonType. Если элемент null — планету не рисуем.")]
+        [SerializeField] private GameObject[] moonPrefabsByType;
 
         // создаём эти руты сами — никаких ссылок не требуется
         private Transform _starRoot;
@@ -109,28 +111,85 @@ namespace _Project.Scripts.SystemMap
                     }
 
                     // орбиты лун вокруг планеты (луны не рисуем)
-                    if (ps.Moons != null && ps.Moons.Length > 0) // Moon.OrbitIndex — PascalCase :contentReference[oaicite:7]{index=7}
-                    {
-                        var moonRoot = new GameObject($"MoonOrbits_Planet_{i}").transform;
-                        moonRoot.SetParent(_moonOrbitsRoot, false);
-                        moonRoot.localPosition = planetPos;
-
-                        for (int k = 0; k < ps.Moons.Length; k++)
-                        {
-                            int idx = Mathf.Max(0, ps.Moons[k].OrbitIndex);
-                            if (idx <= 0) continue;
-
-                            float rMoon = idx * orbitUnitMoon;
-                            var moonOrbit = CreateCircle(moonRoot, Vector3.zero, rMoon, moonOrbitColor);
-                            _allOrbitLines.Add(moonOrbit);
-                        }
-                    }
+                    DrawMoonsForPlanet(i, ps, planetPos, _planetsRoot, _moonOrbitsRoot);
                 }
             }
 
             // первичная установка толщины (на случай, если камера уже не ref-зума)
             UpdateLineWidthsImmediate();
         }
+// Рисуем орбиты лун и сами луны вокруг планеты.
+// planetIndex — индекс планеты в системе (для детерминированного угла)
+// ps          — PlanetSys (в нём Moons[] с OrbitIndex/Type)
+// planetPos   — позиция планеты в локале карты
+// moonsRoot   — родительский узел для объектов лун (GameObject’ы лун)
+// moonOrbitsRoot — родительский узел для линий орбит лун
+private void DrawMoonsForPlanet(
+    int planetIndex,
+    PlanetSys ps,
+    Vector3 planetPos,
+    Transform moonsRoot,
+    Transform moonOrbitsRoot)
+{
+    if (ps.Moons == null || ps.Moons.Length == 0) return;
+
+    // локальный центр лун у этой планеты
+    var center = new GameObject($"Moons_Planet_{planetIndex}").transform;
+    center.SetParent(moonsRoot, false);
+    center.localPosition = planetPos;
+
+    // локальный корень для линий орбит лун
+    var orbitsCenter = new GameObject($"MoonOrbits_Planet_{planetIndex}").transform;
+    orbitsCenter.SetParent(moonOrbitsRoot, false);
+    orbitsCenter.localPosition = planetPos;
+
+    for (int k = 0; k < ps.Moons.Length; k++)
+    {
+        var moon = ps.Moons[k];
+        int orbitIdx = Mathf.Max(0, moon.OrbitIndex);
+        if (orbitIdx <= 0) continue;
+
+        // 1) Орбита луны (кольцо) — тот же круговой LineRenderer, что и для планет
+        float rMoon = orbitIdx * orbitUnitMoon;                // <-- поле класса
+        var moonOrbit = CreateCircle(orbitsCenter, Vector3.zero, rMoon, moonOrbitColor);
+        _allOrbitLines.Add(moonOrbit);
+
+        // 2) Позиция самой луны: детерминированный угол по индексам, без анимации
+        float angle = Hash01((planetIndex + 1) * 73856093 ^ (k + 1) * 19349663 ^ orbitIdx * 83492791) * (Mathf.PI * 2f);
+        Vector3 local = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * rMoon;
+
+        // 3) Инстансим префаб луны по типу (если указан); иначе — пропускаем спрайт, остаётся только орбита
+        var moonPrefab = GetMoonPrefab(moon.Type);             // <-- ожидается массив префабов по (int)MoonType
+        if (moonPrefab != null)
+        {
+            var mGo = Instantiate(moonPrefab, center);
+            mGo.name = $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIdx}";
+            mGo.transform.localPosition = local;
+        }
+    }
+}
+
+// ——— Хелпер для детерминированного угла [0..1)
+private static float Hash01(int seed)
+{
+    unchecked
+    {
+        uint x = (uint)seed;
+        x ^= x >> 17; x *= 0xED5AD4BBu;
+        x ^= x >> 11; x *= 0xAC4C1B51u;
+        x ^= x >> 15; x *= 0x31848BABu;
+        x ^= x >> 14;
+        return (x & 0xFFFFFFu) / 16777216f; // 2^24
+    }
+}
+
+// ——— Ожидается хелпер у класса; если его нет, добавь аналогично GetPlanetPrefab
+private GameObject GetMoonPrefab(MoonType type)
+{
+    int idx = (int)type;
+    if (moonPrefabsByType == null || idx < 0 || idx >= moonPrefabsByType.Length) return null;
+    return moonPrefabsByType[idx];
+}
 
         // ============ ВСПОМОГАТЕЛЬНО ============
 

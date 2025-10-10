@@ -175,6 +175,14 @@ MonoBehaviour:
   - {fileID: 4298940278040418173, guid: c62c0e393d5293a4182aab56c645e624, type: 3}
   - {fileID: 4298940278040418173, guid: ec79074ea7bb24f4ba8eb0bd0825012b, type: 3}
   - {fileID: 4298940278040418173, guid: a4d99ca7257b9754bbf9c867c53a2771, type: 3}
+  moonPrefabsByType:
+  - {fileID: 4298940278040418173, guid: aad72e86950889d408556b67645ec664, type: 3}
+  - {fileID: 4298940278040418173, guid: a0cc5cdd305c6904fa23a02a0a5612e2, type: 3}
+  - {fileID: 4298940278040418173, guid: 90a23f073555f834285c4dac3e294e9c, type: 3}
+  - {fileID: 4298940278040418173, guid: e28c2ae2d6915344da62f6c10c217c09, type: 3}
+  - {fileID: 4298940278040418173, guid: d0bde4ca8704d1344b92f2ae731de490, type: 3}
+  - {fileID: 4298940278040418173, guid: 7eb991a73d7b53f4389f76670e5aa469, type: 3}
+  - {fileID: 4298940278040418173, guid: bf3b3e57058176847a88d6cdfd7ccd58, type: 3}
 --- !u!4 &200395029
 Transform:
   m_ObjectHideFlags: 0
@@ -397,10 +405,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f53b2d3ff543499a910da6d0b0547ff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapCameraController
-  minOrtho: 2
-  maxOrtho: 50
+  minOrtho: 20
+  maxOrtho: 300
   zoomSpeed: 40
-  panSpeed: 0.7
+  panSpeed: 2
 --- !u!114 &1020303313
 MonoBehaviour:
   m_ObjectHideFlags: 0

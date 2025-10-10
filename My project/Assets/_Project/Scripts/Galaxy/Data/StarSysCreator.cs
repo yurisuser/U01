@@ -6,7 +6,7 @@
         {
             starSys.Star = star;
             starSys.Id = star.id;
-            starSys.Name = starSys.Name;
+            starSys.Name = star.name;
             starSys.PlanetSysArr = planetSysArray;
             starSys.PlanetOrbits = planetOrbits;
             return starSys;

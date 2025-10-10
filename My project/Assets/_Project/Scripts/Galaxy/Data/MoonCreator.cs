@@ -5,10 +5,6 @@ namespace _Project.Scripts.Galaxy.Data
 {
     public static class MoonCreator
     {
-        // =========================
-        // ТЮНИНГ (все веса 0–100)
-        // =========================
-
         // Классификация размера планеты по радиусу (в земных радиусах)
         private enum PSize { Small, Medium, Large }
         private static PSize ClassifyPlanet(float rRe)
@@ -24,52 +20,52 @@ namespace _Project.Scripts.Galaxy.Data
         {
             PlanetType.GasGiant => new[]
             {
-                (MoonType.Icy, 40), (MoonType.Ocean, 10), (MoonType.Stone, 10),
+                (MoonType.Ice, 40), (MoonType.Ocean, 10), (MoonType.Stone, 10),
                 (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 10), (MoonType.Blasted, 20)
             },
             PlanetType.IceGiant => new[]
             {
-                (MoonType.Icy, 45), (MoonType.Ocean, 15), (MoonType.Stone, 10),
+                (MoonType.Ice, 45), (MoonType.Ocean, 15), (MoonType.Stone, 10),
                 (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 15)
             },
             PlanetType.Ocean => new[]
             {
-                (MoonType.Ocean, 25), (MoonType.Icy, 25), (MoonType.Stone, 20),
+                (MoonType.Ocean, 25), (MoonType.Ice, 25), (MoonType.Stone, 20),
                 (MoonType.Desert, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 10)
             },
             PlanetType.Stone => new[]
             {
-                (MoonType.Stone, 35), (MoonType.Icy, 25), (MoonType.Desert, 15),
+                (MoonType.Stone, 35), (MoonType.Ice, 25), (MoonType.Desert, 15),
                 (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 5), (MoonType.Blasted, 5)
             },
             PlanetType.Desert => new[]
             {
-                (MoonType.Desert, 35), (MoonType.Stone, 25), (MoonType.Icy, 20),
+                (MoonType.Desert, 35), (MoonType.Stone, 25), (MoonType.Ice, 20),
                 (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
             },
             PlanetType.Frozen => new[]
             {
-                (MoonType.Icy, 45), (MoonType.Stone, 20), (MoonType.Ocean, 10),
+                (MoonType.Ice, 45), (MoonType.Stone, 20), (MoonType.Ocean, 10),
                 (MoonType.Desert, 10), (MoonType.Lava, 3), (MoonType.Toxic, 2), (MoonType.Blasted, 10)
             },
             PlanetType.Lava => new[]
             {
                 (MoonType.Lava, 35), (MoonType.Stone, 25), (MoonType.Desert, 15),
-                (MoonType.Icy, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
+                (MoonType.Ice, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
             },
             PlanetType.Toxic => new[]
             {
                 (MoonType.Toxic, 30), (MoonType.Stone, 25), (MoonType.Desert, 20),
-                (MoonType.Icy, 10), (MoonType.Ocean, 5), (MoonType.Lava, 5), (MoonType.Blasted, 5)
+                (MoonType.Ice, 10), (MoonType.Ocean, 5), (MoonType.Lava, 5), (MoonType.Blasted, 5)
             },
             PlanetType.Blasted => new[]
             {
                 (MoonType.Blasted, 40), (MoonType.Stone, 20), (MoonType.Desert, 15),
-                (MoonType.Icy, 10), (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 0)
+                (MoonType.Ice, 10), (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 0)
             },
             _ => new[]
             {
-                (MoonType.Stone, 30), (MoonType.Icy, 30), (MoonType.Desert, 15),
+                (MoonType.Stone, 30), (MoonType.Ice, 30), (MoonType.Desert, 15),
                 (MoonType.Ocean, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 5)
             }
         };
@@ -96,7 +92,7 @@ namespace _Project.Scripts.Galaxy.Data
             }
         }
 
-        // Модификатор по ОРБИТЕ ЛУНЫ (близко — больше Lava/Stone/Desert; далеко — Icy/Ocean/Blasted)
+        // Модификатор по ОРБИТЕ ЛУНЫ (близко — больше Lava/Stone/Desert; далеко — Icee/Ocean/Blasted)
         private static void ApplyMoonOrbitBias(int moonOrbitIndex, int planetOrbitIndex, ref (MoonType t, int w)[] weights)
         {
             // u ~ «удалённость луны»: чем больше индекс, тем холоднее
@@ -113,7 +109,7 @@ namespace _Project.Scripts.Galaxy.Data
                     case MoonType.Desert:
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.3f * (1f - u)), 0f, 100f));
                         break;
-                    case MoonType.Icy:
+                    case MoonType.Ice:
                     case MoonType.Ocean:
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.4f * u), 0f, 100f));
                         break;
@@ -131,7 +127,7 @@ namespace _Project.Scripts.Galaxy.Data
         // Веса размеров лун по КЛАССУ РАЗМЕРА ПЛАНЕТЫ
         private static int[] SizeWeights(PSize host)
         {
-            // порядок: Tiny, Small, Medium, Large (см. MoonSize) :contentReference[oaicite:4]{index=4}
+            // порядок: Tiny, Small, Medium, Large (см. MoonSize):contentReference[oaicite:4]{index=4}
             return host switch
             {
                 PSize.Small  => new[] { 50, 35, 15, 0 },  // маленькие планеты — мелкие луны
