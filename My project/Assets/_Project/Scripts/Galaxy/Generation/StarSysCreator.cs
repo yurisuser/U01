@@ -1,4 +1,6 @@
-﻿namespace _Project.Scripts.Galaxy.Data
+﻿using _Project.Scripts.Galaxy.Data;
+
+namespace _Project.Scripts.Galaxy.Generation
 {
     public static class StarSysCreator
     {
