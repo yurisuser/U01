@@ -1,6 +1,6 @@
 ﻿namespace _Project.Scripts.Galaxy.Data
 {
-    public enum PlanetType
+    public enum EPlanetType
     {
         Stone = 0,         // каменные (землеподобные)
         GasGiant = 1,      // газовые гиганты

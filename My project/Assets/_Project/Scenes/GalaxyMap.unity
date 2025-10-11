@@ -182,7 +182,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 120
+  orthographic size: 600
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -229,9 +229,9 @@ MonoBehaviour:
   maxX: 500
   minY: -500
   maxY: 500
-  minZoom: 10
-  maxZoom: 200
-  zoomSpeed: 10
+  minZoom: 100
+  maxZoom: 1000
+  zoomSpeed: 50
   dragDamp: 1
 --- !u!114 &447649536
 MonoBehaviour:
@@ -395,9 +395,9 @@ MonoBehaviour:
   defaultPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
   dwarfMul: 0.7
   normalMul: 1
-  giantMul: 2.4
-  supergiantMul: 3.8
-  globalScale: 4
+  giantMul: 1.8
+  supergiantMul: 2.5
+  globalScale: 1
   starsRoot: {fileID: 1830487893}
 --- !u!4 &1830487893
 Transform:

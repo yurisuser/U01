@@ -5,8 +5,8 @@
     {
         public int id;
         public string name;
-        public StarType type;
-        public StarSize size;
+        public EStarType type;
+        public EStarSize size;
         public float temperature; // K
         public float mass;        // солнечные массы
         public float radius;      // солнечные радиусы

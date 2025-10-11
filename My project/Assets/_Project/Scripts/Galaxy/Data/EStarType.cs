@@ -1,6 +1,6 @@
 ﻿namespace _Project.Scripts.Galaxy.Data
 {
-    public enum StarType
+    public enum EStarType
     {
         Red = 0,
         Yellow = 1,

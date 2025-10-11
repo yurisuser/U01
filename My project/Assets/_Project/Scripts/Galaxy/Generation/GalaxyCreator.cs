@@ -31,7 +31,7 @@ public static StarSys[] Create()
             //к этой херне вернуться потом
             //
             // Центральный объект: чёрная дыра, без планет
-            //var starBh = new Star { type = StarType.Black, size = StarSize.Supergiant }; // size по желанию
+            //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size по желанию
             //int[] noPlanets = Array.Empty<int>();
             //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
             continue;
@@ -45,11 +45,11 @@ public static StarSys[] Create()
             planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //для каждой планетной системы делаю планету
             var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]); // прикидываю сколько будет орбит для лун
             var moonsArr = new Moon[moonOrbits.Length]; // делаю столько же и лун
-            for (var k = 0; k < moonOrbits.Length; k++) //для каждой луннной орбиты
+            for (var k = 0; k < moonOrbits.Length; k++) //для каждой лунной орбиты
             {
                 moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //создаю луну
             } 
-            planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //и все что получилось - в планетную систему. 
+            planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //И все что получилось - в планетную систему. 
         }
 
         galaxy[i] = StarSysCreator.Create(galaxy[i], star, planetSysArr, planetOrbits); //планетные системы и звезду упаковываю в звездную систему

@@ -16,85 +16,85 @@ namespace _Project.Scripts.Galaxy.Generation
         }
 
         // Базовые веса типов лун по ТИПУ ПЛАНЕТЫ
-        // (Stone/Desert/Toxic/Frozen/Ocean/GasGiant/IceGiant/Blasted/Lava в твоём PlanetType наборе — лунные типы здесь)
-        private static (MoonType t, int w)[] WeightsByPlanetType(PlanetType p) => p switch
+        // (Stone/Desert/Toxic/Frozen/Ocean/GasGiant/IceGiant/Blasted/Lava в твоём EPlanetType наборе — лунные типы здесь)
+        private static (EMoonType t, int w)[] WeightsByPlanetType(EPlanetType p) => p switch
         {
-            PlanetType.GasGiant => new[]
+            EPlanetType.GasGiant => new[]
             {
-                (MoonType.Ice, 40), (MoonType.Ocean, 10), (MoonType.Stone, 10),
-                (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 10), (MoonType.Blasted, 20)
+                (EMoonType.Ice, 40), (EMoonType.Ocean, 10), (EMoonType.Stone, 10),
+                (EMoonType.Desert, 5), (EMoonType.Lava, 5), (EMoonType.Toxic, 10), (EMoonType.Blasted, 20)
             },
-            PlanetType.IceGiant => new[]
+            EPlanetType.IceGiant => new[]
             {
-                (MoonType.Ice, 45), (MoonType.Ocean, 15), (MoonType.Stone, 10),
-                (MoonType.Desert, 5), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 15)
+                (EMoonType.Ice, 45), (EMoonType.Ocean, 15), (EMoonType.Stone, 10),
+                (EMoonType.Desert, 5), (EMoonType.Lava, 5), (EMoonType.Toxic, 5), (EMoonType.Blasted, 15)
             },
-            PlanetType.Ocean => new[]
+            EPlanetType.Ocean => new[]
             {
-                (MoonType.Ocean, 25), (MoonType.Ice, 25), (MoonType.Stone, 20),
-                (MoonType.Desert, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 10)
+                (EMoonType.Ocean, 25), (EMoonType.Ice, 25), (EMoonType.Stone, 20),
+                (EMoonType.Desert, 10), (EMoonType.Lava, 5), (EMoonType.Toxic, 5), (EMoonType.Blasted, 10)
             },
-            PlanetType.Stone => new[]
+            EPlanetType.Stone => new[]
             {
-                (MoonType.Stone, 35), (MoonType.Ice, 25), (MoonType.Desert, 15),
-                (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 5), (MoonType.Blasted, 5)
+                (EMoonType.Stone, 35), (EMoonType.Ice, 25), (EMoonType.Desert, 15),
+                (EMoonType.Lava, 10), (EMoonType.Toxic, 5), (EMoonType.Ocean, 5), (EMoonType.Blasted, 5)
             },
-            PlanetType.Desert => new[]
+            EPlanetType.Desert => new[]
             {
-                (MoonType.Desert, 35), (MoonType.Stone, 25), (MoonType.Ice, 20),
-                (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
+                (EMoonType.Desert, 35), (EMoonType.Stone, 25), (EMoonType.Ice, 20),
+                (EMoonType.Lava, 5), (EMoonType.Toxic, 5), (EMoonType.Ocean, 3), (EMoonType.Blasted, 7)
             },
-            PlanetType.Frozen => new[]
+            EPlanetType.Frozen => new[]
             {
-                (MoonType.Ice, 45), (MoonType.Stone, 20), (MoonType.Ocean, 10),
-                (MoonType.Desert, 10), (MoonType.Lava, 3), (MoonType.Toxic, 2), (MoonType.Blasted, 10)
+                (EMoonType.Ice, 45), (EMoonType.Stone, 20), (EMoonType.Ocean, 10),
+                (EMoonType.Desert, 10), (EMoonType.Lava, 3), (EMoonType.Toxic, 2), (EMoonType.Blasted, 10)
             },
-            PlanetType.Lava => new[]
+            EPlanetType.Lava => new[]
             {
-                (MoonType.Lava, 35), (MoonType.Stone, 25), (MoonType.Desert, 15),
-                (MoonType.Ice, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 3), (MoonType.Blasted, 7)
+                (EMoonType.Lava, 35), (EMoonType.Stone, 25), (EMoonType.Desert, 15),
+                (EMoonType.Ice, 10), (EMoonType.Toxic, 5), (EMoonType.Ocean, 3), (EMoonType.Blasted, 7)
             },
-            PlanetType.Toxic => new[]
+            EPlanetType.Toxic => new[]
             {
-                (MoonType.Toxic, 30), (MoonType.Stone, 25), (MoonType.Desert, 20),
-                (MoonType.Ice, 10), (MoonType.Ocean, 5), (MoonType.Lava, 5), (MoonType.Blasted, 5)
+                (EMoonType.Toxic, 30), (EMoonType.Stone, 25), (EMoonType.Desert, 20),
+                (EMoonType.Ice, 10), (EMoonType.Ocean, 5), (EMoonType.Lava, 5), (EMoonType.Blasted, 5)
             },
-            PlanetType.Blasted => new[]
+            EPlanetType.Blasted => new[]
             {
-                (MoonType.Blasted, 40), (MoonType.Stone, 20), (MoonType.Desert, 15),
-                (MoonType.Ice, 10), (MoonType.Lava, 10), (MoonType.Toxic, 5), (MoonType.Ocean, 0)
+                (EMoonType.Blasted, 40), (EMoonType.Stone, 20), (EMoonType.Desert, 15),
+                (EMoonType.Ice, 10), (EMoonType.Lava, 10), (EMoonType.Toxic, 5), (EMoonType.Ocean, 0)
             },
             _ => new[]
             {
-                (MoonType.Stone, 30), (MoonType.Ice, 30), (MoonType.Desert, 15),
-                (MoonType.Ocean, 10), (MoonType.Lava, 5), (MoonType.Toxic, 5), (MoonType.Blasted, 5)
+                (EMoonType.Stone, 30), (EMoonType.Ice, 30), (EMoonType.Desert, 15),
+                (EMoonType.Ocean, 10), (EMoonType.Lava, 5), (EMoonType.Toxic, 5), (EMoonType.Blasted, 5)
             }
         };
 
         // Модификатор по ЗВЕЗДЕ (жёсткие — усиливают Blasted/Toxic, душат Ocean)
-        private static void ApplyStarHazard(StarType star, ref (MoonType t, int w)[] weights)
+        private static void ApplyStarHazard(EStarType eStar, ref (EMoonType t, int w)[] weights)
         {
-            if (star == StarType.Neutron || star == StarType.Black)
+            if (eStar == EStarType.Neutron || eStar == EStarType.Black)
             {
                 for (int i = 0; i < weights.Length; i++)
                 {
-                    if (weights[i].t == MoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 20);
-                    if (weights[i].t == MoonType.Toxic)   weights[i].w = Mathf.Min(100, weights[i].w + 10);
-                    if (weights[i].t == MoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 20);
+                    if (weights[i].t == EMoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 20);
+                    if (weights[i].t == EMoonType.Toxic)   weights[i].w = Mathf.Min(100, weights[i].w + 10);
+                    if (weights[i].t == EMoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 20);
                 }
             }
-            else if (star == StarType.Blue || star == StarType.White)
+            else if (eStar == EStarType.Blue || eStar == EStarType.White)
             {
                 for (int i = 0; i < weights.Length; i++)
                 {
-                    if (weights[i].t == MoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 10);
-                    if (weights[i].t == MoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 10);
+                    if (weights[i].t == EMoonType.Blasted) weights[i].w = Mathf.Min(100, weights[i].w + 10);
+                    if (weights[i].t == EMoonType.Ocean)   weights[i].w = Mathf.Max(0,   weights[i].w - 10);
                 }
             }
         }
 
         // Модификатор по ОРБИТЕ ЛУНЫ (близко — больше Lava/Stone/Desert; далеко — Icee/Ocean/Blasted)
-        private static void ApplyMoonOrbitBias(int moonOrbitIndex, int planetOrbitIndex, ref (MoonType t, int w)[] weights)
+        private static void ApplyMoonOrbitBias(int moonOrbitIndex, int planetOrbitIndex, ref (EMoonType t, int w)[] weights)
         {
             // u ~ «удалённость луны»: чем больше индекс, тем холоднее
             float u = Mathf.Clamp01((moonOrbitIndex - 1) / 8f); // 1..~9 нормализуем в 0..1
@@ -103,22 +103,22 @@ namespace _Project.Scripts.Galaxy.Generation
             {
                 switch (weights[i].t)
                 {
-                    case MoonType.Lava:
+                    case EMoonType.Lava:
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.6f * (1f - u)), 0f, 100f));
                         break;
-                    case MoonType.Stone:
-                    case MoonType.Desert:
+                    case EMoonType.Stone:
+                    case EMoonType.Desert:
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.3f * (1f - u)), 0f, 100f));
                         break;
-                    case MoonType.Ice:
-                    case MoonType.Ocean:
+                    case EMoonType.Ice:
+                    case EMoonType.Ocean:
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.4f * u), 0f, 100f));
                         break;
-                    case MoonType.Blasted:
+                    case EMoonType.Blasted:
                         // чуть чаще на внешних орбитах
                         weights[i].w = Mathf.RoundToInt(Mathf.Clamp(weights[i].w * (1.0f + 0.2f * u), 0f, 100f));
                         break;
-                    case MoonType.Toxic:
+                    case EMoonType.Toxic:
                         // слабая зависимость
                         break;
                 }
@@ -128,7 +128,7 @@ namespace _Project.Scripts.Galaxy.Generation
         // Веса размеров лун по КЛАССУ РАЗМЕРА ПЛАНЕТЫ
         private static int[] SizeWeights(PSize host)
         {
-            // порядок: Tiny, Small, Medium, Large (см. MoonSize):contentReference[oaicite:4]{index=4}
+            // порядок: Tiny, Small, Medium, Large (см. EMoonSize):contentReference[oaicite:4]{index=4}
             return host switch
             {
                 PSize.Small  => new[] { 50, 35, 15, 0 },  // маленькие планеты — мелкие луны
@@ -147,18 +147,18 @@ namespace _Project.Scripts.Galaxy.Generation
             var w = WeightsByPlanetType(planet.Type);
             ApplyStarHazard(star.type, ref w);
             ApplyMoonOrbitBias(moonOrbitIndex, planetOrbitIndex, ref w);
-            MoonType mType = PickWeighted(w);
+            EMoonType mType = PickWeighted(w);
 
             // 2) Размер
             var hostClass = ClassifyPlanet(Mathf.Max(planet.Radius, 0.1f));
-            MoonSize mSize = PickSizeWeighted(SizeWeights(hostClass));
+            EMoonSize mSize = PickSizeWeighted(SizeWeights(hostClass));
 
             // 3) Сборка Moon (минимально необходимое; остальное ты уже сам довесишь при надобности)
             return new Moon
             {
                 Name = null,
-                Type = mType,              // из твоего enum MoonType :contentReference[oaicite:5]{index=5}
-                Size = mSize,              // из твоего enum MoonSize :contentReference[oaicite:6]{index=6}
+                Type = mType,              // из твоего enum EMoonType :contentReference[oaicite:5]{index=5}
+                Size = mSize,              // из твоего enum EMoonSize :contentReference[oaicite:6]{index=6}
                 OrbitIndex = moonOrbitIndex
                 // Остальные поля (Mass, Radius, OrbitDistance, …) оставляю по умолчанию — под твои генераторы.
             };
@@ -167,7 +167,7 @@ namespace _Project.Scripts.Galaxy.Generation
         // =========================
         // ВНУТРЕНКА
         // =========================
-        private static MoonType PickWeighted((MoonType t, int w)[] items)
+        private static EMoonType PickWeighted((EMoonType t, int w)[] items)
         {
             int total = 0;
             for (int i = 0; i < items.Length; i++) total += Mathf.Max(0, items[i].w);
@@ -181,18 +181,18 @@ namespace _Project.Scripts.Galaxy.Generation
             return items[0].t;
         }
 
-        private static MoonSize PickSizeWeighted(int[] w)
+        private static EMoonSize PickSizeWeighted(int[] w)
         {
             int total = 0;
             for (int i = 0; i < w.Length; i++) total += Mathf.Max(0, w[i]);
             int r = UnityEngine.Random.Range(0, Math.Max(1, total));
             int acc = 0;
 
-            // порядок должен соответствовать MoonSize: Tiny, Small, Medium, Large :contentReference[oaicite:7]{index=7}
-            if ((acc += w[0]) > r) return MoonSize.Tiny;
-            if ((acc += w[1]) > r) return MoonSize.Small;
-            if ((acc += w[2]) > r) return MoonSize.Medium;
-            return MoonSize.Large;
+            // порядок должен соответствовать EMoonSize: Tiny, Small, Medium, Large :contentReference[oaicite:7]{index=7}
+            if ((acc += w[0]) > r) return EMoonSize.Tiny;
+            if ((acc += w[1]) > r) return EMoonSize.Small;
+            if ((acc += w[2]) > r) return EMoonSize.Medium;
+            return EMoonSize.Large;
         }
     }
 }

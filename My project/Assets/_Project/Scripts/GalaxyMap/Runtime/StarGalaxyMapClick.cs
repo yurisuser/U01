@@ -12,7 +12,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private bool   logClick = true;
 
         [Header("Данные (заполняет рендерер/префаб)")]
-        public StarType type;
+        public EStarType type;
         public string   systemName;
         public StarSys? System;
 

@@ -63,14 +63,14 @@ namespace _Project.Scripts.Galaxy.Generation
             return Create(type);
         }
 
-        public static Star Create(StarType forcedType)
+        public static Star Create(EStarType forcedType)
         {
             var size = PickStarSizeWeighted(forcedType);
             return BuildStar(forcedType, size);
         }
 
         // === внутренние методы ===
-        private static Star BuildStar(StarType type, StarSize size)
+        private static Star BuildStar(EStarType type, EStarSize size)
         {
             float temperature = PickTemp(type);
             float mass = PickByType(type, MassRed, MassOrange, MassYellow, MassWhite, MassBlue, MassNeutron, MassBlack);
@@ -97,7 +97,7 @@ namespace _Project.Scripts.Galaxy.Generation
             };
         }
 
-        private static StarType PickStarTypeWeighted()
+        private static EStarType PickStarTypeWeighted()
         {
             int total = 0;
             for (int i = 0; i < TypeWeights.Length; i++) total += TypeWeights[i];
@@ -106,73 +106,73 @@ namespace _Project.Scripts.Galaxy.Generation
             for (int i = 0; i < TypeWeights.Length; i++)
             {
                 acc += TypeWeights[i];
-                if (r < acc) return (StarType)i;
+                if (r < acc) return (EStarType)i;
             }
-            return StarType.Red;
+            return EStarType.Red;
         }
 
-        private static StarSize PickStarSizeWeighted(StarType t)
+        private static EStarSize PickStarSizeWeighted(EStarType t)
         {
             int[] w = t switch
             {
-                StarType.Red     => RedSizeWeights,
-                StarType.Orange  => OrangeSizeWeights,
-                StarType.Yellow  => YellowSizeWeights,
-                StarType.White   => WhiteSizeWeights,
-                StarType.Blue    => BlueSizeWeights,
-                StarType.Neutron => NeutronSizeWeights,
-                StarType.Black   => BlackSizeWeights,
+                EStarType.Red     => RedSizeWeights,
+                EStarType.Orange  => OrangeSizeWeights,
+                EStarType.Yellow  => YellowSizeWeights,
+                EStarType.White   => WhiteSizeWeights,
+                EStarType.Blue    => BlueSizeWeights,
+                EStarType.Neutron => NeutronSizeWeights,
+                EStarType.Black   => BlackSizeWeights,
                 _ => YellowSizeWeights
             };
 
             int total = w[0] + w[1] + w[2] + w[3];
             int r = Random.Range(0, total);
-            if (r < w[0]) return StarSize.Dwarf;
+            if (r < w[0]) return EStarSize.Dwarf;
             r -= w[0];
-            if (r < w[1]) return StarSize.Normal;
+            if (r < w[1]) return EStarSize.Normal;
             r -= w[1];
-            if (r < w[2]) return StarSize.Giant;
-            return StarSize.Supergiant;
+            if (r < w[2]) return EStarSize.Giant;
+            return EStarSize.Supergiant;
         }
 
-        private static float PickTemp(StarType t)
+        private static float PickTemp(EStarType t)
         {
             var range = t switch
             {
-                StarType.Red     => TempKRed,
-                StarType.Orange  => TempKOrange,
-                StarType.Yellow  => TempKYellow,
-                StarType.White   => TempKWhite,
-                StarType.Blue    => TempKBlue,
-                StarType.Neutron => TempKNeutron,
-                StarType.Black   => TempKBlack,
+                EStarType.Red     => TempKRed,
+                EStarType.Orange  => TempKOrange,
+                EStarType.Yellow  => TempKYellow,
+                EStarType.White   => TempKWhite,
+                EStarType.Blue    => TempKBlue,
+                EStarType.Neutron => TempKNeutron,
+                EStarType.Black   => TempKBlack,
                 _ => TempKYellow
             };
             return Random.Range(range.x, range.y);
         }
 
-        private static float PickByType(StarType t, Vector2 red, Vector2 orange, Vector2 yellow, Vector2 white, Vector2 blue, Vector2 neutron, Vector2 black)
+        private static float PickByType(EStarType t, Vector2 red, Vector2 orange, Vector2 yellow, Vector2 white, Vector2 blue, Vector2 neutron, Vector2 black)
         {
             Vector2 range = t switch
             {
-                StarType.Red     => red,
-                StarType.Orange  => orange,
-                StarType.Yellow  => yellow,
-                StarType.White   => white,
-                StarType.Blue    => blue,
-                StarType.Neutron => neutron,
-                StarType.Black   => black,
+                EStarType.Red     => red,
+                EStarType.Orange  => orange,
+                EStarType.Yellow  => yellow,
+                EStarType.White   => white,
+                EStarType.Blue    => blue,
+                EStarType.Neutron => neutron,
+                EStarType.Black   => black,
                 _ => yellow
             };
             return Random.Range(range.x, range.y);
         }
 
-        private static float SizeMultiplier(StarSize s) => s switch
+        private static float SizeMultiplier(EStarSize s) => s switch
         {
-            StarSize.Dwarf      => MulDwarf,
-            StarSize.Normal     => MulNormal,
-            StarSize.Giant      => MulGiant,
-            StarSize.Supergiant => MulSupergiant,
+            EStarSize.Dwarf      => MulDwarf,
+            EStarSize.Normal     => MulNormal,
+            EStarSize.Giant      => MulGiant,
+            EStarSize.Supergiant => MulSupergiant,
             _ => MulNormal
         };
     }

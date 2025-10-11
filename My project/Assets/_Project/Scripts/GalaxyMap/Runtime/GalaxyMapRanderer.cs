@@ -85,26 +85,26 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             }
         }
 
-        private GameObject GetPrefabFor(StarType t) =>
+        private GameObject GetPrefabFor(EStarType t) =>
             t switch
             {
-                StarType.Red     => redPrefab,
-                StarType.Orange  => orangePrefab,
-                StarType.Yellow  => yellowPrefab,
-                StarType.White   => whitePrefab,
-                StarType.Blue    => bluePrefab,
-                StarType.Neutron => neutronPrefab,
-                StarType.Black   => blackPrefab,
+                EStarType.Red     => redPrefab,
+                EStarType.Orange  => orangePrefab,
+                EStarType.Yellow  => yellowPrefab,
+                EStarType.White   => whitePrefab,
+                EStarType.Blue    => bluePrefab,
+                EStarType.Neutron => neutronPrefab,
+                EStarType.Black   => blackPrefab,
                 _                => defaultPrefab
             };
 
-        private float GetSizeMul(StarSize z) =>
+        private float GetSizeMul(EStarSize z) =>
             z switch
             {
-                StarSize.Dwarf      => dwarfMul,
-                StarSize.Normal     => normalMul,
-                StarSize.Giant      => giantMul,
-                StarSize.Supergiant => supergiantMul,
+                EStarSize.Dwarf      => dwarfMul,
+                EStarSize.Normal     => normalMul,
+                EStarSize.Giant      => giantMul,
+                EStarSize.Supergiant => supergiantMul,
                 _                   => normalMul
             };
     }

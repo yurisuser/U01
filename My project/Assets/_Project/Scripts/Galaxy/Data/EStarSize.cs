@@ -1,6 +1,6 @@
 ﻿namespace _Project.Scripts.Galaxy.Data
 {
-    public enum StarSize
+    public enum EStarSize
     {
         Dwarf = 0,
         Normal = 1,

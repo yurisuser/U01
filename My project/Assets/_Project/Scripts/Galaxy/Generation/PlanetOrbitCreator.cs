@@ -10,58 +10,58 @@ namespace _Project.Scripts.Galaxy.Generation
         // ==== ТЮНИНГ (если захочешь — правь числа здесь) ====
 
         // Внутренняя граница по размеру звезды (первая допустимая орбита 1-based)
-        private static int InnerCutoff(StarSize size) => size switch
+        private static int InnerCutoff(EStarSize size) => size switch
         {
-            StarSize.Dwarf      => 1,
-            StarSize.Normal     => 2,
-            StarSize.Giant      => 3,
-            StarSize.Supergiant => 4,
+            EStarSize.Dwarf      => 1,
+            EStarSize.Normal     => 2,
+            EStarSize.Giant      => 3,
+            EStarSize.Supergiant => 4,
             _ => 2
         };
 
         // Внешняя граница по типу звезды (последняя допустимая орбита 1-based)
-        private static int OuterLimit(StarType type) => type switch
+        private static int OuterLimit(EStarType type) => type switch
         {
-            StarType.Red     => 18,
-            StarType.Orange  => 18,
-            StarType.Yellow  => 22,
-            StarType.White   => 20,
-            StarType.Blue    => 14,
-            StarType.Neutron => 8,
-            StarType.Black   => 8,
+            EStarType.Red     => 18,
+            EStarType.Orange  => 18,
+            EStarType.Yellow  => 22,
+            EStarType.White   => 20,
+            EStarType.Blue    => 14,
+            EStarType.Neutron => 8,
+            EStarType.Black   => 8,
             _ => 20
         };
 
         // Минимальный разрыв между занятыми орбитами (в «ячейках»)
-        private static int MinGap(StarSize size) => size switch
+        private static int MinGap(EStarSize size) => size switch
         {
-            StarSize.Dwarf      => 1,
-            StarSize.Normal     => 2,
-            StarSize.Giant      => 3,
-            StarSize.Supergiant => 4,
+            EStarSize.Dwarf      => 1,
+            EStarSize.Normal     => 2,
+            EStarSize.Giant      => 3,
+            EStarSize.Supergiant => 4,
             _ => 2
         };
 
         // Диапазоны количества планет по типу (база)
-        private static (int min, int max) BasePlanetCount(StarType type) => type switch
+        private static (int min, int max) BasePlanetCount(EStarType type) => type switch
         {
-            StarType.Red     => (3, 7),
-            StarType.Orange  => (3, 6),
-            StarType.Yellow  => (2, 5),
-            StarType.White   => (1, 4),
-            StarType.Blue    => (0, 3),
-            StarType.Neutron => (0, 1),
-            StarType.Black   => (0, 1),
+            EStarType.Red     => (3, 7),
+            EStarType.Orange  => (3, 6),
+            EStarType.Yellow  => (2, 5),
+            EStarType.White   => (1, 4),
+            EStarType.Blue    => (0, 3),
+            EStarType.Neutron => (0, 1),
+            EStarType.Black   => (0, 1),
             _ => (2, 5)
         };
 
         // Модификатор по размеру
-        private static int CountModifier(StarSize size) => size switch
+        private static int CountModifier(EStarSize size) => size switch
         {
-            StarSize.Dwarf      => +2,
-            StarSize.Normal     => 0,
-            StarSize.Giant      => -1,
-            StarSize.Supergiant => -2,
+            EStarSize.Dwarf      => +2,
+            EStarSize.Normal     => 0,
+            EStarSize.Giant      => -1,
+            EStarSize.Supergiant => -2,
             _ => 0
         };
 

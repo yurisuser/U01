@@ -23,26 +23,26 @@ namespace _Project.Scripts.Galaxy.Generation
         }
 
         // Внутренняя запретная зона (inner cutoff) для лун — ближе «жарко/приливно», чаще кольца
-        private static int InnerCutoff(PlanetType type, SizeClass sc) => type switch
+        private static int InnerCutoff(EPlanetType type, SizeClass sc) => type switch
         {
-            PlanetType.GasGiant => 2,    // гиганты — первая «надёжная» орбита дальше
-            PlanetType.IceGiant => 2,
+            EPlanetType.GasGiant => 2,    // гиганты — первая «надёжная» орбита дальше
+            EPlanetType.IceGiant => 2,
             _ => sc == SizeClass.Small ? 1 : 2 // крупные супер-земли/средние — немного дальше
         };
 
         // Внешняя граница лун — зависит от типа планеты и её размера (как суррогат Хилловой сферы)
-        private static int OuterLimit(PlanetType type, SizeClass sc)
+        private static int OuterLimit(EPlanetType type, SizeClass sc)
         {
             int baseLimit = type switch
             {
-                PlanetType.GasGiant => 14,
-                PlanetType.IceGiant => 11,
-                PlanetType.Ocean    => 7,
-                PlanetType.Stone    => 6,
-                PlanetType.Desert   => 6,
-                PlanetType.Toxic    => 6,
-                PlanetType.Frozen   => 7,
-                PlanetType.Blasted  => 5,
+                EPlanetType.GasGiant => 14,
+                EPlanetType.IceGiant => 11,
+                EPlanetType.Ocean    => 7,
+                EPlanetType.Stone    => 6,
+                EPlanetType.Desert   => 6,
+                EPlanetType.Toxic    => 6,
+                EPlanetType.Frozen   => 7,
+                EPlanetType.Blasted  => 5,
                 _ => 6
             };
             // крупнее планета — чуть дальше тянется «зона удержания»
@@ -51,10 +51,10 @@ namespace _Project.Scripts.Galaxy.Generation
         }
 
         // Минимальный разрыв между орбитами лун (в «ячейках»)
-        private static int MinGap(PlanetType type, SizeClass sc) => type switch
+        private static int MinGap(EPlanetType type, SizeClass sc) => type switch
         {
-            PlanetType.GasGiant => 1, // много лун — разрешаем плотнее
-            PlanetType.IceGiant => 1,
+            EPlanetType.GasGiant => 1, // много лун — разрешаем плотнее
+            EPlanetType.IceGiant => 1,
             _ => sc == SizeClass.Small ? 2 : 1
         };
 
@@ -62,7 +62,7 @@ namespace _Project.Scripts.Galaxy.Generation
         // Берём один из «коридоров» численности с указанным весом: low / mid / high
         private struct CountProfile { public Vector2Int Low; public int WLow; public Vector2Int Mid; public int WMid; public Vector2Int High; public int WHigh; }
 
-        private static CountProfile CountByType(PlanetType t, SizeClass sc)
+        private static CountProfile CountByType(EPlanetType t, SizeClass sc)
         {
             // дефолт для каменных/океанических/пустынных/токсичных/замёрзших
             var common = new CountProfile
@@ -74,22 +74,22 @@ namespace _Project.Scripts.Galaxy.Generation
 
             switch (t)
             {
-                case PlanetType.Stone:
-                case PlanetType.Desert:
-                case PlanetType.Toxic:
-                case PlanetType.Blasted:
+                case EPlanetType.Stone:
+                case EPlanetType.Desert:
+                case EPlanetType.Toxic:
+                case EPlanetType.Blasted:
                     // у малых чаще 0–1, у средних иногда 2–3
                     if (sc == SizeClass.Small)  return new CountProfile { Low=new Vector2Int(0,1), WLow=70, Mid=new Vector2Int(2,2), WMid=25, High=new Vector2Int(3,3), WHigh=5 };
                     if (sc == SizeClass.Medium) return new CountProfile { Low=new Vector2Int(0,1), WLow=45, Mid=new Vector2Int(2,3), WMid=45, High=new Vector2Int(4,4), WHigh=10 };
                     return new CountProfile { Low=new Vector2Int(1,2), WLow=40, Mid=new Vector2Int(2,3), WMid=45, High=new Vector2Int(4,5), WHigh=15 };
 
-                case PlanetType.Ocean:
-                case PlanetType.Frozen:
+                case EPlanetType.Ocean:
+                case EPlanetType.Frozen:
                     if (sc == SizeClass.Small)  return new CountProfile { Low=new Vector2Int(0,1), WLow=60, Mid=new Vector2Int(2,3), WMid=35, High=new Vector2Int(4,4), WHigh=5 };
                     if (sc == SizeClass.Medium) return new CountProfile { Low=new Vector2Int(1,2), WLow=45, Mid=new Vector2Int(2,3), WMid=45, High=new Vector2Int(4,5), WHigh=10 };
                     return new CountProfile { Low=new Vector2Int(1,2), WLow=35, Mid=new Vector2Int(2,4), WMid=50, High=new Vector2Int(5,6), WHigh=15 };
 
-                case PlanetType.GasGiant:
+                case EPlanetType.GasGiant:
                     // гиганты: обычно 6–12, иногда 3–5, редко 13–16
                     return new CountProfile
                     {
@@ -98,7 +98,7 @@ namespace _Project.Scripts.Galaxy.Generation
                         High = new Vector2Int(13,16), WHigh = 15
                     };
 
-                case PlanetType.IceGiant:
+                case EPlanetType.IceGiant:
                     return new CountProfile
                     {
                         Low  = new Vector2Int(2, 4),  WLow  = 40,
@@ -113,27 +113,27 @@ namespace _Project.Scripts.Galaxy.Generation
 
         // ===== ВЕСА ДЛЯ УДАЛЁННОСТИ (0–100) =====
         // Функция весов по индексу орбиты; разные «профили» под типы.
-        private static float OrbitWeight(PlanetType t, int orbit, int inner, int outer)
+        private static float OrbitWeight(EPlanetType t, int orbit, int inner, int outer)
         {
             // нормализуем 0..1
             float u = (outer > inner) ? Mathf.InverseLerp(inner, outer, orbit) : 0.5f;
 
             switch (t)
             {
-                case PlanetType.GasGiant:
+                case EPlanetType.GasGiant:
                     // пик в средней зоне (u ≈ 0.5), приглушаем крайние
                     return 40f + 60f * Mathf.Exp(-Mathf.Pow((u - 0.55f) / 0.2f, 2f));
-                case PlanetType.IceGiant:
+                case EPlanetType.IceGiant:
                     // пик чуть ближе к планете
                     return 35f + 65f * Mathf.Exp(-Mathf.Pow((u - 0.45f) / 0.22f, 2f));
-                case PlanetType.Stone:
-                case PlanetType.Desert:
-                case PlanetType.Toxic:
-                case PlanetType.Blasted:
+                case EPlanetType.Stone:
+                case EPlanetType.Desert:
+                case EPlanetType.Toxic:
+                case EPlanetType.Blasted:
                     // у каменных — ближе лучше; плавный спад к внешним
                     return 80f - 60f * u;
-                case PlanetType.Ocean:
-                case PlanetType.Frozen:
+                case EPlanetType.Ocean:
+                case EPlanetType.Frozen:
                     // двухгорбый: ближняя и средняя зоны
                     float a = 60f * Mathf.Exp(-Mathf.Pow((u - 0.25f) / 0.18f, 2f));
                     float b = 40f * Mathf.Exp(-Mathf.Pow((u - 0.55f) / 0.22f, 2f));

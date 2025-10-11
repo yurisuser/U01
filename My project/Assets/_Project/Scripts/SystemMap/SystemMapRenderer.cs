@@ -33,11 +33,11 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private Camera targetCamera; // если пусто — возьмём Camera.main
 
         [Header("Префабы (мэпы по типам)")]
-        [Tooltip("Индекс = (int)StarType. Если элемент null — звезду не рисуем.")]
+        [Tooltip("Индекс = (int)EStarType. Если элемент null — звезду не рисуем.")]
         [SerializeField] private GameObject[] starPrefabsByType;
-        [Tooltip("Индекс = (int)PlanetType. Если элемент null — планету не рисуем.")]
+        [Tooltip("Индекс = (int)EPlanetType. Если элемент null — планету не рисуем.")]
         [SerializeField] private GameObject[] planetPrefabsByType;
-        [Tooltip("Индекс = (int)MoonType. Если элемент null — планету не рисуем.")]
+        [Tooltip("Индекс = (int)EMoonType. Если элемент null — планету не рисуем.")]
         [SerializeField] private GameObject[] moonPrefabsByType;
 
         // создаём эти руты сами — никаких ссылок не требуется
@@ -191,7 +191,7 @@ private void DrawMoonsForPlanet(
         Vector3 local = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * rMoon;
 
         // 3) Инстансим префаб луны по типу (если указан); иначе — пропускаем спрайт, остаётся только орбита
-        var moonPrefab = GetMoonPrefab(moon.Type);             // <-- ожидается массив префабов по (int)MoonType
+        var moonPrefab = GetMoonPrefab(moon.Type);             // <-- ожидается массив префабов по (int)EMoonType
         if (moonPrefab != null)
         {
             var mGo = Instantiate(moonPrefab, center);
@@ -216,7 +216,7 @@ private static float Hash01(int seed)
 }
 
 // ——— Ожидается хелпер у класса; если его нет, добавь аналогично GetPlanetPrefab
-private GameObject GetMoonPrefab(MoonType type)
+private GameObject GetMoonPrefab(EMoonType type)
 {
     int idx = (int)type;
     if (moonPrefabsByType == null || idx < 0 || idx >= moonPrefabsByType.Length) return null;
@@ -267,14 +267,14 @@ private GameObject GetMoonPrefab(MoonType type)
             }
         }
 
-        private GameObject GetStarPrefab(StarType type)
+        private GameObject GetStarPrefab(EStarType type)
         {
             int idx = (int)type;
             if (starPrefabsByType == null || idx < 0 || idx >= starPrefabsByType.Length) return null;
             return starPrefabsByType[idx];
         }
 
-        private GameObject GetPlanetPrefab(PlanetType type)
+        private GameObject GetPlanetPrefab(EPlanetType type)
         {
             int idx = (int)type;
             if (planetPrefabsByType == null || idx < 0 || idx >= planetPrefabsByType.Length) return null;

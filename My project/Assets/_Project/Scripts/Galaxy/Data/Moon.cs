@@ -3,8 +3,8 @@
     public struct Moon
     {
         public string Name;            // Имя луны
-        public MoonType Type;          // Тип луны
-        public MoonSize Size;          // Размер
+        public EMoonType Type;          // Тип луны
+        public EMoonSize Size;          // Размер
         public int OrbitIndex;         // Номер орбиты
         public float Mass;             // Масса
         public float Radius;           // Радиус
