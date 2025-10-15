@@ -1,0 +1,69 @@
+﻿/* Корневая панель */
+.TimePanel {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+
+    padding: 4px 6px;
+    min-height: 40px;
+    min-width: 160px;
+
+    border-radius: 8px;
+    background-color: rgba(30, 30, 60, 0.86);
+}
+
+/* Кнопка-переключатель */
+#PlayToggle {
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+
+    border-width: 1px;
+    border-radius: 8px;
+    border-color: rgba(46, 46, 46, 1.0);
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Прячем стандартные внутренности Toggle (чекбокс и текст) */
+#PlayToggle .unity-toggle__input { display: none; }
+#PlayToggle .unity-toggle__text  { display: none; }
+
+/* Общие параметры иконок */
+.Icon {
+    width: 24px;
+    height: 24px;
+
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: rgba(255, 255, 255, 1.0);
+
+    align-items: center;
+    justify-content: center;
+}
+
+/* Назначаем SVG на иконки ТУТ, а не инлайном в UXML */
+#IconPlay {
+    background-image: url("project://database/Assets/_Project/Assets/UI/Icons/Play.svg?guid=44113939aade4c499e9f46962bebb250&type=3");
+}
+#IconPause {
+    background-image: url("project://database/Assets/_Project/Assets/UI/Icons/Pause.svg?guid=e04c7709f8eb45a58900eed270ba6612&type=3");
+}
+
+/* Базовое состояние: показываем Play, скрываем Pause */
+#PlayToggle #IconPlay  { display: flex; }
+#PlayToggle #IconPause { display: none; }
+
+/* checked: показываем Pause, скрываем Play */
+#PlayToggle:checked #IconPlay  { display: none; }
+#PlayToggle:checked #IconPause { display: flex; }
+
+/* Hover/Active — просто меняем Tint */
+#PlayToggle:hover .Icon {
+    -unity-background-image-tint-color: rgba(255, 179, 0, 1.0);
+}
+#PlayToggle:active .Icon {
+    -unity-background-image-tint-color: rgba(255, 200, 0, 1.0);
+}
+#PlayToggle:disabled .Icon {
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.4);
+}

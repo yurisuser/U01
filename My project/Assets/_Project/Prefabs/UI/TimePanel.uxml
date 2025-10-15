@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="TimePanel" style="flex-grow: 1; flex-direction: row; align-self: auto; align-items: center; justify-content: space-between; width: 500px; height: 50px; padding-top: 8px; padding-bottom: 8px; padding-right: 12px; padding-left: 12px; background-color: rgba(20, 25, 48, 0.82); border-left-color: rgba(0, 0, 81, 0.85); border-right-color: rgba(0, 0, 81, 0.85); border-top-color: rgba(0, 0, 81, 0.85); border-bottom-color: rgba(0, 0, 81, 0.85); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;">
+        <ui:VisualElement name="Left" style="flex-grow: 1; flex-direction: row; align-items: center;">
+            <ui:Button text="..." name="PlayPauseBtn" class="is-hover is-active" style="width: 36px; height: 36px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-bottom-left-radius: 8px; background-color: rgb(67, 73, 103);" />
+        </ui:VisualElement>
+        <ui:VisualElement name="SpeedControl" style="flex-grow: 1; flex-direction: row; align-items: center; justify-content: center; align-content: auto; background-color: rgb(44, 44, 44); height: 36px; -unity-background-image-tint-color: rgba(34, 34, 34, 0.87); border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; padding-top: 3px; padding-bottom: 3px; padding-right: 4px; padding-left: 4px;">
+            <ui:RadioButton label="x1" name="x1Btn" value="true" style="height: 28px; min-width: 56px; padding-right: 10px; padding-left: 10px; align-items: center; justify-content: center; -unity-text-align: upper-center; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-left-color: rgb(204, 204, 204); border-right-color: rgb(204, 204, 204); border-top-color: rgb(204, 204, 204); border-bottom-color: rgb(204, 204, 204); color: rgb(204, 204, 204); -unity-background-image-tint-color: rgb(42, 42, 42);" />
+            <ui:RadioButton label="x3" name="x3Btn" />
+            <ui:RadioButton label="x5" name="X5Btn" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Right" style="flex-grow: 1; align-items: center; justify-content: center; align-self: auto; align-content: auto; flex-direction: row;">
+            <ui:Label text="32.15.5652" name="DataLabel" enabled="true" class="TimePanel" style="color: rgba(178, 175, 172, 0.73); font-size: 13px; min-width: 140px; width: 141px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

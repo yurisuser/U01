@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <!-- Подключаем стиль БЕЗ фрагмента #... -->
+    <Style src="project://database/Assets/_Project/Assets/UI/Styles/TimePanel.uss?fileID=7433441132597879392&amp;guid=ea8ce357ddf04a55a87adbcc138724f6&amp;type=3" />
+
+    <ui:VisualElement name="Timepanel" class="TimePanel" style="flex-direction: row; width: auto; height: auto; position: absolute; right: 10px; bottom: 10px;">
+        <!-- ВАЖНО: имя с точным регистром -->
+        <ui:Toggle name="PlayToggle" value="false" toggle-on-label-click="true" enabled="true">
+            <!-- Иконки без inline background-image; фон зададим в USS -->
+            <ui:VisualElement name="IconPlay" class="Icon" />
+            <ui:VisualElement name="IconPause" class="Icon" />
+        </ui:Toggle>
+
+        <!-- Остальные элементы оставляю как есть -->
+        <ui:Button text="x3" name="Btn" style="width: 40px; height: 40px; border-left-color: rgba(0, 0, 100, 0.78); border-right-color: rgba(0, 0, 100, 0.78); border-top-color: rgba(0, 0, 100, 0.78); border-bottom-color: rgba(0, 0, 100, 0.78); background-color: rgba(0, 0, 160, 0.1); color: rgba(255, 255, 255, 0.78); -unity-font-style: bold; border-top-left-radius: 0; border-bottom-left-radius: 0; padding-top: 5px; padding-left: 5px; padding-bottom: 5px; padding-right: 5px; margin-top: 2px; margin-right: 2px; margin-bottom: 2px; margin-left: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
+        <ui:VisualElement>
+            <ui:Button text="+" style="margin: 0; padding: 0; width: 20px; height: 20px; -unity-background-image-tint-color: rgba(126, 126, 142, 0); background-color: rgba(0, 0, 160, 0.1); color: rgb(185, 185, 185); border-width: 0; border-top-right-radius: 5px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(229, 229, 229);" />
+            <ui:Button text="-" style="margin: 0; padding: 0; width: 20px; height: 20px; -unity-background-image-tint-color: rgba(126, 126, 142, 0); background-color: rgba(0, 0, 160, 0.1); color: rgb(185, 185, 185); border-width: 0; border-bottom-right-radius: 5px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(229, 229, 229);" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
