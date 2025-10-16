@@ -4,7 +4,7 @@
 
     <ui:VisualElement name="Timepanel" class="TimePanel" style="flex-direction: row; width: auto; height: auto; position: absolute; right: 10px; bottom: 10px;">
         <!-- ВАЖНО: имя с точным регистром -->
-        <ui:Toggle name="PlayToggle" value="false" toggle-on-label-click="true" enabled="true">
+        <ui:Toggle name="PlayPauseToggle" value="false" toggle-on-label-click="true" enabled="true">
             <!-- Иконки без inline background-image; фон зададим в USS -->
             <ui:VisualElement name="IconPlay" class="Icon" />
             <ui:VisualElement name="IconPause" class="Icon" />

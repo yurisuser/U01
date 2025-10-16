@@ -1,55 +1,45 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿using _Project.Scripts.Core.GameState;        // ERunMode
+using UnityEngine;                            // MonoBehaviour, Debug
+using UnityEngine.UIElements;                 // UI Toolkit: UIDocument, Toggle, callbacks
+
 
 namespace _Project.Scripts.UI
 {
     public class TimePanelController : MonoBehaviour
     {
-        private Toggle _playToggle;
-
-        // Храним ссылку на колбэк, чтобы корректно отписаться
-        private EventCallback<ChangeEvent<bool>> _onToggleChanged;
+        private Toggle _playToggle;                                   // Toggle из UXML (name="PlayPauseToggle")
+        private EventCallback<ChangeEvent<bool>> _onToggleChanged;    // сохранённый делегат для корректного un-register
+        private bool _isPlaying = false;                              // локальное зеркало UI: true=Auto, false=Paused
 
         private void OnEnable()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null)
-            {
-                Debug.LogError("[TimePanel] UIDocument not found on GameObject.");
-                return;
-            }
+            var doc = GetComponent<UIDocument>();                     // корневой документ UI Toolkit на этом GO
+            if (doc == null) { Debug.LogError("[TimePanel] UIDocument not found."); return; }
 
-            var root = doc.rootVisualElement;
-            _playToggle = root.Q<Toggle>("PlayToggle");
-            if (_playToggle == null)
-            {
-                Debug.LogError("[TimePanel] Toggle 'PlayToggle' not found. Check UXML name.");
-                return;
-            }
+            var root = doc.rootVisualElement;                         // корень UXML
+            _playToggle = root.Q<Toggle>("PlayPauseToggle");          // ищем Toggle по name=PlayPauseToggle
+            if (_playToggle == null) { Debug.LogError("[TimePanel] Toggle 'PlayPauseToggle' not found."); return; }
 
-            // Создаем делегат один раз и сохраняем
-            _onToggleChanged = OnPlayToggleChanged;
+            _onToggleChanged = OnPlayToggleChanged;                   // создаём делегат один раз
+            _playToggle.UnregisterValueChangedCallback(_onToggleChanged); // страховка от двойных подписок
+            _playToggle.RegisterValueChangedCallback(_onToggleChanged);   // подписываемся по UI Toolkit
 
-            // На всякий случай — снимаем, если кто-то уже повесил раньше
-            _playToggle.UnregisterValueChangedCallback(_onToggleChanged);
-            _playToggle.RegisterValueChangedCallback(_onToggleChanged);
-
-            Debug.Log("[TimePanel] Ready. Value = " + _playToggle.value);
+            _isPlaying = _playToggle.value;                           // синхронизация начального состояния
+            Core.Core.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // инициализируем режим
         }
 
         private void OnDisable()
         {
             if (_playToggle != null && _onToggleChanged != null)
-            {
-                _playToggle.UnregisterValueChangedCallback(_onToggleChanged);
-            }
+                _playToggle.UnregisterValueChangedCallback(_onToggleChanged); // снятие подписки
         }
 
-        private void OnPlayToggleChanged(ChangeEvent<bool> evt)
+        private void OnPlayToggleChanged(ChangeEvent<bool> evt)        // единая точка обработки Play/Pause
         {
-            Debug.Log("[TimePanel] Toggled. Value = " + evt.newValue);
-            // тут дергай свой GameState: Paused/Running
-            // GameState.RunMode = evt.newValue ? RunMode.Running : RunMode.Paused;
+            _isPlaying = evt.newValue;                                 // обновляем локальное зеркало
+            Core.Core.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // переключаем режим симуляции
+            
+            Debug.Log("[TimePanel] Play=" + _isPlaying);               // диагностика
         }
     }
 }

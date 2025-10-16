@@ -1,10 +1,5 @@
 ﻿namespace _Project.Scripts.Core.GameState
 {
-    /// <summary>
-    /// Единственный источник истины для режима игры.
-    /// Держит снапшот и даёт минимальные операции для UI и симуляции.
-    /// Без ссылок на Unity сцены/объекты. Нулевые аллокации в рантайме.
-    /// </summary>
     public sealed class GameStateService
     {
         // ---- Снапшот (POD) ----
@@ -44,21 +39,10 @@
         {
             _current.PlayStepSpeed = speed;
         }
-
-        /// <summary>
-        /// Попросить выполнить ровно один логический шаг (используется в режиме Step/Paused).
-        /// Флаг будет сброшен симуляцией через ConsumeStepRequest().
-        /// </summary>
         public void RequestStep()
         {
             _current.RequestStep = true;
         }
-
-        // ---- Вызывается ТОЛЬКО симуляцией ----
-
-        /// <summary>
-        /// Прочитать и сбросить одношаговый флаг. Возвращает true, если шаг запрошен.
-        /// </summary>
         public bool ConsumeStepRequest()
         {
             if (_current.RequestStep)
@@ -69,9 +53,6 @@
             return false;
         }
 
-        /// <summary>
-        /// Увеличить индекс логического шага после успешного DoStep().
-        /// </summary>
         public void AdvanceTick()
         {
             _current.TickIndex++;

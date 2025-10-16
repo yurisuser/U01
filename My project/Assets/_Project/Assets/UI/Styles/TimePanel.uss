@@ -13,7 +13,7 @@
 }
 
 /* Кнопка-переключатель */
-#PlayToggle {
+#PlayPauseToggle {
     width: 44px;
     height: 44px;
     align-items: center;
@@ -26,8 +26,8 @@
 }
 
 /* Прячем стандартные внутренности Toggle (чекбокс и текст) */
-#PlayToggle .unity-toggle__input { display: none; }
-#PlayToggle .unity-toggle__text  { display: none; }
+#PlayPauseToggle .unity-toggle__input { display: none; }
+#PlayPauseToggle .unity-toggle__text  { display: none; }
 
 /* Общие параметры иконок */
 .Icon {
@@ -50,20 +50,20 @@
 }
 
 /* Базовое состояние: показываем Play, скрываем Pause */
-#PlayToggle #IconPlay  { display: flex; }
-#PlayToggle #IconPause { display: none; }
+#PlayPauseToggle #IconPlay  { display: flex; }
+#PlayPauseToggle #IconPause { display: none; }
 
 /* checked: показываем Pause, скрываем Play */
-#PlayToggle:checked #IconPlay  { display: none; }
-#PlayToggle:checked #IconPause { display: flex; }
+#PlayPauseToggle:checked #IconPlay  { display: none; }
+#PlayPauseToggle:checked #IconPause { display: flex; }
 
 /* Hover/Active — просто меняем Tint */
-#PlayToggle:hover .Icon {
+#PlayPauseToggle:hover .Icon {
     -unity-background-image-tint-color: rgba(255, 179, 0, 1.0);
 }
-#PlayToggle:active .Icon {
+#PlayPauseToggle:active .Icon {
     -unity-background-image-tint-color: rgba(255, 200, 0, 1.0);
 }
-#PlayToggle:disabled .Icon {
+#PlayPauseToggle:disabled .Icon {
     -unity-background-image-tint-color: rgba(255, 255, 255, 0.4);
 }
