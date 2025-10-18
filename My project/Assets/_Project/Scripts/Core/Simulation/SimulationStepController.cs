@@ -1,5 +1,6 @@
 ﻿using _Project.Scripts.Core;                    // доступ к Core.Core.GameState
 using _Project.Scripts.Core.GameState;          // ERunMode
+using UnityEngine;                             // для Debug.Log
 
 namespace _Project.Scripts.Core.Simulation
 {
@@ -16,7 +17,6 @@ namespace _Project.Scripts.Core.Simulation
         /// </summary>
         public void UpdateStep(float dt)        // dt — прошедшее время в секундах за кадр
         {
-            UnityEngine.Debug.Log("SimulationStepController: UpdateStep");
             var s = Core.GameState.Current; // снимок состояния на этот кадр
 
             if (s.RunMode == ERunMode.Auto)      // в авто-режиме тикаем по таймеру
@@ -37,7 +37,7 @@ namespace _Project.Scripts.Core.Simulation
 
         private void DoLogicStep()               // тестовый шаг: здесь позже будет конвейер Inputs→…→Snapshot
         {
-            // TODO: добавь минимальное действие для видимости шага (двинуть тестовый объект, счётчик и т.п.)
+            UnityEngine.Debug.Log($"Logic tick: {Core.GameState.Current.TickIndex}");
         }
     }
 }

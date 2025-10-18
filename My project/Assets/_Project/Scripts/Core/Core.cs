@@ -12,7 +12,7 @@ namespace _Project.Scripts.Core
     public sealed class Core : MonoBehaviour
     {
         private static GameStateService _gameState;               // единственный экземпляр состояния игры (ленивая инициализация)
-        public  static GameStateService GameState => _gameState ??= new GameStateService(1.0f); // доступ к состоянию; шаг логики = 1.0с
+        public  static GameStateService GameState => _gameState ??= new GameStateService(2.0f); // доступ к состоянию; шаг логики = 2.0с
 
         public static Core Instance { get; private set; }         // синглтон ядра
         public SceneController Scenes { get; } = new SceneController(); // управление сценами
@@ -36,7 +36,6 @@ namespace _Project.Scripts.Core
 
         private void Update()
         {
-            UnityEngine.Debug.Log("Core: Update");
             Input?.Update();                                         // опрос ввода
             _simulation.UpdateStep(Time.deltaTime);                  // тикаем симуляцию по таймеру (один шаг при накоплении)
         }

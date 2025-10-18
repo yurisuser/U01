@@ -8,13 +8,13 @@
             public ERunMode       RunMode;           // Paused | Step | Auto
             public EPlayStepSpeed PlayStepSpeed;     // X1 | X3 | X5
             public long           TickIndex;         // номер логического шага
-            public float          LogicStepSeconds;  // Фикс. Длительность шага логики (например, 1.0f)
+            public float          LogicStepSeconds;  // Фикс. Длительность шага логики
             public bool           RequestStep;       // однокадровый флаг "выполнить один шаг"
         }
 
         private Snapshot _current;
 
-        public GameStateService(float logicStepSeconds = 1.0f)
+        public GameStateService(float logicStepSeconds)
         {
             _current = new Snapshot
             {
