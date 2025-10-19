@@ -1,11 +1,10 @@
-﻿using _Project.Scripts.ID;
-
+﻿using _Project.Scripts.Core;
 namespace _Project.Scripts.Galaxy.Data
 {
     [System.Serializable]
     public struct Star
     {
-        public UID UID;
+        public UID Uid;
         public string name;
         public EStarType type;
         public EStarSize size;

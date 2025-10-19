@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using _Project.Scripts.Core;
 
-namespace _Project.Scripts.ID
+namespace _Project.Scripts.Core
 {
-    public static class IDService
+    public static class UIDService
     {
         private static readonly Dictionary<EntityType, int> _counters = new(); // счётчики по типам
 
@@ -13,7 +12,7 @@ namespace _Project.Scripts.ID
                 current = 0;
             current++;
             _counters[type] = current;
-            return new UID(type, current);
+            return new Scripts.Core.UID(type, current);
         }
     }
 }

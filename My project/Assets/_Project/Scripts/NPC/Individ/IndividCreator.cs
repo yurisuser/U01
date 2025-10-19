@@ -1,5 +1,4 @@
 ﻿using _Project.Scripts.Core;
-using _Project.Scripts.ID;
 using _Project.Scripts.NPC.Fraction;
 using Random = UnityEngine.Random;
 
@@ -9,12 +8,12 @@ namespace _Project.Scripts.NPC.Individ
     {
         public static Individ Create(EFraction fraction, ECurrentRole role = ECurrentRole.Free)
         {
-            UID id = IDService.Create(EntityType.Individ);                                      // уникальный идентификатор
-            string name = IndividNameCreator.Create(id, fraction);    // имя на основе UID и фракции
+            UID uid = UIDService.Create(EntityType.Individ);                                      // уникальный идентификатор
+            string name = IndividNameCreator.Create(uid, fraction);    // имя на основе UID и фракции
             var s = GenerateInnateSkills();                           // базовые характеристики
 
             return new Individ(
-                id,               // уникальный идентификатор
+                uid,               // уникальный идентификатор
                 name,             // имя индивида
                 fraction,         // фракция
                 role,             // текущая роль

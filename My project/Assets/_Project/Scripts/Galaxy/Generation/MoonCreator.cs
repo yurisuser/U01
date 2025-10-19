@@ -1,7 +1,6 @@
 ﻿using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
-using _Project.Scripts.ID;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -158,7 +157,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // 3) Сборка Moon (минимально необходимое; остальное ты уже сам довесишь при надобности)
             return new Moon
             {
-                Uid = IDService.Create(EntityType.Moon),
+                Uid = UIDService.Create(EntityType.Moon),
                 Name = null,
                 Type = mType,              // из твоего enum EMoonType :contentReference[oaicite:5]{index=5}
                 Size = mSize,              // из твоего enum EMoonSize :contentReference[oaicite:6]{index=6}

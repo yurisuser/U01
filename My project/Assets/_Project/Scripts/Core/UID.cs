@@ -1,6 +1,4 @@
-﻿using _Project.Scripts.Core;
-
-namespace _Project.Scripts.ID
+﻿namespace _Project.Scripts.Core
 {
     // ReSharper disable once InconsistentNaming
     public struct UID

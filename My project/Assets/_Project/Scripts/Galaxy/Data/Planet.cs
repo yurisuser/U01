@@ -1,10 +1,8 @@
-﻿using _Project.Scripts.ID;
-
-namespace _Project.Scripts.Galaxy.Data
+﻿namespace _Project.Scripts.Galaxy.Data
 {
     public struct Planet
     {
-        public UID Uid;
+        public Core.UID Uid;
         public string Name;         // Имя планеты
         public float Mass;          // Масса (в условных ед.)
         public EPlanetType Type;         // Тип планеты (газовый гигант, каменная, ледяная и т.д.)

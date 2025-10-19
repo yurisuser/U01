@@ -72,7 +72,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         Vector3 ScreenToWorld(Vector2 screenPos)
         {
-            var p = _cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -_cam.transform.position.z));
+            var p = _cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, _cam.nearClipPlane));
+
             // для орто-камеры z нам не важен, нормализуем:
             p.z = transform.position.z;
             return p;

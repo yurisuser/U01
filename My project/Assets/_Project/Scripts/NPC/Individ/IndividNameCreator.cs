@@ -1,11 +1,11 @@
-﻿using _Project.Scripts.ID;
+﻿using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.Scripts.NPC.Individ
 {
     public static class IndividNameCreator
     {
-        public static string Create(UID id, EFraction fraction)
+        public static string Create(UID uid, EFraction fraction)
         {
             string prefix = fraction switch
             {
@@ -17,7 +17,7 @@ namespace _Project.Scripts.NPC.Individ
                 EFraction.fraction6 => "Symbiont",
                 _ => "Unknown"
             };
-            return $"{prefix}#{id:000000}";
+            return $"{prefix}#{uid:000000}";
         }
     }
 }

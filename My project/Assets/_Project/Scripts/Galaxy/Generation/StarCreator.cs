@@ -1,6 +1,5 @@
 ﻿using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
-using _Project.Scripts.ID;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -85,7 +84,7 @@ namespace _Project.Scripts.Galaxy.Generation
 
             return new Star
             {
-                UID = IDService.Create(EntityType.Star),
+                Uid = UIDService.Create(EntityType.Star),
                 name = null,
                 type = type,
                 size = size,

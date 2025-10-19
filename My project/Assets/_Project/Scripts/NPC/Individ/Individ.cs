@@ -1,5 +1,5 @@
 ﻿using System;
-using _Project.Scripts.ID;
+using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.Scripts.NPC.Individ

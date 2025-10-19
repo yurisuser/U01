@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
-using _Project.Scripts.ID;
+using _Project.Scripts.Core;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -58,10 +58,10 @@ namespace _Project.Scripts.Galaxy.Generation
             float envelope = planetVisual + farMoonOrbit;
 
             // 3) Подбираем угол с учётом уже расставленных планет у этой звезды
-            float angle = PickAngleDeterministicAndSafe(star.UID, planetOrbitIndex, orbitRadius, envelope);
+            float angle = PickAngleDeterministicAndSafe(star.Uid, planetOrbitIndex, orbitRadius, envelope);
 
             // 4) Регистрируем размещение (чтобы следующие планеты этой же звезды учитывали его)
-            RegisterPlaced(star.UID.Id, planetOrbitIndex, angle, orbitRadius, envelope);
+            RegisterPlaced(star.Uid, planetOrbitIndex, angle, orbitRadius, envelope);
 
             // 5) Собираем PlanetSys
             return new PlanetSys
@@ -109,12 +109,12 @@ namespace _Project.Scripts.Galaxy.Generation
             return NormalizeAngle(angle);
         }
 
-        private static void RegisterPlaced(int starId, int orbitIndex, float angleRad, float orbitR, float envelope)
+        private static void RegisterPlaced(UID starId, int orbitIndex, float angleRad, float orbitR, float envelope)
         {
-            if (!PlacedByStar.TryGetValue(starId, out var list))
+            if (!PlacedByStar.TryGetValue(starId.Id, out var list))
             {
                 list = new List<PlacedPlanet>(8);
-                PlacedByStar[starId] = list;
+                PlacedByStar[starId.Id] = list;
             }
             list.Add(new PlacedPlanet
             {

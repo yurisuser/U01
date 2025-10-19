@@ -1,10 +1,10 @@
-﻿using _Project.Scripts.ID;
+﻿using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Galaxy.Data
 {
     public struct Moon
     {
-        public UID Uid;
+        public Core.UID Uid;
         public string Name;            // Имя луны
         public EMoonType Type;          // Тип луны
         public EMoonSize Size;          // Размер
