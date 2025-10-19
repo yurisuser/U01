@@ -1,5 +1,7 @@
 ﻿using System;
+using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.ID;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -135,6 +137,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Если у твоего Planet другие названия — подправь ниже 2 строки.
             return new Planet
             {
+                Uid = IDService.Create(EntityType.Planet),
                 Type = pType,
                 Radius = r
             };

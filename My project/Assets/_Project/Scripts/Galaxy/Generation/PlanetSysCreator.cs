@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.ID;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -31,7 +32,7 @@ namespace _Project.Scripts.Galaxy.Generation
         // ==================================================
 
         // Для контроля соседства: накапливаем выставленные углы по каждой звезде.
-        // Ключ — id звезды (Star.id); значение — список уже назначенных «угол+масштабы».
+        // Ключ — UID звезды (Star.UID); значение — список уже назначенных «угол+масштабы».
         private static readonly Dictionary<int, List<PlacedPlanet>> PlacedByStar = new();
 
         private struct PlacedPlanet
@@ -57,10 +58,10 @@ namespace _Project.Scripts.Galaxy.Generation
             float envelope = planetVisual + farMoonOrbit;
 
             // 3) Подбираем угол с учётом уже расставленных планет у этой звезды
-            float angle = PickAngleDeterministicAndSafe(star.id, planetOrbitIndex, orbitRadius, envelope);
+            float angle = PickAngleDeterministicAndSafe(star.UID, planetOrbitIndex, orbitRadius, envelope);
 
             // 4) Регистрируем размещение (чтобы следующие планеты этой же звезды учитывали его)
-            RegisterPlaced(star.id, planetOrbitIndex, angle, orbitRadius, envelope);
+            RegisterPlaced(star.UID.Id, planetOrbitIndex, angle, orbitRadius, envelope);
 
             // 5) Собираем PlanetSys
             return new PlanetSys
@@ -81,15 +82,15 @@ namespace _Project.Scripts.Galaxy.Generation
             return Mathf.Max(0, orbitIndex) * OrbitUnitPlanet;
         }
 
-        private static float PickAngleDeterministicAndSafe(int starId, int orbitIndex, float orbitR, float envelope)
+        private static float PickAngleDeterministicAndSafe(UID starId, int orbitIndex, float orbitR, float envelope)
         {
-            // Базовый угол — детерминированный: хэш(id, orbit) → [0..2π)
-            float baseAngle = Hash01(starId * 73856093 ^ orbitIndex * 19349663) * Mathf.PI * 2f;
+            // Базовый угол — детерминированный: хэш(UID, orbit) → [0..2π)
+            float baseAngle = Hash01(starId.Id * 73856093 ^ orbitIndex * 19349663) * Mathf.PI * 2f;
 
             // Пытаемся ставить базовый угол; если конфликт — добавляем GOLDEN_ANGLE_RAD и пробуем снова.
             // Требуемая минимальная угловая дистанция от уже размещённых = базовая + вклад от габаритов систем.
             float angle = baseAngle;
-            if (!PlacedByStar.TryGetValue(starId, out var placed) || placed.Count == 0)
+            if (!PlacedByStar.TryGetValue(starId.Id, out var placed) || placed.Count == 0)
                 return angle;
 
             for (int attempt = 0; attempt < MaxAngleAttempts; attempt++, angle += GoldenAngleRad)

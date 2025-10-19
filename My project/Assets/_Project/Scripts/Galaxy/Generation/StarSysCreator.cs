@@ -7,7 +7,7 @@ namespace _Project.Scripts.Galaxy.Generation
         public static StarSys Create(StarSys starSys, Star star, PlanetSys[] planetSysArray, int[] planetOrbits)
         {
             starSys.Star = star;
-            starSys.Id = star.id;
+            starSys.UID = star.UID;
             starSys.Name = star.name;
             starSys.PlanetSysArr = planetSysArray;
             starSys.PlanetOrbits = planetOrbits;

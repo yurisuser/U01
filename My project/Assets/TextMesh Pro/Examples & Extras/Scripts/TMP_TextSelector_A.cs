@@ -83,7 +83,7 @@ namespace TMPro.Examples
                     TMP_LinkInfo linkInfo = m_TextMeshPro.textInfo.linkInfo[linkIndex];
 
                     // The following provides an example of how to access the link properties.
-                    //Debug.Log("Link id: \"" + linkInfo.GetLinkID() + "\"   Link Text: \"" + linkInfo.GetLinkText() + "\""); // Example of how to retrieve the Link id and Link Text.
+                    //Debug.Log("Link UID: \"" + linkInfo.GetLinkID() + "\"   Link Text: \"" + linkInfo.GetLinkText() + "\""); // Example of how to retrieve the Link UID and Link Text.
 
                     Vector3 worldPointInRectangle;
 
@@ -94,12 +94,12 @@ namespace TMPro.Examples
                         case "id_01": // 100041637: // id_01
                                       //m_TextPopup_RectTransform.position = worldPointInRectangle;
                                       //m_TextPopup_RectTransform.gameObject.SetActive(true);
-                                      //m_TextPopup_TMPComponent.text = k_LinkText + " id 01";
+                                      //m_TextPopup_TMPComponent.text = k_LinkText + " UID 01";
                             break;
                         case "id_02": // 100041638: // id_02
                                       //m_TextPopup_RectTransform.position = worldPointInRectangle;
                                       //m_TextPopup_RectTransform.gameObject.SetActive(true);
-                                      //m_TextPopup_TMPComponent.text = k_LinkText + " id 02";
+                                      //m_TextPopup_TMPComponent.text = k_LinkText + " UID 02";
                             break;
                     }
                 }
