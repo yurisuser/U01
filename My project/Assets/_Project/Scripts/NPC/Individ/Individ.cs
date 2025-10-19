@@ -1,12 +1,12 @@
 ﻿using System;
+using _Project.Scripts.ID;
 using _Project.Scripts.NPC.Fraction;
-using Random = UnityEngine.Random;
 
 namespace _Project.Scripts.NPC.Individ
 {
     public struct Individ
     {
-        public readonly int Id;
+        public readonly UID Id;
         public readonly String Name;
         public readonly EFraction Frac;
         
@@ -16,21 +16,28 @@ namespace _Project.Scripts.NPC.Individ
         public readonly float Physique;
        
         public ECurrentRole CurrentRole;            // текущая роль (Pilot/Marine)
-        public int SystemId;           // Id системы
 
-        public Individ(int id, string name, EFraction frac, int systemId)
+        public Individ(
+            UID id,              // уникальный идентификатор
+            string name,          // имя индивида
+            EFraction frac,       // фракция
+            ECurrentRole role,    // текущая роль
+            float intellect,      // интеллект 0.0–1.0
+            float perception,     // восприятие 0.0–1.0
+            float willpower,      // сила воли 0.0–1.0
+            float physique        // физическая форма 0.0–1.0
+        )
         {
-            Id = id;                    // фиксируем Id
+            Id = id;                    // фиксируем UID
             Name = name;                // фиксируем имя
             Frac = frac;                // фиксируем фракцию
+            CurrentRole = role;         // задаём текущую роль
 
-            CurrentRole = ECurrentRole.Free;
-            SystemId = systemId;
-            Intellect = Random.Range(0.3f, 0.8f);
-            Perception = Random.Range(0.3f, 0.8f);
-            Willpower = Random.Range(0.3f, 0.8f);
-            Physique = Random.Range(0.3f, 0.8f);
-            
+            Intellect = intellect;      // задаём интеллект
+            Perception = perception;    // задаём восприятие
+            Willpower = willpower;      // задаём силу воли
+            Physique = physique;        // задаём физическую форму
         }
+
     }
 }
