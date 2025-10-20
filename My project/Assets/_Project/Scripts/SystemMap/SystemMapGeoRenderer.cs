@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
-// List<LineRenderer> — учёт всех орбит
-// MonoBehaviour, Transform, Camera, Material, Color
-// StarSys, PlanetSys
-
-// ISystemMapLayer
+using _Project.Prefabs;                                        // добавлено — для доступа к PrefabCatalog
 
 namespace _Project.Scripts.SystemMap
 {
@@ -16,45 +12,39 @@ namespace _Project.Scripts.SystemMap
     public sealed class SystemMapGeoRenderer : MonoBehaviour, ISystemMapLayer
     {
         [Header("Порядок слоя")]
-        [SerializeField] private int order = 0;                  // порядок рендера: гео рисуем раньше кораблей
+        [SerializeField] private int order = 0;
         public int Order => order;
 
         [Header("Материал и цвета орбит")]
-        [SerializeField] private Material orbitMaterial;         // материал для LineRenderer'ов
+        [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new(0.6f, 0.8f, 1f, 0.35f);
         [SerializeField] private Color moonOrbitColor   = new(1f, 1f, 1f, 0.18f);
 
         [Header("Геометрия окружностей")]
-        [SerializeField, Min(16)] private int segments = 128;    // сегменты круга для орбит
-        [SerializeField] private float orbitUnitPlanet = 10f;    // радиус планетной орбиты = OrbitIndex * это
-        [SerializeField] private float orbitUnitMoon   = 1.5f;   // радиус лунной  орбиты = OrbitIndex * это
+        [SerializeField, Min(16)] private int segments = 128;
+        [SerializeField] private float orbitUnitPlanet = 10f;
+        [SerializeField] private float orbitUnitMoon   = 1.5f;
 
         [Header("Экранная толщина линий (без шейдера)")]
-        [SerializeField] private float lineWidthAtRefZoom = 0.015f; // толщина при ref-зумах
-        [SerializeField] private float referenceOrthoSize = 10f;    // опорный орто-зуум
-        [SerializeField] private Camera targetCamera;               // если пусто — возьмём Camera.main
+        [SerializeField] private float lineWidthAtRefZoom = 0.015f;
+        [SerializeField] private float referenceOrthoSize = 10f;
+        [SerializeField] private Camera targetCamera;
 
-        [Header("Префабы (мэпы по типам)")]
-        [Tooltip("Индекс = (int)EStarType. Если элемент null — звезду не рисуем.")]
-        [SerializeField] private GameObject[] starPrefabsByType;
-        [Tooltip("Индекс = (int)EPlanetType. Если элемент null — планету не рисуем.")]
-        [SerializeField] private GameObject[] planetPrefabsByType;
-        [Tooltip("Индекс = (int)EMoonType. Если элемент null — луну не рисуем.")]
-        [SerializeField] private GameObject[] moonPrefabsByType;
+        [Header("Каталог префабов")]                           // добавлено
+        [SerializeField] private PrefabCatalog catalog;         // добавлено
 
-        // Корни слоя (создаются под parentRoot из Init)
-        private Transform _layerRoot;                             // корень всего слоя (GeoLayer)
-        private Transform _starRoot;                              // звезда
-        private Transform _planetOrbitsRoot;                      // линии орбит планет
-        private Transform _moonOrbitsRoot;                        // линии орбит лун
-        private Transform _planetsRoot;                           // объекты планет/лун
+        // Корни слоя
+        private Transform _layerRoot;
+        private Transform _starRoot;
+        private Transform _planetOrbitsRoot;
+        private Transform _moonOrbitsRoot;
+        private Transform _planetsRoot;
 
-        // Учёт всех линий для быстрой смены толщины
         private readonly List<LineRenderer> _allOrbitLines = new();
 
         // ---------------- ISystemMapLayer ----------------
 
-        public void Init(Transform parentRoot)                    // создаём структуру узлов и готовим материал/камеру
+        public void Init(Transform parentRoot)
         {
             EnsureCamera();
 
@@ -71,21 +61,17 @@ namespace _Project.Scripts.SystemMap
             ClearAll();
         }
 
-        public void Render(in StarSys sys)                        // полный дифф: на текущем этапе — простой пересбор
+        public void Render(in StarSys sys)
         {
             if (_layerRoot == null) return;
 
-            ClearAll();                                           // простой путь: чистим и рисуем заново (пока без инкремента)
+            ClearAll();
             DrawStar(sys);
             DrawPlanetsAndMoons(sys);
-
-            UpdateLineWidthsImmediate();                          // первичная корректировка толщины
+            UpdateLineWidthsImmediate();
         }
 
-        public void Dispose()                                     // очистка: вернуть всё в исходное состояние
-        {
-            ClearAll();
-        }
+        public void Dispose() => ClearAll();
 
         // ---------------- Рисование ----------------
 
@@ -108,18 +94,13 @@ namespace _Project.Scripts.SystemMap
             {
                 PlanetSys ps = arr[i];
 
-                // радиус планетной орбиты
                 float rPlanet = Mathf.Max(0, ps.OrbitIndex) * orbitUnitPlanet;
-
-                // угловая позиция уже в данных (радианы)
                 float ang = ps.OrbitPosition;
                 Vector3 planetPos = new(Mathf.Cos(ang) * rPlanet, Mathf.Sin(ang) * rPlanet, 0f);
 
-                // кольцо орбиты планеты
                 var planetOrbit = CreateCircle(_planetOrbitsRoot, Vector3.zero, rPlanet, planetOrbitColor);
                 _allOrbitLines.Add(planetOrbit);
 
-                // планета по типу
                 var planetPrefab = GetPlanetPrefab(ps.Planet.Type);
                 if (planetPrefab != null)
                 {
@@ -128,7 +109,6 @@ namespace _Project.Scripts.SystemMap
                     pGo.transform.localPosition = planetPos;
                 }
 
-                // орбиты и позиции лун
                 DrawMoonsForPlanet(i, ps, planetPos, _planetsRoot, _moonOrbitsRoot);
             }
         }
@@ -156,16 +136,13 @@ namespace _Project.Scripts.SystemMap
                 int orbitIdx = Mathf.Max(0, moon.OrbitIndex);
                 if (orbitIdx <= 0) continue;
 
-                // 1) Орбита луны
                 float rMoon = orbitIdx * orbitUnitMoon;
                 var moonOrbit = CreateCircle(orbitsCenter, Vector3.zero, rMoon, moonOrbitColor);
                 _allOrbitLines.Add(moonOrbit);
 
-                // 2) Позиция луны: детерминированный угол
                 float angle = Hash01((planetIndex + 1) * 73856093 ^ (k + 1) * 19349663 ^ orbitIdx * 83492791) * (Mathf.PI * 2f);
                 Vector3 local = new(Mathf.Cos(angle) * rMoon, Mathf.Sin(angle) * rMoon, 0f);
 
-                // 3) Префаб луны
                 var moonPrefab = GetMoonPrefab(moon.Type);
                 if (moonPrefab != null)
                 {
@@ -180,7 +157,7 @@ namespace _Project.Scripts.SystemMap
 
         private void EnsureCamera()
         {
-            if (!targetCamera) targetCamera = Camera.main;        // если не задана — берём главную камеру
+            if (!targetCamera) targetCamera = Camera.main;
         }
 
         private void EnsureMaterial()
@@ -220,26 +197,33 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
+        // === заменено: теперь читаем из PrefabCatalog ===
+
         private GameObject GetStarPrefab(EStarType type)
         {
+            if (!catalog || catalog.StarSystemPrefabsByType == null) return null;
             int idx = (int)type;
-            if (starPrefabsByType == null || idx < 0 || idx >= starPrefabsByType.Length) return null;
-            return starPrefabsByType[idx];
+            if (idx < 0 || idx >= catalog.StarSystemPrefabsByType.Length) return null;
+            return catalog.StarSystemPrefabsByType[idx];
         }
 
         private GameObject GetPlanetPrefab(EPlanetType type)
         {
+            if (!catalog || catalog.PlanetPrefabsByType == null) return null;
             int idx = (int)type;
-            if (planetPrefabsByType == null || idx < 0 || idx >= planetPrefabsByType.Length) return null;
-            return planetPrefabsByType[idx];
+            if (idx < 0 || idx >= catalog.PlanetPrefabsByType.Length) return null;
+            return catalog.PlanetPrefabsByType[idx];
         }
 
         private GameObject GetMoonPrefab(EMoonType type)
         {
+            if (!catalog || catalog.MoonPrefabsByType == null) return null;
             int idx = (int)type;
-            if (moonPrefabsByType == null || idx < 0 || idx >= moonPrefabsByType.Length) return null;
-            return moonPrefabsByType[idx];
+            if (idx < 0 || idx >= catalog.MoonPrefabsByType.Length) return null;
+            return catalog.MoonPrefabsByType[idx];
         }
+
+        // ================================================
 
         private LineRenderer CreateCircle(Transform parent, Vector3 center, float radius, Color color)
         {
@@ -254,8 +238,6 @@ namespace _Project.Scripts.SystemMap
             lr.alignment = LineAlignment.View;
             lr.textureMode = LineTextureMode.Stretch;
             lr.positionCount = segments;
-
-            // базовая толщина (пересчитаем сразу после рендера)
             lr.widthMultiplier = lineWidthAtRefZoom;
 
             var pts = new Vector3[segments];
@@ -273,7 +255,7 @@ namespace _Project.Scripts.SystemMap
             return lr;
         }
 
-        private static float Hash01(int seed)                     // детерминированный [0..1)
+        private static float Hash01(int seed)
         {
             unchecked
             {
@@ -282,11 +264,11 @@ namespace _Project.Scripts.SystemMap
                 x ^= x >> 11; x *= 0xAC4C1B51u;
                 x ^= x >> 15; x *= 0x31848BABu;
                 x ^= x >> 14;
-                return (x & 0xFFFFFFu) / 16777216f;               // 2^24
+                return (x & 0xFFFFFFu) / 16777216f;
             }
         }
 
-        private void LateUpdate()                                 // поддерживаем постоянную относит. толщину линий
+        private void LateUpdate()
         {
             if (_allOrbitLines.Count == 0) return;
             if (!targetCamera) return;

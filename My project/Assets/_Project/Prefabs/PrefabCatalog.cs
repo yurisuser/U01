@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace _Project.Scripts.Rendering
+namespace _Project.Prefabs
 {
     [CreateAssetMenu(fileName = "PrefabCatalog", menuName = "_Project/Rendering/Prefab Catalog")]
     public class PrefabCatalog : ScriptableObject
