@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a6989c09f7a46a2aa57d11c4cfa2d64, type: 3}
+  m_Name: PrefabCatalog 1
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Rendering.PrefabCatalog
+  StarGalaxyPrefabsByType:
+  - {fileID: 7116236054248093868, guid: 5917416a601a2244aae38997cc5a373e, type: 3}
+  - {fileID: 7116236054248093868, guid: 42c04e92096688144bc00fdf8e3de4bd, type: 3}
+  - {fileID: 7116236054248093868, guid: b029797a808943d46823cbc6c060808e, type: 3}
+  - {fileID: 7116236054248093868, guid: 4ef853a3a66bccc46807e55d27520c3d, type: 3}
+  - {fileID: 7116236054248093868, guid: 1cab694d0900f58448bac831d6b64a25, type: 3}
+  - {fileID: 7116236054248093868, guid: 3874f6df18c10994f8869fdf9843411c, type: 3}
+  - {fileID: 7116236054248093868, guid: 3e7ea3f72db18de47b9fbc3cd3d87b60, type: 3}
+  StarSystemPrefabsByType:
+  - {fileID: 5232491077732590000, guid: 17eb67ceb950ff44c85f9a47dfdf475e, type: 3}
+  - {fileID: 5232491077732590000, guid: 418a03e892b1dcb4a8c1f8a5ea023086, type: 3}
+  - {fileID: 5232491077732590000, guid: 28cf82f561a330243bf49410ada7bcd5, type: 3}
+  - {fileID: 5232491077732590000, guid: 665ca3354f0828f49b0d4e38dc1b58a2, type: 3}
+  - {fileID: 5232491077732590000, guid: 2bd75ab5be2782d4aa0cd65900bece5e, type: 3}
+  - {fileID: 5232491077732590000, guid: a116d2f1ab777be4abf5e02a080ecb52, type: 3}
+  - {fileID: 5232491077732590000, guid: 8ff1a38a9c4c50f4aa34de1da6248902, type: 3}
+  PlanetPrefabsByType:
+  - {fileID: 4298940278040418173, guid: 23eea45864374fc46a9b6abe88425c71, type: 3}
+  - {fileID: 4298940278040418173, guid: 7e46da7625855944bbe8b09eb3de43a7, type: 3}
+  - {fileID: 4298940278040418173, guid: 4cf7cc0e8eccea8498df676db53954db, type: 3}
+  - {fileID: 4298940278040418173, guid: 3a3e4186e8e5abb43bc1a37ce9dc5130, type: 3}
+  - {fileID: 4298940278040418173, guid: 83dccffa078f4324f9a675465c1e58bd, type: 3}
+  - {fileID: 4298940278040418173, guid: c0bf9980a8b02c24c89a53ec4289f988, type: 3}
+  - {fileID: 4298940278040418173, guid: c62c0e393d5293a4182aab56c645e624, type: 3}
+  - {fileID: 4298940278040418173, guid: ec79074ea7bb24f4ba8eb0bd0825012b, type: 3}
+  - {fileID: 4298940278040418173, guid: a4d99ca7257b9754bbf9c867c53a2771, type: 3}
+  MoonPrefabsByType:
+  - {fileID: 4298940278040418173, guid: aad72e86950889d408556b67645ec664, type: 3}
+  - {fileID: 4298940278040418173, guid: a0cc5cdd305c6904fa23a02a0a5612e2, type: 3}
+  - {fileID: 4298940278040418173, guid: 90a23f073555f834285c4dac3e294e9c, type: 3}
+  - {fileID: 4298940278040418173, guid: e28c2ae2d6915344da62f6c10c217c09, type: 3}
+  - {fileID: 4298940278040418173, guid: d0bde4ca8704d1344b92f2ae731de490, type: 3}
+  - {fileID: 4298940278040418173, guid: 7eb991a73d7b53f4389f76670e5aa469, type: 3}
+  - {fileID: 4298940278040418173, guid: bf3b3e57058176847a88d6cdfd7ccd58, type: 3}
+  ShipPrefabsByClass:
+  - {fileID: 8933744318166373964, guid: 9b4f0548eb8117a418552604f3ad9d78, type: 3}
+  OrbitPlanetColor: {r: 1, g: 0.9831489, b: 0, a: 0}
+  OrbitMoonColor: {r: 1, g: 0.8433224, b: 0, a: 0}
+  SelectionHighlightPrefab: {fileID: 0}
