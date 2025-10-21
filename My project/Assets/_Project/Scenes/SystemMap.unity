@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 200395029}
   - component: {fileID: 200395028}
   - component: {fileID: 200395030}
+  - component: {fileID: 200395031}
   m_Layer: 0
   m_Name: SystemMapRoot
   m_TagString: Untagged
@@ -151,7 +152,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapRenderer
   layersRoot: {fileID: 200395029}
   geoLayer: {fileID: 200395030}
-  extraLayers: []
+  extraLayers:
+  - {fileID: 200395031}
 --- !u!4 &200395029
 Transform:
   m_ObjectHideFlags: 0
@@ -189,6 +191,20 @@ MonoBehaviour:
   lineWidthAtRefZoom: 0.015
   referenceOrthoSize: 10
   targetCamera: {fileID: 1020303310}
+  catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
+--- !u!114 &200395031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200395027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75dbeaacd90248da99f156fb88202c51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapShipRenderer
+  order: 10
   catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
 --- !u!1001 &453937181
 PrefabInstance:
