@@ -1,20 +1,17 @@
-﻿﻿using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
+using _Project.Prefabs; // ← добавлено
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
     [DisallowMultipleComponent]
     public class GalaxyMapRenderer : MonoBehaviour
     {
-        [Header("Префабы по типам звёзд")]
-        [SerializeField] private GameObject redPrefab;
-        [SerializeField] private GameObject orangePrefab;
-        [SerializeField] private GameObject yellowPrefab;
-        [SerializeField] private GameObject whitePrefab;
-        [SerializeField] private GameObject bluePrefab;
-        [SerializeField] private GameObject neutronPrefab;
-        [SerializeField] private GameObject blackPrefab;
+        [Header("Каталог префабов (галактическая карта)")]
+        [SerializeField] private PrefabCatalog catalog;          // ← добавлено
+
+        [Header("Дефолтный префаб (если в каталоге нет ячейки)")]
         [SerializeField] private GameObject defaultPrefab;
 
         [Header("Скейл по размеру (если не нужен — поставь все = 1)")]
@@ -62,7 +59,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 var s = systems[i];
 
-                var prefab = GetPrefabFor(s.Star.type) ?? defaultPrefab;
+                var prefab = GetPrefabFor(s.Star.type) ?? defaultPrefab; // ← берём из каталога
                 if (!prefab) continue;
 
                 var go = Instantiate(prefab, s.GalaxyPosition, Quaternion.identity, starsRoot);
@@ -78,25 +75,23 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 {
                     click.type       = s.Star.type;
                     click.systemName = go.name;
-                    click.System     = s;          // передаём саму систему
+                    click.System     = s;
                 }
 
                 _spawned.Add(go);
             }
         }
 
-        private GameObject GetPrefabFor(EStarType t) =>
-            t switch
-            {
-                EStarType.Red     => redPrefab,
-                EStarType.Orange  => orangePrefab,
-                EStarType.Yellow  => yellowPrefab,
-                EStarType.White   => whitePrefab,
-                EStarType.Blue    => bluePrefab,
-                EStarType.Neutron => neutronPrefab,
-                EStarType.Black   => blackPrefab,
-                _                => defaultPrefab
-            };
+        // === минимальная правка: читаем префаб из PrefabCatalog ===
+        private GameObject GetPrefabFor(EStarType t)
+        {
+            if (!catalog || catalog.StarGalaxyPrefabsByType == null) return null;
+            int idx = (int)t;
+            var arr = catalog.StarGalaxyPrefabsByType;
+            if (idx < 0 || idx >= arr.Length) return null;
+            return arr[idx];
+        }
+        // ==========================================================
 
         private float GetSizeMul(EStarSize z) =>
             z switch
@@ -105,7 +100,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 EStarSize.Normal     => normalMul,
                 EStarSize.Giant      => giantMul,
                 EStarSize.Supergiant => supergiantMul,
-                _                   => normalMul
+                _                    => normalMul
             };
     }
 }
