@@ -5,33 +5,28 @@ using _Project.Scripts.Galaxy.Data;                               // тип Star
 using _Project.Scripts.Galaxy.Generation;                         // генератор галактики
 using UnityEngine;                                                // Unity API
 using _Project.Scripts.Core.GameState;
-using _Project.Scripts.Simulation; // GameStateService / ERunMode
-
-// SimulationStepController (без MonoBehaviour)
 
 namespace _Project.Scripts.Core
 {
     public sealed class Core : MonoBehaviour
     {
-        private static GameStateService _gameState;               // единственный экземпляр состояния игры (ленивая инициализация)
+        private static GameStateService _gameState;               
         public  static GameStateService GameState => _gameState ??= new GameStateService(2.0f); // доступ к состоянию; шаг логики = 2.0с
-
         public static Core Instance { get; private set; }         // синглтон ядра
         public SceneController Scenes { get; } = new SceneController(); // управление сценами
         public static StarSys[] Galaxy { get; private set; }      // сгенерированная галактика
         public InputController  Input  { get; } = new InputController(); // опрос ввода (polling)
-
-        private readonly Executor _simulation = new Executor(); // логический тикер по таймеру (без компонентов)
+        [SerializeField] private float stepDurationSeconds = 2f; // длительность логического шага
+        private StepManager _stepManager;                          // тупой диспетчер шага
 
         private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; } // защита от дублей ядра
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; } 
             Instance = this;
 
-            DontDestroyOnLoad(gameObject);                           // ядро живёт между сценами
-
+            DontDestroyOnLoad(gameObject);
             Galaxy = GalaxyCreator.Create();                         // создаём данные галактики
-            UnityEngine.Debug.Log($"Core: Galaxy generated. Stars = {Galaxy?.Length}"); // печатаем количество звёзд
+            _stepManager = new StepManager(stepDurationSeconds, (_, __) => { });
 
             StartCoroutine(LoadMainMenuDelayed());                   // мягкая загрузка первой сцены
         }
@@ -39,7 +34,7 @@ namespace _Project.Scripts.Core
         private void Update()
         {
             Input?.Update();                                         // опрос ввода
-            _simulation.UpdateStep(Time.deltaTime);                  // тикаем симуляцию по таймеру (один шаг при накоплении)
+            _stepManager?.Update(Time.deltaTime);
         }
 
         private IEnumerator LoadMainMenuDelayed()                    // небольшая задержка для корректной инициализации

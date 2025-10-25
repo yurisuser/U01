@@ -35,34 +35,11 @@
             _current.RunMode = mode;
         }
 
-        public void SetPlayStepSpeed(EPlayStepSpeed speed)
-        {
-            _current.PlayStepSpeed = speed;
-        }
-        public void RequestStep()
-        {
-            _current.RequestStep = true;
-        }
-        public bool ConsumeStepRequest()
-        {
-            if (_current.RequestStep)
-            {
-                _current.RequestStep = false;
-                return true;
-            }
-            return false;
-        }
-
         public void AdvanceTick()
         {
             _current.TickIndex++;
         }
 
         // ---- Вспомогательное: длительность визуального проигрывания шага (сек) ----
-        public float GetVisualStepDurationSeconds()
-        {
-            // Логика всегда тикает с LogicStepSeconds; визуал проигрывается быстрее/медленнее.
-            return _current.LogicStepSeconds / (int)_current.PlayStepSpeed;
-        }
     }
 }
