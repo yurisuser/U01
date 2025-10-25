@@ -4,8 +4,10 @@ using _Project.Scripts.Core.Scene;                                // менед�
 using _Project.Scripts.Galaxy.Data;                               // тип StarSys
 using _Project.Scripts.Galaxy.Generation;                         // генератор галактики
 using UnityEngine;                                                // Unity API
-using _Project.Scripts.Core.GameState;                            // GameStateService / ERunMode
-using _Project.Scripts.Core.Simulation;                           // SimulationStepController (без MonoBehaviour)
+using _Project.Scripts.Core.GameState;
+using _Project.Scripts.Simulation; // GameStateService / ERunMode
+
+// SimulationStepController (без MonoBehaviour)
 
 namespace _Project.Scripts.Core
 {
@@ -19,7 +21,7 @@ namespace _Project.Scripts.Core
         public static StarSys[] Galaxy { get; private set; }      // сгенерированная галактика
         public InputController  Input  { get; } = new InputController(); // опрос ввода (polling)
 
-        private readonly SimulationStepController _simulation = new SimulationStepController(); // логический тикер по таймеру (без компонентов)
+        private readonly Executor _simulation = new Executor(); // логический тикер по таймеру (без компонентов)
 
         private void Awake()
         {
