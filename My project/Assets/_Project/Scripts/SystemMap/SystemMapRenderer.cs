@@ -1,6 +1,7 @@
 ﻿using UnityEngine;                                              // MonoBehaviour, Transform
 using UnityEngine.InputSystem;                                  // Key
 using _Project.Scripts.Galaxy.Data;                             // StarSys
+using _Project.Scripts.Core;                                   // GameBootstrap
 using _Project.Scripts.Core.Scene;                              // SceneController, SceneId, SelectedSystemBus
 
 namespace _Project.Scripts.SystemMap
@@ -16,12 +17,12 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private SystemMapGeoRenderer geoLayer;  // география (звезда/планеты/орбиты)
         [SerializeField] private MonoBehaviour[] extraLayers;    // будущие слои (напр. SystemMapShipRenderer), опционально
 
-        private Core.Core _core;                                 // доступ к вводу и галактике
+        private GameBootstrap _core;                                 // доступ к вводу и галактике
         private bool _isExiting;
 
         private void Awake()
         {
-            _core = FindFirstObjectByType<Core.Core>();
+            _core = FindFirstObjectByType<GameBootstrap>();
             if (!layersRoot)
             {
                 var go = new GameObject("SystemMapLayers");
@@ -79,7 +80,7 @@ namespace _Project.Scripts.SystemMap
         {
             if (SelectedSystemBus.HasValue) return SelectedSystemBus.Selected;
 
-            var galaxy = Core.Core.Galaxy;
+            var galaxy = GameBootstrap.Galaxy;
             if (galaxy == null || galaxy.Length == 0) return null;
 
             return galaxy[0];

@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Core.GameState;
+﻿using _Project.Scripts.Core;
+using _Project.Scripts.Core.GameState;
 
 
 namespace _Project.Scripts.Simulation
@@ -9,7 +10,7 @@ namespace _Project.Scripts.Simulation
 
         public void UpdateStep(float dt)        // dt — прошедшее время в секундах за кадр
         {
-            var s = Core.Core.GameState.Current; // снимок состояния на этот кадр
+            var s = GameBootstrap.GameState.Current; // снимок состояния на этот кадр
 
             if (s.RunMode == ERunMode.Auto)      // в авто-режиме тикаем по таймеру
             {
@@ -17,7 +18,7 @@ namespace _Project.Scripts.Simulation
                 if (_logicTimer >= s.LogicStepSeconds) // набрали длительность логического шага
                 {
                     DoLogicStep();               // выполнить один логический шаг (конвейер добавим позже)
-                    Core.Core.GameState.AdvanceTick(); // увеличиваем индекс тика
+                    GameBootstrap.GameState.AdvanceTick(); // увеличиваем индекс тика
                     _logicTimer -= s.LogicStepSeconds; // вычитаем интервал, оставляя «хвост» для точности
                 }
             }
@@ -29,7 +30,7 @@ namespace _Project.Scripts.Simulation
 
         private void DoLogicStep()               // тестовый шаг: здесь позже будет конвейер Inputs→…→Snapshot
         {
-            UnityEngine.Debug.Log($"Logic tick: {Core.Core.GameState.Current.TickIndex}");
+            UnityEngine.Debug.Log($"Logic tick: {GameBootstrap.GameState.Current.TickIndex}");
         }
     }
 }
