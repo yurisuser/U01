@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Core.Debug
 {
@@ -24,15 +25,15 @@ namespace _Project.Scripts.Core.Debug
         {
             if (panel != null) panel.SetActive(false); // панель изначально выключена
             if (!Application.isPlaying) return;
-            if (Core.Instance != null) 
-                Core.Instance.Input.Subscribe(Key.F1, TogglePanel);
+            if (GameBootstrap.Instance != null) 
+                GameBootstrap.Instance.Input.Subscribe(Key.F1, TogglePanel);
         }
 
         private void OnDisable()
         {
             if (!Application.isPlaying) return;
-            if (Core.Instance != null)
-                Core.Instance.Input.Unsubscribe(Key.F1, TogglePanel);
+            if (GameBootstrap.Instance != null)
+                GameBootstrap.Instance.Input.Unsubscribe(Key.F1, TogglePanel);
         }
 
         public void ShowMe(int num, string text, object val)

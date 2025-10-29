@@ -8,11 +8,11 @@ using _Project.Scripts.Core.GameState;
 
 namespace _Project.Scripts.Core
 {
-    public sealed class Core : MonoBehaviour
+    public sealed class GameBootstrap : MonoBehaviour
     {
         private static GameStateService _gameState;               
         public  static GameStateService GameState => _gameState ??= new GameStateService(2.0f); // доступ к состоянию; шаг логики = 2.0с
-        public static Core Instance { get; private set; }         // синглтон ядра
+        public static GameBootstrap Instance { get; private set; }         // синглтон ядра
         public SceneController Scenes { get; } = new SceneController(); // управление сценами
         public static StarSys[] Galaxy { get; private set; }      // сгенерированная галактика
         public InputController  Input  { get; } = new InputController(); // опрос ввода (polling)
@@ -21,7 +21,7 @@ namespace _Project.Scripts.Core
 
         private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; } 
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
 
             DontDestroyOnLoad(gameObject);
