@@ -80,7 +80,7 @@ namespace _Project.Scripts.SystemMap
         {
             if (SelectedSystemBus.HasValue) return SelectedSystemBus.Selected;
 
-            var galaxy = GameBootstrap.Galaxy;
+            var galaxy = GameBootstrap.GameState.Current.Galaxy;
             if (galaxy == null || galaxy.Length == 0) return null;
 
             return galaxy[0];
