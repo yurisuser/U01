@@ -10,27 +10,30 @@ namespace _Project.Scripts.Simulation
 
         public void UpdateStep(float dt)        // dt — прошедшее время в секундах за кадр
         {
-            var s = GameBootstrap.GameState.Current; // снимок состояния на этот кадр
+            var stateService = GameBootstrap.GameState;
+            var snapshot     = stateService.Current; // снимок состояния на этот кадр
 
-            if (s.RunMode == ERunMode.Auto)      // в авто-режиме тикаем по таймеру
+            if (snapshot.RunMode == ERunMode.Auto)      // в авто-режиме тикаем по таймеру
             {
-                _logicTimer += dt;               // копим прошедшее время
-                if (_logicTimer >= s.LogicStepSeconds) // набрали длительность логического шага
+                _logicTimer += dt;                      // копим прошедшее время
+                if (_logicTimer >= snapshot.LogicStepSeconds) // набрали длительность логического шага
                 {
-                    DoLogicStep();               // выполнить один логический шаг (конвейер добавим позже)
-                    GameBootstrap.GameState.AdvanceTick(); // увеличиваем индекс тика
-                    _logicTimer -= s.LogicStepSeconds; // вычитаем интервал, оставляя «хвост» для точности
+                    var nextSnapshot = snapshot;        // будущий снапшот для коммита
+                    DoLogicStep(ref nextSnapshot);      // выполнить один логический шаг (конвейер добавим позже)
+                    nextSnapshot.TickIndex++;           // увеличиваем индекс тика
+                    stateService.Commit(nextSnapshot);  // запись состояния только на стадии Commit
+                    _logicTimer -= snapshot.LogicStepSeconds; // вычитаем интервал, оставляя «хвост» для точности
                 }
             }
             else
             {
-                _logicTimer = 0f;                // в паузе таймер не копим, чтобы не «взрывался» после паузы
+                _logicTimer = 0f;                       // в паузе таймер не копим, чтобы не «взрывался» после паузы
             }
         }
 
-        private void DoLogicStep()               // тестовый шаг: здесь позже будет конвейер Inputs→…→Snapshot
+        private void DoLogicStep(ref GameStateService.Snapshot snapshot) // тестовый шаг: здесь позже будет конвейер Inputs→…→Snapshot
         {
-            UnityEngine.Debug.Log($"Logic tick: {GameBootstrap.GameState.Current.TickIndex}");
+            UnityEngine.Debug.Log($"Logic tick: {snapshot.TickIndex}");
         }
     }
 }

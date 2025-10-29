@@ -10,7 +10,18 @@ namespace _Project.Scripts.Core
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static GameStateService _gameState;
-        public  static GameStateService GameState => _gameState ??= new GameStateService(2.0f); // доступ к состоянию; шаг логики = 2.0с
+        public  static GameStateService GameState
+        {
+            get
+            {
+                if (_gameState == null)
+                {
+                    Debug.LogWarning("[GameBootstrap] GameStateService requested before bootstrap initialized. Creating fallback instance.");
+                    _gameState = new GameStateService(2.0f);
+                }
+                return _gameState;
+            }
+        }
         public static GameBootstrap Instance { get; private set; }         // синглтон ядра
         public SceneController Scenes { get; } = new SceneController(); // управление сценами
         public InputController  Input  { get; } = new InputController(); // опрос ввода (polling)
@@ -23,8 +34,10 @@ namespace _Project.Scripts.Core
             Instance = this;
 
             DontDestroyOnLoad(gameObject);
+            _gameState = new GameStateService(stepDurationSeconds);   // сервис состояния, шаг — из инспектора
+
             var galaxy = GalaxyCreator.Create();                      // создаём данные галактики
-            GameState.SetGalaxy(galaxy);                              // сохраняем в состояние
+            _gameState.SetGalaxy(galaxy);                             // сохраняем в состояние
             _stepManager = new StepManager(stepDurationSeconds, (_, __) => { });
 
             StartCoroutine(LoadMainMenuDelayed());                   // мягкая загрузка первой сцены

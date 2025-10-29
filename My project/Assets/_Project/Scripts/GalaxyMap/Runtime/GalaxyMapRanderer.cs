@@ -40,7 +40,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void Start()
         {
-            var snapshot = GameBootstrap.GameState.Current;
+            var snapshot = GameBootstrap.GameState.Render;
             var galaxy   = snapshot.Galaxy; // StarSys[]
             if (galaxy != null && galaxy.Length > 0)
                 Render(galaxy, clearBefore: true);
