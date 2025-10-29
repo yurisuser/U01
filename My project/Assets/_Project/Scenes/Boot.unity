@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 30364036}
   - component: {fileID: 30364040}
   m_Layer: 0
-  m_Name: Core
+  m_Name: GameBootstrap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -163,7 +163,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c25ec6a89d1c496facc6b1e1c43d5ad4, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Glob
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Core.GameBootstrap
 --- !u!1 &210190809
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 using _Project.Prefabs; // ← добавлено
@@ -39,7 +40,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void Start()
         {
-            var galaxy = Core.Core.Galaxy; // StarSys[]
+            var galaxy = GameBootstrap.Galaxy; // StarSys[]
             if (galaxy != null && galaxy.Length > 0)
                 Render(galaxy, clearBefore: true);
         }

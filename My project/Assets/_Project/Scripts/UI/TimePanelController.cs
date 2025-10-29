@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Core.GameState;        // ERunMode
+﻿using _Project.Scripts.Core;                  // GameBootstrap
+using _Project.Scripts.Core.GameState;        // ERunMode
 using UnityEngine;                            // MonoBehaviour, Debug
 using UnityEngine.UIElements;                 // UI Toolkit: UIDocument, Toggle, callbacks
 
@@ -25,7 +26,7 @@ namespace _Project.Scripts.UI
             _playToggle.RegisterValueChangedCallback(_onToggleChanged);   // подписываемся по UI Toolkit
 
             _isPlaying = _playToggle.value;                           // синхронизация начального состояния
-            Core.Core.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // инициализируем режим
+            GameBootstrap.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // инициализируем режим
         }
 
         private void OnDisable()
@@ -37,7 +38,7 @@ namespace _Project.Scripts.UI
         private void OnPlayToggleChanged(ChangeEvent<bool> evt)        // единая точка обработки Play/Pause
         {
             _isPlaying = evt.newValue;                                 // обновляем локальное зеркало
-            Core.Core.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // переключаем режим симуляции
+            GameBootstrap.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // переключаем режим симуляции
             
             Debug.Log("[TimePanel] Play=" + _isPlaying);               // диагностика
         }
