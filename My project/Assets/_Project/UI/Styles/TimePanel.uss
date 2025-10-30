@@ -43,10 +43,10 @@
 
 /* Назначаем SVG на иконки ТУТ, а не инлайном в UXML */
 #IconPlay {
-    background-image: url("project://database/Assets/_Project/Assets/UI/Icons/Play.svg?guid=44113939aade4c499e9f46962bebb250&type=3");
+    background-image: url("project://database/Assets/_Project/UI/Icons/Play.svg?guid=44113939aade4c499e9f46962bebb250&type=3");
 }
 #IconPause {
-    background-image: url("project://database/Assets/_Project/Assets/UI/Icons/Pause.svg?guid=e04c7709f8eb45a58900eed270ba6612&type=3");
+    background-image: url("project://database/Assets/_Project/UI/Icons/Pause.svg?guid=e04c7709f8eb45a58900eed270ba6612&type=3");
 }
 
 /* Базовое состояние: показываем Play, скрываем Pause */

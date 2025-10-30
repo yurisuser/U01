@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <!-- Подключаем стиль БЕЗ фрагмента #... -->
-    <Style src="project://database/Assets/_Project/Assets/UI/Styles/TimePanel.uss?fileID=7433441132597879392&amp;guid=ea8ce357ddf04a55a87adbcc138724f6&amp;type=3" />
+    <Style src="project://database/Assets/_Project/UI/Styles/TimePanel.uss?fileID=7433441132597879392&amp;guid=ea8ce357ddf04a55a87adbcc138724f6&amp;type=3" />
 
     <ui:VisualElement name="Timepanel" class="TimePanel" style="flex-direction: row; width: auto; height: auto; position: absolute; right: 10px; bottom: 10px;">
         <!-- ВАЖНО: имя с точным регистром -->

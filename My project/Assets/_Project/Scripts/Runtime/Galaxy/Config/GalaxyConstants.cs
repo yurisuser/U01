@@ -1,6 +1,6 @@
-﻿﻿namespace _Project.CONSTANT
+﻿namespace _Project.CONSTANT
 {
-    public static class GALAXY {
+    public static class GalaxyConstants {
         // Орбиты
         public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
         // Типы звёзд (вес)
@@ -95,3 +95,5 @@
             {  1,  1,  2,  2,  2,  2,  2,  2,  1,  1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     }
 }
+
+

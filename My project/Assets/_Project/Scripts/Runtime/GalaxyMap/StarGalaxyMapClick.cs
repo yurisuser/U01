@@ -1,4 +1,4 @@
-﻿﻿using _Project.Scripts.Galaxy.Data;
+﻿using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Scripts.Core.Scene;
@@ -70,3 +70,5 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 #endif
     }
 }
+
+
