@@ -16,7 +16,7 @@ namespace _Project.Scripts.Core
             {
                 if (_gameState == null)
                 {
-                    Debug.LogWarning("[GameBootstrap] GameStateService requested before bootstrap initialized. Creating fallback instance.");
+                   // Debug.LogWarning("[GameBootstrap] GameStateService requested before bootstrap initialized. Creating fallback instance.");
                     _gameState = new GameStateService(2.0f);
                 }
                 return _gameState;
