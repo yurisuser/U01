@@ -1,7 +1,8 @@
-﻿using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Core;
+using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Core.Scene;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using _Project.Scripts.Core.Scene;
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
@@ -11,12 +12,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
     {
         [SerializeField] private bool   logClick = true;
 
-        [Header("Данные (заполняет рендерер/префаб)")]
+        [Header("����� (�������� ७����/��䠡)")]
         public EStarType type;
         public string   systemName;
         public StarSys? System;
 
-        [Header("Камера (если пусто — возьмёт MainCamera)")]
+        [Header("����� (�᫨ ���� - ������ MainCamera)")]
         [SerializeField] private Camera cam;
 
         private Collider _col;
@@ -50,13 +51,19 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             if (hit.collider == _col || hit.collider.transform.IsChildOf(transform))
             {
-                if (logClick) Debug.Log($"[Star] {systemName} → {type}");
+                if (logClick) Debug.Log($"[Star] {systemName}  {type}");
 
                 if (System.HasValue)
-                    { 
-                        SelectedSystemBus.Selected = System.Value;
-                        SelectedSystemBus.HasValue = true;
-                    }
+                {
+                    var sys = System.Value;
+                    if (!GameBootstrap.GameState.SelectSystemByUid(sys.Uid))
+                        GameBootstrap.GameState.SelectSystemByIndex(0);
+                }
+                else
+                {
+                    GameBootstrap.GameState.ClearSelectedSystem();
+                }
+
                 SceneController.Load(SceneId.SystemMap);
             }
         }
@@ -70,5 +77,3 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 #endif
     }
 }
-
-

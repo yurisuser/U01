@@ -1,24 +1,26 @@
-﻿using UnityEngine;                                              // MonoBehaviour, Transform
+using UnityEngine;                                              // MonoBehaviour, Transform
 using UnityEngine.InputSystem;                                  // Key
 using _Project.Scripts.Galaxy.Data;                             // StarSys
-using _Project.Scripts.Core;                                   // GameBootstrap
-using _Project.Scripts.Core.Scene;                              // SceneController, SceneId, SelectedSystemBus
+using _Project.Scripts.Core;                                    // GameBootstrap
+using _Project.Scripts.Core.GameState;                          // GameStateService
+using _Project.Scripts.Core.Scene;                              // SceneController, SceneId
 
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// Тонкий оркестратор: выбирает активную StarSys и делегирует рисование слоям карты.
-    /// Никакой геометрии/префабов/линий внутри — всё в слоях.
+    /// ������ �ථ�����: �롨ࠥ� ��⨢��� StarSys � ��������� �ᮢ���� ᫮� �����.
+    /// ������� ������ਨ/��䠡��/����� ����� - ��� � ᫮��.
     /// </summary>
     public sealed class SystemMapRenderer : MonoBehaviour
     {
-        [Header("Слои карты")]
-        [SerializeField] private Transform layersRoot;           // родитель для слоёв (если пусто — создадим)
-        [SerializeField] private SystemMapGeoRenderer geoLayer;  // география (звезда/планеты/орбиты)
-        [SerializeField] private MonoBehaviour[] extraLayers;    // будущие слои (напр. SystemMapShipRenderer), опционально
+        [Header("���� �����")]
+        [SerializeField] private Transform layersRoot;           // த�⥫� ��� ᫮� (�᫨ ���� - ᮧ�����)
+        [SerializeField] private SystemMapGeoRenderer geoLayer;  // ������� (������/�������/�ࡨ��)
+        [SerializeField] private MonoBehaviour[] extraLayers;    // ���騥 ᫮� (����. SystemMapShipRenderer), ��樮���쭮
 
-        private GameBootstrap _core;                                 // доступ к вводу и галактике
-        private bool _isExiting;
+        private GameBootstrap    _core;                          // ����� � ����� � �����⨪�
+        private GameStateService _state;                         // ������ ���ﭨ�
+        private bool             _isExiting;
 
         private void Awake()
         {
@@ -33,14 +35,26 @@ namespace _Project.Scripts.SystemMap
 
         private void OnEnable()
         {
+            _isExiting = false;
             if (_core?.Input != null)
                 _core.Input.Subscribe(Key.Escape, OnEscPressed);
+
+            _state = GameBootstrap.GameState;
+            if (_state != null)
+            {
+                _state.RenderChanged += OnRenderChanged;
+                OnRenderChanged(_state.Render); // ��� ����� �� ������ ����������
+            }
         }
 
         private void OnDisable()
         {
             if (_core?.Input != null)
                 _core.Input.Unsubscribe(Key.Escape, OnEscPressed);
+
+            if (_state != null)
+                _state.RenderChanged -= OnRenderChanged;
+            _state = null;
         }
 
         private async void OnEscPressed()
@@ -50,39 +64,60 @@ namespace _Project.Scripts.SystemMap
             await SceneController.LoadAsync(SceneId.GalaxyMap);
         }
 
-        private void Start()
+        private void OnRenderChanged(GameStateService.RenderSnapshot snapshot)
         {
-            var sys = ResolveActiveSystem();                     // выберем систему (SelectedSystemBus или [0])
-            if (sys == null) { Debug.LogWarning("[SystemMap] Нет данных системы."); return; }
+            var sys = ResolveActiveSystem(snapshot);
+            if (sys == null)
+            {
+                ClearLayers();
+                Debug.LogWarning("[SystemMap] ��� ������ ��⥬�.");
+                return;
+            }
 
-            // Инициализируем и рендерим геослой
+            RenderSystem(sys.Value);
+        }
+
+        private void RenderSystem(in StarSys sys)
+        {
+            ClearLayers();
+
             if (geoLayer != null)
             {
                 geoLayer.Init(layersRoot);
-                geoLayer.Render(sys.Value);
+                geoLayer.Render(sys);
             }
 
-            // Инициализируем и рендерим дополнительные слои (если есть)
-            if (extraLayers != null)
+            if (extraLayers == null) return;
+            for (int i = 0; i < extraLayers.Length; i++)
             {
-                foreach (var mb in extraLayers)
+                if (extraLayers[i] is ISystemMapLayer layer)
                 {
-                    if (mb is ISystemMapLayer layer)
-                    {
-                        layer.Init(layersRoot);
-                        layer.Render(sys.Value);
-                    }
+                    layer.Init(layersRoot);
+                    layer.Render(sys);
                 }
             }
         }
 
-        private StarSys? ResolveActiveSystem()                    // выбор активной системы
+        private void ClearLayers()
         {
-            if (SelectedSystemBus.HasValue) return SelectedSystemBus.Selected;
+            geoLayer?.Dispose();
 
-            var renderSnapshot = GameBootstrap.GameState.Render;
-            var galaxy = renderSnapshot.Galaxy;
+            if (extraLayers == null) return;
+            for (int i = 0; i < extraLayers.Length; i++)
+            {
+                if (extraLayers[i] is ISystemMapLayer layer)
+                    layer.Dispose();
+            }
+        }
+
+        private static StarSys? ResolveActiveSystem(GameStateService.RenderSnapshot snapshot) // �롮� ��⨢��� ��⥬�
+        {
+            var galaxy = snapshot.Galaxy;
             if (galaxy == null || galaxy.Length == 0) return null;
+
+            var idx = snapshot.SelectedSystemIndex;
+            if (idx >= 0 && idx < galaxy.Length)
+                return galaxy[idx];
 
             return galaxy[0];
         }

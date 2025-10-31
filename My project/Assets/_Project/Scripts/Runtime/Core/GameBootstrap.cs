@@ -1,16 +1,17 @@
-﻿using System.Collections;                                         // корутина загрузки сцены
-using _Project.Scripts.Core.Input;                                // контроллер ввода
-using _Project.Scripts.Core.Scene;                                // менеджер сцен
-using _Project.Scripts.Galaxy.Generation;                         // генератор галактики
+using System.Collections;                                         // ����⨭� ����㧪� �業�
+using _Project.Scripts.Core.Input;                                // ����஫��� �����
+using _Project.Scripts.Core.Scene;                                // �������� �業
+using _Project.Scripts.Galaxy.Generation;                         // ������� �����⨪�
 using UnityEngine;                                                // Unity API
 using _Project.Scripts.Core.GameState;
+using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Core
 {
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static GameStateService _gameState;
-        public  static GameStateService GameState
+        public static GameStateService GameState
         {
             get
             {
@@ -22,11 +23,15 @@ namespace _Project.Scripts.Core
                 return _gameState;
             }
         }
-        public static GameBootstrap Instance { get; private set; }         // синглтон ядра
-        public SceneController Scenes { get; } = new SceneController(); // управление сценами
-        public InputController  Input  { get; } = new InputController(); // опрос ввода (polling)
-        [SerializeField] private float stepDurationSeconds = 2f; // длительность логического шага
-        private StepManager _stepManager;                          // тупой диспетчер шага
+
+        public static GameBootstrap Instance { get; private set; }         // ᨭ��⮭ ��
+        public SceneController Scenes { get; } = new SceneController(); // �ࠢ����� �業���
+        public InputController  Input  { get; } = new InputController(); // ���� ����� (polling)
+
+        [SerializeField] private float stepDurationSeconds = 2f; // ���⥫쭮��� �����᪮�� 蠣�
+
+        private StepManager _stepManager;                          // ������ ����᫥�� StepManager
+        private Executor _executor;                                // ���������� �����������
 
         private void Awake()
         {
@@ -34,25 +39,31 @@ namespace _Project.Scripts.Core
             Instance = this;
 
             DontDestroyOnLoad(gameObject);
-            _gameState = new GameStateService(stepDurationSeconds);   // сервис состояния, шаг — из инспектора
 
-            var galaxy = GalaxyCreator.Create();                      // создаём данные галактики
-            _gameState.SetGalaxy(galaxy);                             // сохраняем в состояние
-            _stepManager = new StepManager(stepDurationSeconds, (_, __) => { });
+            if (_gameState == null)
+                _gameState = new GameStateService(stepDurationSeconds);   // �ࢨ� ���ﭨ�, 蠣 - �� ��ᯥ���
+            else
+                _gameState.SetLogicStepSeconds(stepDurationSeconds);     // ��������� ����� ᮢ��� �ந��
 
-            StartCoroutine(LoadMainMenuDelayed());                   // мягкая загрузка первой сцены
+            var galaxy = GalaxyCreator.Create();                      // ᮧ��� ����� �����⨪�
+            _gameState.SetGalaxy(galaxy);                             // ��࠭塞 � ���ﭨ�
+
+            _executor    = new Executor();                            // ���������� ᮡࠣ����
+            _stepManager = new StepManager(_gameState, _executor);    // ������ StepManager � сервисами
+
+            StartCoroutine(LoadMainMenuDelayed());                   // ��� ����㧪� ��ࢮ� �業�
         }
 
         private void Update()
         {
-            Input?.Update();                                         // опрос ввода
-            _stepManager?.Update(Time.deltaTime);
+            Input?.Update();                                         // ���� �����
+            _stepManager?.Update(Time.deltaTime);                    // �������� ���������
         }
 
-        private IEnumerator LoadMainMenuDelayed()                    // небольшая задержка для корректной инициализации
+        private IEnumerator LoadMainMenuDelayed()                    // �������� ����প� ��� ���४⭮� ���樠����樨
         {
             yield return new WaitForSeconds(1f);
-            SceneController.Load(SceneId.GalaxyMap);                 // статический вызов загрузки сцены
+            SceneController.Load(SceneId.GalaxyMap);                 // ����᪨� �맮� ����㧪� �業�
         }
     }
 }

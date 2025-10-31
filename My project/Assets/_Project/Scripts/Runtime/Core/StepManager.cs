@@ -1,35 +1,81 @@
-﻿using System;
+using System;
+using _Project.Scripts.Core.GameState;
+using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Core
 {
     public sealed class StepManager
     {
-        private readonly Action<int, float> _pipeline; // внешний пайплайн (может быть no-op)
-        private readonly float _stepDurationSeconds;   // длительность логического шага (обычно 2.0 c)
-        private float _accum;                          // аккумулятор прошедшего времени
-        private int _tick;                             // счётчик логических тиков
+        private readonly GameStateService _state;
+        private readonly Executor _executor;
 
-        public StepManager(float stepDurationSeconds, Action<int, float> pipeline)
+        private float _accum;
+
+        public StepManager(GameStateService state, Executor executor)
         {
-            _stepDurationSeconds = stepDurationSeconds > 0f ? stepDurationSeconds : 2f;
-            _pipeline = pipeline ?? ((_, __) => { });
+            _state     = state ?? throw new ArgumentNullException(nameof(state));
+            _executor  = executor ?? throw new ArgumentNullException(nameof(executor));
+            _accum     = 0f;
         }
 
-        // Core теперь просто передаёт сюда deltaTime каждый кадр
         public void Update(float dt)
         {
-            _accum += dt;
-            while (_accum >= _stepDurationSeconds)
+            if (dt < 0f) dt = 0f;
+
+            var snapshot     = _state.Current;
+            var stepDuration = GetStepDuration(snapshot);
+
+            if (snapshot.RequestStep)
             {
-                _accum -= _stepDurationSeconds;
-                _tick++;
-                Step(_tick, _stepDurationSeconds);
+                ExecuteStep(stepDuration);
+                snapshot     = _state.Current;
+                stepDuration = GetStepDuration(snapshot);
+            }
+
+            if (snapshot.RunMode != ERunMode.Auto)
+            {
+                _accum = 0f;
+                return;
+            }
+
+            stepDuration = Math.Max(0.0001f, stepDuration);
+            _accum += dt;
+
+            const int safetyCap = 1000; // защита от зацикливания при экстремально малых тиках
+            int loops = 0;
+
+            while (_accum >= stepDuration && loops++ < safetyCap)
+            {
+                _accum -= stepDuration;
+                ExecuteStep(stepDuration);
+
+                snapshot     = _state.Current;
+                stepDuration = Math.Max(0.0001f, GetStepDuration(snapshot));
+            }
+
+            if (loops >= safetyCap)
+            {
+                _accum = 0f; // аварийная защита, чтобы не зависнуть
             }
         }
 
-        public void Step(int tickIndex, float dt)
+        private void ExecuteStep(float dt)
         {
-            _pipeline(tickIndex, dt);
+            var snapshot = _state.Current;
+            var next     = snapshot;
+
+            _executor.Execute(ref next, dt);
+            next.TickIndex++;
+            next.RequestStep = false;
+
+            _state.Commit(next);
+        }
+
+        private static float GetStepDuration(in GameStateService.Snapshot snapshot)
+        {
+            var baseSeconds = snapshot.LogicStepSeconds > 0f ? snapshot.LogicStepSeconds : 0.0001f;
+            var speedMul    = Math.Max(1, (int)snapshot.PlayStepSpeed);
+            return baseSeconds / speedMul;
         }
     }
 }
