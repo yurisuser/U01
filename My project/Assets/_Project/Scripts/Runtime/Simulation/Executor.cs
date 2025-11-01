@@ -4,6 +4,7 @@ using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Motives;
+using sim = _Project.Scripts.Simulation;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation
