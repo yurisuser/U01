@@ -1,11 +1,9 @@
-using _Project.CONSTANT;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Motives;
-using _Project.Scripts.Galaxy.Config;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation
@@ -19,7 +17,7 @@ namespace _Project.Scripts.Simulation
         private const float SpawnRadius = 6f;
         private const float ArriveDistance = 0.2f;
         private const float DefaultPatrolSpeed = 2f;
-        private static readonly float DefaultPatrolRadius = OrbitMath.PlanetOrbitIndexToUnits(GalaxyConstants.OrbitSlots);
+        private const float DefaultPatrolRadius = PatrolParameters.DefaultPatrolRadius;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;

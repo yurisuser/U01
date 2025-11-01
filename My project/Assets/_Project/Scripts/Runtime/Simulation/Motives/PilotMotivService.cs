@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using _Project.Scripts.Ships;
 using UnityEngine;
 
@@ -8,6 +10,8 @@ namespace _Project.Scripts.Simulation.Motives
     /// </summary>
     public sealed class PilotMotivService
     {
+        private static int _seedCounter = Environment.TickCount;
+
         private readonly float _defaultPatrolRadius;
         private readonly float _arriveDistance;
 
@@ -35,7 +39,8 @@ namespace _Project.Scripts.Simulation.Motives
                     Center = center,
                     Radius = patrolRadius,
                     CurrentTarget = Vector3.zero,
-                    HasTarget = false
+                    HasTarget = false,
+                    RandomState = CreateSeed()
                 }
             };
 
@@ -89,19 +94,52 @@ namespace _Project.Scripts.Simulation.Motives
             if (center == Vector3.zero && patrol.HasTarget == false)
                 center = origin;
 
-            var next = PickPointWithinRadius(center, patrol.Radius);
+            var state = patrol.RandomState;
+            var next = PickPointWithinRadius(ref state, center, patrol.Radius);
             for (int i = 0; i < 5 && (next - origin).sqrMagnitude < _arriveDistance * _arriveDistance; i++)
-                next = PickPointWithinRadius(center, patrol.Radius);
+                next = PickPointWithinRadius(ref state, center, patrol.Radius);
 
+            patrol.RandomState = state;
             patrol.CurrentTarget = next;
             patrol.HasTarget = true;
+            patrol.Center = center;
             motiv.Patrol = patrol;
         }
 
-        private static Vector3 PickPointWithinRadius(Vector3 center, float radius)
+        private static Vector3 PickPointWithinRadius(ref uint state, Vector3 center, float radius)
         {
-            var offset = Random.insideUnitCircle * radius;
+            var offset = SamplePointOnDisk(ref state, radius);
             return new Vector3(center.x + offset.x, center.y + offset.y, center.z);
+        }
+
+        private static Vector2 SamplePointOnDisk(ref uint state, float radius)
+        {
+            float angle = NextFloat(ref state) * Mathf.PI * 2f;
+            float distance = Mathf.Sqrt(NextFloat(ref state)) * radius;
+            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
+        }
+
+        private static float NextFloat(ref uint state)
+        {
+            state = NextState(state);
+            return (state & 0x00FFFFFFu) / 16777216f;
+        }
+
+        private static uint NextState(uint state)
+        {
+            if (state == 0u)
+                state = 0x9E3779B9u;
+
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+            return state;
+        }
+
+        private static uint CreateSeed()
+        {
+            var value = unchecked((uint)Interlocked.Increment(ref _seedCounter));
+            return value == 0u ? 0xA511E9B3u : value;
         }
     }
 }

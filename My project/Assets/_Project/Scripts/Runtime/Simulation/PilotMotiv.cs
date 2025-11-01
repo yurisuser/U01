@@ -29,6 +29,7 @@ namespace _Project.Scripts.Simulation
             public float Radius;          // максимальный радиус от центра
             public Vector3 CurrentTarget; // текущая цель
             public bool HasTarget;        // флаг, что цель уже выбрана
+            public uint RandomState;      // внутреннее состояние генератора точек патруля
         }
     }
 }
