@@ -51,7 +51,7 @@ namespace _Project.Scripts.Core.GameState
         private int _shipsVersion;
         private int _lastDynamicSystemIndex = -1;
         private float _stepProgress;
-        private bool _dynamicDirty;
+        private volatile bool _dynamicDirty;
 
         public event Action<Snapshot> SnapshotChanged;
         public event Action<RenderSnapshot> RenderChanged;

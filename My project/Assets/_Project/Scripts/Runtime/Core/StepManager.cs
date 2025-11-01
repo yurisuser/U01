@@ -7,15 +7,17 @@ namespace _Project.Scripts.Core
     public sealed class StepManager
     {
         private readonly GameStateService _state;
-        private readonly Executor _executor;
+        private readonly SimulationThread _simulationThread;
 
         private float _accum;
+        private bool _stepInFlight;
 
-        public StepManager(GameStateService state, Executor executor)
+        public StepManager(GameStateService state, SimulationThread simulationThread)
         {
-            _state    = state ?? throw new ArgumentNullException(nameof(state));
-            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _accum    = 0f;
+            _state            = state ?? throw new ArgumentNullException(nameof(state));
+            _simulationThread = simulationThread ?? throw new ArgumentNullException(nameof(simulationThread));
+            _accum            = 0f;
+            _stepInFlight     = false;
         }
 
         public void Update(float dt)
@@ -23,14 +25,19 @@ namespace _Project.Scripts.Core
             if (dt < 0f)
                 dt = 0f;
 
+            TryConsumeCompletedStep();
+
             var snapshot     = _state.Current;
             var stepDuration = GetStepDuration(snapshot);
 
             if (snapshot.RequestStep)
             {
-                ExecuteStep(stepDuration);
-                snapshot     = _state.Current;
-                stepDuration = GetStepDuration(snapshot);
+                if (!_stepInFlight && TryScheduleStep(snapshot, Math.Max(0.0001f, stepDuration)))
+                {
+                    _accum = 0f;
+                    _state.SetStepProgress(0f);
+                }
+                return;
             }
 
             if (snapshot.RunMode != ERunMode.Auto)
@@ -44,41 +51,55 @@ namespace _Project.Scripts.Core
             _accum += dt;
             _state.SetStepProgress(Clamp01(_accum / stepDuration));
 
-            const int safetyCap = 1000;
-            int loops = 0;
-
-            while (_accum >= stepDuration && loops++ < safetyCap)
+            if (_accum >= stepDuration && !_stepInFlight)
             {
-                _accum -= stepDuration;
-                ExecuteStep(stepDuration);
-
-                snapshot     = _state.Current;
-                stepDuration = Math.Max(0.0001f, GetStepDuration(snapshot));
-                _state.SetStepProgress(Clamp01(_accum / stepDuration));
-            }
-
-            if (loops >= safetyCap)
-            {
-                _accum = 0f;
-                _state.SetStepProgress(0f);
-            }
-            else
-            {
-                _state.SetStepProgress(Clamp01(_accum / stepDuration));
+                if (TryScheduleStep(snapshot, stepDuration))
+                {
+                    _accum -= stepDuration;
+                    _state.SetStepProgress(Clamp01(_accum / stepDuration));
+                }
             }
         }
 
-        private void ExecuteStep(float dt)
+        private void TryConsumeCompletedStep()
         {
-            var snapshot = _state.Current;
-            var next     = snapshot;
+            if (_simulationThread == null)
+                return;
 
-            _executor.Execute(ref next, dt);
-            next.TickIndex++;
-            next.RequestStep = false;
-            _state.SetStepProgress(0f);
+            if (_simulationThread.TryGetCompletedStep(out var completedSnapshot))
+            {
+                _stepInFlight = false;
 
-            _state.Commit(next);
+                var latest = _state.Current;
+                completedSnapshot.RunMode             = latest.RunMode;
+                completedSnapshot.PlayStepSpeed       = latest.PlayStepSpeed;
+                completedSnapshot.LogicStepSeconds    = latest.LogicStepSeconds;
+                completedSnapshot.Galaxy              = latest.Galaxy;
+                completedSnapshot.SelectedSystemIndex = latest.SelectedSystemIndex;
+                completedSnapshot.TickIndex           = latest.TickIndex + 1;
+                completedSnapshot.RequestStep         = false;
+
+                _state.Commit(completedSnapshot);
+
+                var refreshed = _state.Current;
+                var duration  = Math.Max(0.0001f, GetStepDuration(refreshed));
+                _state.SetStepProgress(Clamp01(_accum / duration));
+            }
+        }
+
+        private bool TryScheduleStep(in GameStateService.Snapshot snapshot, float dt)
+        {
+            if (_simulationThread == null)
+                return false;
+
+            var stepSnapshot = snapshot;
+            stepSnapshot.RequestStep = false;
+
+            if (!_simulationThread.TryScheduleStep(stepSnapshot, dt))
+                return false;
+
+            _stepInFlight = true;
+            return true;
         }
 
         private static float GetStepDuration(in GameStateService.Snapshot snapshot)

@@ -33,6 +33,7 @@ namespace _Project.Scripts.Core
 
         private StepManager _stepManager;
         private Executor _executor;
+        private SimulationThread _simulationThread;
 
         private void Awake()
         {
@@ -58,7 +59,8 @@ namespace _Project.Scripts.Core
             _gameState.AttachRuntimeContext(context);
 
             _executor = new Executor(context, _gameState);
-            _stepManager = new StepManager(_gameState, _executor);
+            _simulationThread = new SimulationThread(_executor);
+            _stepManager = new StepManager(_gameState, _simulationThread);
 
             StartCoroutine(LoadMainMenuDelayed());
         }
@@ -67,6 +69,12 @@ namespace _Project.Scripts.Core
         {
             Input?.Update();
             _stepManager?.Update(Time.deltaTime);
+        }
+
+        private void OnDestroy()
+        {
+            _simulationThread?.Dispose();
+            _simulationThread = null;
         }
 
         private IEnumerator LoadMainMenuDelayed()
