@@ -10,6 +10,7 @@ namespace _Project.Scripts.Core
         private readonly SimulationThread _simulationThread;
 
         private float _accum;
+        private float _visualTime;
         private bool _stepInFlight;
 
         public StepManager(GameStateService state, SimulationThread simulationThread)
@@ -17,6 +18,7 @@ namespace _Project.Scripts.Core
             _state            = state ?? throw new ArgumentNullException(nameof(state));
             _simulationThread = simulationThread ?? throw new ArgumentNullException(nameof(simulationThread));
             _accum            = 0f;
+            _visualTime      = 0f;
             _stepInFlight     = false;
         }
 
@@ -28,13 +30,14 @@ namespace _Project.Scripts.Core
             TryConsumeCompletedStep();
 
             var snapshot     = _state.Current;
-            var stepDuration = GetStepDuration(snapshot);
+            var stepDuration = Math.Max(0.0001f, GetStepDuration(snapshot));
 
             if (snapshot.RequestStep)
             {
-                if (!_stepInFlight && TryScheduleStep(snapshot, Math.Max(0.0001f, stepDuration)))
+                if (!_stepInFlight && TryScheduleStep(snapshot, stepDuration))
                 {
                     _accum = 0f;
+                    _visualTime = 0f;
                     _state.SetStepProgress(0f);
                 }
                 return;
@@ -43,22 +46,46 @@ namespace _Project.Scripts.Core
             if (snapshot.RunMode != ERunMode.Auto)
             {
                 _accum = 0f;
+                _visualTime = 0f;
                 _state.SetStepProgress(0f);
                 return;
             }
 
-            stepDuration = Math.Max(0.0001f, stepDuration);
             _accum += dt;
-            _state.SetStepProgress(Clamp01(_accum / stepDuration));
 
             if (_accum >= stepDuration && !_stepInFlight)
             {
                 if (TryScheduleStep(snapshot, stepDuration))
                 {
                     _accum -= stepDuration;
-                    _state.SetStepProgress(Clamp01(_accum / stepDuration));
                 }
             }
+
+            _visualTime += dt;
+
+            while (_visualTime >= stepDuration)
+            {
+                if (_state.TryPromoteNextShips())
+                {
+                    _visualTime -= stepDuration;
+                    if (_visualTime < 0f)
+                        _visualTime = 0f;
+
+                    if (!_stepInFlight && _accum >= stepDuration)
+                    {
+                        if (TryScheduleStep(snapshot, stepDuration))
+                            _accum -= stepDuration;
+                    }
+                }
+                else
+                {
+                    _visualTime = stepDuration;
+                    break;
+                }
+            }
+
+            float progress = stepDuration > 0f ? Clamp01(_visualTime / stepDuration) : 1f;
+            _state.SetStepProgress(progress);
         }
 
         private void TryConsumeCompletedStep()
@@ -80,10 +107,6 @@ namespace _Project.Scripts.Core
                 completedSnapshot.RequestStep         = false;
 
                 _state.Commit(completedSnapshot);
-
-                var refreshed = _state.Current;
-                var duration  = Math.Max(0.0001f, GetStepDuration(refreshed));
-                _state.SetStepProgress(Clamp01(_accum / duration));
             }
         }
 
