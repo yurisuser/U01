@@ -1,8 +1,9 @@
-﻿using _Project.Scripts.Core;
+using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Simulation.Motives;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation
@@ -16,9 +17,11 @@ namespace _Project.Scripts.Simulation
         private const float SpawnRadius = 6f;
         private const float ArriveDistance = 0.2f;
         private const float DefaultPatrolSpeed = 2f;
+        private const float DefaultPatrolRadius = PatrolParameters.DefaultPatrolRadius;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
+        private readonly PilotMotivService _pilotMotivService;
 
         private bool _initialShipsSpawned;
 
@@ -26,6 +29,7 @@ namespace _Project.Scripts.Simulation
         {
             _context = context;
             _state = state;
+            _pilotMotivService = new PilotMotivService(DefaultPatrolRadius, ArriveDistance);
         }
 
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
@@ -75,35 +79,14 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        var route = BuildPatrolRoute(angle);
-                        var motiv = new PilotMotiv
-                        {
-                            Order = PilotOrderType.Patrol,
-                            Waypoints = route,
-                            CurrentIndex = 0,
-                            DesiredSpeed = DefaultPatrolSpeed,
-                            WaitTimer = 0f
-                        };
+                        // центрируем патруль вокруг нулевой точки системы (условное расположение звезды)
+                        var motiv = _pilotMotivService.CreateDefaultPatrol(Vector3.zero, DefaultPatrolSpeed);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
                 }
             }
 
             _initialShipsSpawned = true;
-        }
-
-        private static Vector3[] BuildPatrolRoute(float baseAngle)
-        {
-            var points = new Vector3[3];
-            for (int j = 0; j < points.Length; j++)
-            {
-                float nodeAngle = baseAngle + j * Mathf.PI * 2f / points.Length;
-                points[j] = new Vector3(
-                    Mathf.Cos(nodeAngle) * SpawnRadius,
-                    Mathf.Sin(nodeAngle) * SpawnRadius,
-                    0f);
-            }
-            return points;
         }
 
         private void UpdateShips(float dt)
@@ -131,7 +114,7 @@ namespace _Project.Scripts.Simulation
                     switch (motiv.Order)
                     {
                         case PilotOrderType.Patrol:
-                            UpdatePatrol(ref ship, ref motiv, dt);
+                            _pilotMotivService.UpdatePatrol(ref ship, ref motiv, dt);
                             break;
                         case PilotOrderType.Idle:
                         default:
@@ -142,41 +125,6 @@ namespace _Project.Scripts.Simulation
                     _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv);
                 }
             }
-        }
-
-        private static void UpdatePatrol(ref Ship ship, ref PilotMotiv motiv, float dt)
-        {
-            var points = motiv.Waypoints;
-            if (points == null || points.Length == 0)
-                return;
-
-            if (motiv.CurrentIndex < 0 || motiv.CurrentIndex >= points.Length)
-                motiv.CurrentIndex = 0;
-
-            var target = points[motiv.CurrentIndex];
-            var toTarget = target - ship.Position;
-            var distance = toTarget.magnitude;
-
-            if (distance <= ArriveDistance)
-            {
-                motiv.CurrentIndex = (motiv.CurrentIndex + 1) % points.Length;
-                target = points[motiv.CurrentIndex];
-                toTarget = target - ship.Position;
-                distance = toTarget.magnitude;
-            }
-
-            if (distance <= Mathf.Epsilon)
-                return;
-
-            float speed = Mathf.Max(0.1f, motiv.DesiredSpeed);
-            var direction = toTarget.normalized;
-            var move = direction * speed * dt;
-            if (move.magnitude > distance)
-                move = direction * distance;
-
-            ship.Position += move;
-            float angleDeg = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
         }
 
         private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)
