@@ -27,20 +27,15 @@ namespace _Project.Scripts.Simulation.Motives
         public PilotMotiv CreatePatrol(Vector3 center, float radius, float desiredSpeed)
         {
             var patrolRadius = Mathf.Max(radius, _arriveDistance * 2f);
-            var motiv = new PilotMotiv
-            {
-                Order = PilotOrderType.Patrol,
-                DesiredSpeed = desiredSpeed,
-                WaitTimer = 0f,
-                Patrol = new PilotMotiv.PatrolState
-                {
-                    Center = center,
-                    Radius = patrolRadius,
-                    CurrentTarget = Vector3.zero,
-                    HasTarget = false,
-                    RandomState = CreateSeed()
-                }
-            };
+            var motiv = PilotMotiv.Idle();
+            motiv.Mission = PilotMotiv.MissionState.CreatePatrol(center, patrolRadius);
+
+            var frame = PilotMotiv.TaskFrame.CreatePatrolMove(desiredSpeed, CreateSeed());
+            var execution = motiv.Execution;
+            var stack = execution.TaskStack;
+            stack.Push(in frame);
+            execution.TaskStack = stack;
+            motiv.Execution = execution;
 
             AssignNextPatrolTarget(ref motiv, center);
             return motiv;
@@ -48,19 +43,39 @@ namespace _Project.Scripts.Simulation.Motives
 
         public void UpdatePatrol(ref Ship ship, ref PilotMotiv motiv, float dt)
         {
-            if (motiv.Order != PilotOrderType.Patrol)
+            if (motiv.Mission.Kind != PilotMissionKind.Patrol)
+                return;
+
+            var execution = motiv.Execution;
+            var stack = execution.TaskStack;
+            if (stack.Count == 0)
+                return;
+
+            var frame = stack.Peek();
+            if (frame.Kind != PilotTaskKind.PatrolMove)
                 return;
 
             EnsureTarget(ref motiv, ship.Position);
 
-            var target = motiv.Patrol.CurrentTarget;
+            execution = motiv.Execution;
+            stack = execution.TaskStack;
+            frame = stack.Peek();
+            var patrolTask = frame.Payload.Patrol;
+
+            var target = patrolTask.CurrentTarget;
             var toTarget = target - ship.Position;
             var distance = toTarget.magnitude;
 
             if (distance <= _arriveDistance)
             {
                 AssignNextPatrolTarget(ref motiv, ship.Position);
-                target = motiv.Patrol.CurrentTarget;
+
+                execution = motiv.Execution;
+                stack = execution.TaskStack;
+                frame = stack.Peek();
+                patrolTask = frame.Payload.Patrol;
+
+                target = patrolTask.CurrentTarget;
                 toTarget = target - ship.Position;
                 distance = toTarget.magnitude;
 
@@ -68,7 +83,7 @@ namespace _Project.Scripts.Simulation.Motives
                     return;
             }
 
-            float speed = Mathf.Max(0.1f, motiv.DesiredSpeed);
+            float speed = Mathf.Max(0.1f, patrolTask.DesiredSpeed);
             var direction = toTarget.normalized;
             var move = direction * speed * dt;
             if (move.magnitude > distance)
@@ -81,27 +96,59 @@ namespace _Project.Scripts.Simulation.Motives
 
         private void EnsureTarget(ref PilotMotiv motiv, Vector3 origin)
         {
-            if (!motiv.Patrol.HasTarget)
+            var execution = motiv.Execution;
+            var stack = execution.TaskStack;
+            if (stack.Count == 0)
+                return;
+
+            var frame = stack.Peek();
+            if (frame.Kind != PilotTaskKind.PatrolMove)
+                return;
+
+            if (!frame.Payload.Patrol.HasTarget)
                 AssignNextPatrolTarget(ref motiv, origin);
         }
 
         private void AssignNextPatrolTarget(ref PilotMotiv motiv, Vector3 origin)
         {
-            var patrol = motiv.Patrol;
-            var center = patrol.Center;
-            if (center == Vector3.zero && patrol.HasTarget == false)
+            var mission = motiv.Mission;
+            if (mission.Kind != PilotMissionKind.Patrol)
+                return;
+
+            var execution = motiv.Execution;
+            var stack = execution.TaskStack;
+            if (stack.Count == 0)
+                return;
+
+            var frame = stack.Peek();
+            if (frame.Kind != PilotTaskKind.PatrolMove)
+                return;
+
+            var patrolMission = mission.Parameters.Patrol;
+            var patrolTask = frame.Payload.Patrol;
+
+            var center = patrolMission.Center;
+            if (center == Vector3.zero && !patrolTask.HasTarget)
+            {
                 center = origin;
+                patrolMission.Center = center;
+                mission.Parameters.Patrol = patrolMission;
+                motiv.Mission = mission;
+            }
 
-            var state = patrol.RandomState;
-            var next = PickPointWithinRadius(ref state, center, patrol.Radius);
+            var state = patrolTask.RandomState;
+            var next = PickPointWithinRadius(ref state, center, patrolMission.Radius);
             for (int i = 0; i < 5 && (next - origin).sqrMagnitude < _arriveDistance * _arriveDistance; i++)
-                next = PickPointWithinRadius(ref state, center, patrol.Radius);
+                next = PickPointWithinRadius(ref state, center, patrolMission.Radius);
 
-            patrol.RandomState = state;
-            patrol.CurrentTarget = next;
-            patrol.HasTarget = true;
-            patrol.Center = center;
-            motiv.Patrol = patrol;
+            patrolTask.RandomState = state;
+            patrolTask.CurrentTarget = next;
+            patrolTask.HasTarget = true;
+
+            frame.Payload.Patrol = patrolTask;
+            stack.ReplaceTop(in frame);
+            execution.TaskStack = stack;
+            motiv.Execution = execution;
         }
 
         private static Vector3 PickPointWithinRadius(ref uint state, Vector3 center, float radius)

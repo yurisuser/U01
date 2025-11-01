@@ -113,12 +113,12 @@ namespace _Project.Scripts.Simulation
                     if (_context.Pilots == null || !_context.Pilots.TryGetMotiv(ship.PilotUid, out var motiv))
                         continue;
 
-                    switch (motiv.Order)
+                    switch (motiv.ActiveTaskKind)
                     {
-                        case PilotOrderType.Patrol:
+                        case PilotTaskKind.PatrolMove:
                             _pilotMotivService.UpdatePatrol(ref ship, ref motiv, dt);
                             break;
-                        case PilotOrderType.Idle:
+                        case PilotTaskKind.None:
                         default:
                             break;
                     }
