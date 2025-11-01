@@ -5,9 +5,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Motives
 {
-    /// <summary>
-    /// Управляет созданием и обновлением мотивов пилота.
-    /// </summary>
+    // Управляет созданием и обновлением мотивов пилота.
     public sealed class PilotMotivService
     {
         private static int _seedCounter = Environment.TickCount;

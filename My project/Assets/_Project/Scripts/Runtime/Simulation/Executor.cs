@@ -13,11 +13,11 @@ namespace _Project.Scripts.Simulation
     /// </summary>
     public sealed class Executor
     {
-        private const int ShipsPerSystem = 3;
+        private const int ShipsPerSystem = 5;
         private const float SpawnRadius = 6f;
-        private const float ArriveDistance = 0.2f;
-        private const float DefaultPatrolSpeed = 2f;
-        private const float DefaultPatrolRadius = PatrolParameters.DefaultPatrolRadius;
+        private const float ArriveDistance = 0.2f; // расстояние, с которого патруль считается достигшим цели и берёт новую точку маршрута
+        private const float DefaultPatrolSpeed = 5f;
+        private static float DefaultPatrolRadius = PatrolParameters.DefaultPatrolRadius;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
@@ -25,11 +25,13 @@ namespace _Project.Scripts.Simulation
 
         private bool _initialShipsSpawned;
 
+        public static float DefaultPatrolRadius1 => DefaultPatrolRadius;
+
         public Executor(RuntimeContext context, GameStateService state)
         {
             _context = context;
             _state = state;
-            _pilotMotivService = new PilotMotivService(DefaultPatrolRadius, ArriveDistance);
+            _pilotMotivService = new PilotMotivService(DefaultPatrolRadius1, ArriveDistance);
         }
 
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
