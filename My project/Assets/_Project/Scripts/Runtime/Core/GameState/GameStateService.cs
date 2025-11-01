@@ -1,6 +1,7 @@
 using System;                                                     // Array.Empty
 using _Project.Scripts.Core;                                      // UID
 using _Project.Scripts.Galaxy.Data;                               // StarSys
+using _Project.Scripts.Core.Runtime;
 
 namespace _Project.Scripts.Core.GameState
 {
@@ -30,6 +31,7 @@ namespace _Project.Scripts.Core.GameState
 
         private Snapshot _current;
         private RenderSnapshot _render;
+        private RuntimeContext _runtimeContext;
 
         public event Action<Snapshot> SnapshotChanged;          // ��������� ��� �������� �����
         public event Action<RenderSnapshot> RenderChanged;      // ��������� ��� UI/рендеров
@@ -60,6 +62,11 @@ namespace _Project.Scripts.Core.GameState
         public StarSys? GetSelectedSystem()
         {
             return TryGetSystem(_current.SelectedSystemIndex, _current.Galaxy);
+        }
+
+        public void AttachRuntimeContext(RuntimeContext context)
+        {
+            _runtimeContext = context;
         }
 
         // ---- ��ࠢ����� �� UI ----
