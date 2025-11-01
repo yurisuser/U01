@@ -1,3 +1,5 @@
+using _Project.Scripts.Galaxy.Config;
+
 namespace _Project.Scripts.Simulation.Motives
 {
     /// <summary>
@@ -8,6 +10,6 @@ namespace _Project.Scripts.Simulation.Motives
         /// <summary>
         /// Радиус патруля по умолчанию (20-я орбита) в единицах сцены.
         /// </summary>
-        public const float DefaultPatrolRadius = 200f; // = OrbitMath.PlanetOrbitIndexToUnits(20)
+        public static readonly float DefaultPatrolRadius = OrbitMath.PlanetOrbitIndexToUnits(20);
     }
 }
