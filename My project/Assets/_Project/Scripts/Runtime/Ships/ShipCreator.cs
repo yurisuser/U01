@@ -16,7 +16,6 @@ namespace _Project.Scripts.Ships
                 GetPosition(),           // позиция
                 GetRotation(),           // ориентация
                 GetHp(),                 // здоровье
-                GetSpeed(),              // скорость
                 GetIsActive()            // активность
             );
         }
@@ -39,11 +38,6 @@ namespace _Project.Scripts.Ships
         private static int GetHp()                // возвращает здоровье
         {
             return 100;
-        }
-
-        private static float GetSpeed()           // возвращает базовую скорость
-        {
-            return 10f;
         }
 
         private static bool GetIsActive()         // возвращает флаг активности

@@ -15,6 +15,7 @@ namespace _Project.Scripts.Simulation
         private const int ShipsPerSystem = 3;
         private const float SpawnRadius = 6f;
         private const float ArriveDistance = 0.2f;
+        private const float DefaultPatrolSpeed = 2f;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
@@ -80,7 +81,7 @@ namespace _Project.Scripts.Simulation
                             Order = PilotOrderType.Patrol,
                             Waypoints = route,
                             CurrentIndex = 0,
-                            DesiredSpeed = Mathf.Max(0.5f, Mathf.Min(2f, ship.Speed * 0.2f)),
+                            DesiredSpeed = DefaultPatrolSpeed,
                             WaitTimer = 0f
                         };
                         _context.Pilots.SetMotiv(pilotUid, in motiv);

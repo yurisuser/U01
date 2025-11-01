@@ -13,7 +13,6 @@ namespace _Project.Scripts.Ships
         public Vector3 Position;          // мировая позиция центра масс
         public Quaternion Rotation;       // мировая ориентация корабля
         public int Hp;                    // текущее здоровье
-        public float Speed;               // базовая скорость движения (м/с)
         public bool IsActive;             // активен ли корабль в мире
 
         public Ship(                      // конструктор, инициализирующий все поля
@@ -24,7 +23,6 @@ namespace _Project.Scripts.Ships
             Vector3 position,             // мировая позиция
             Quaternion rotation,          // ориентация
             int hp,                       // здоровье
-            float speed,                  // скорость
             bool isActive                 // активность
         )
         {
@@ -35,7 +33,6 @@ namespace _Project.Scripts.Ships
             Position = position;          // сохраняем позицию
             Rotation = rotation;          // сохраняем ориентацию
             Hp = hp;                      // сохраняем здоровье
-            Speed = speed;                // сохраняем скорость
             IsActive = isActive;          // сохраняем активность
         }
     }
