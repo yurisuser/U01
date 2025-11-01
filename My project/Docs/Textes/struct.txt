@@ -86,10 +86,6 @@ CombatComponent — вооружение, щиты, ХП отсеков.
 
 ScannerComponent — сенсоры/сигнатура/обнаружение.
 
-AIComponent — текущее состояние ИИ (см. §5).
-
-MissionComponent — активные задания/цели/контракты.
-
 AnomalyComponent — поведение аномалии (поля, эффекты, триггеры).
 
 Ownership/FactionComponent — фракция, репутация, отношения.
