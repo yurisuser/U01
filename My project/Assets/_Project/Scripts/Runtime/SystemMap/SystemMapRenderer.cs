@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Ships;
+using sim = _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.SystemMap
 {
