@@ -28,8 +28,6 @@ namespace _Project.Scripts.SystemMap
                 go.transform.SetParent(parentRoot, false);
                 _root = go.transform;
             }
-
-            ClearAll();
         }
 
         public void Render(in StarSys sys, Ship[] ships, int shipCount)

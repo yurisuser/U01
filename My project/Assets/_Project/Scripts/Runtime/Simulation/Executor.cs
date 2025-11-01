@@ -1,4 +1,4 @@
-using _Project.Scripts.Core;
+﻿using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
@@ -8,13 +8,13 @@ using UnityEngine;
 namespace _Project.Scripts.Simulation
 {
     /// <summary>
-    /// Выполняет игровой шаг: следит за задачами, обновляет корабли и сообщает UI об изменениях.
+    /// Исполняет игровой шаг: обновляет задачи, перемещает корабли и синхронизирует снапшот UI.
     /// </summary>
     public sealed class Executor
     {
-        private const int ShipsPerSystem = 3;   // сколько кораблей создаём на старте в каждой системе
-        private const float SpawnRadius = 6f;   // радиус размещения кораблей вокруг центра системы
-        private const float BaseAngularSpeed = 0.6f; // базовая угловая скорость патруля (рад/с)
+        private const int ShipsPerSystem = 3;
+        private const float SpawnRadius = 6f;
+        private const float ArriveDistance = 0.2f;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
@@ -34,13 +34,11 @@ namespace _Project.Scripts.Simulation
             if (_context != null)
             {
                 _context.Tasks.Tick(dt);
-                _context.Ships.Tick(dt); // зарезервировано для будущей логики флотов
+                _context.Ships.Tick(dt);
                 UpdateShips(dt);
             }
 
             DoLogicStep(ref snapshot, dt);
-
-            // Сообщаем UI, что динамика обновилась (позиции кораблей и пр.)
             _state?.RefreshDynamicSnapshot();
         }
 
@@ -64,7 +62,6 @@ namespace _Project.Scripts.Simulation
                     var pilotUid = UIDService.Create(EntityType.Individ);
                     var ship = ShipCreator.CreateShip(faction, pilotUid);
 
-                    // Разбрасываем корабли по окружности, чтобы они не слипались
                     float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
                     ship.Position = new Vector3(
                         Mathf.Cos(angle) * SpawnRadius,
@@ -74,10 +71,38 @@ namespace _Project.Scripts.Simulation
                     ship.IsActive = true;
 
                     _context.Ships.RegisterShip(systemId, ship);
+
+                    if (_context.Pilots != null)
+                    {
+                        var route = BuildPatrolRoute(angle);
+                        var motiv = new PilotMotiv
+                        {
+                            Order = PilotOrderType.Patrol,
+                            Waypoints = route,
+                            CurrentIndex = 0,
+                            DesiredSpeed = Mathf.Max(0.5f, Mathf.Min(2f, ship.Speed * 0.2f)),
+                            WaitTimer = 0f
+                        };
+                        _context.Pilots.SetMotiv(pilotUid, in motiv);
+                    }
                 }
             }
 
             _initialShipsSpawned = true;
+        }
+
+        private static Vector3[] BuildPatrolRoute(float baseAngle)
+        {
+            var points = new Vector3[3];
+            for (int j = 0; j < points.Length; j++)
+            {
+                float nodeAngle = baseAngle + j * Mathf.PI * 2f / points.Length;
+                points[j] = new Vector3(
+                    Mathf.Cos(nodeAngle) * SpawnRadius,
+                    Mathf.Sin(nodeAngle) * SpawnRadius,
+                    0f);
+            }
+            return points;
         }
 
         private void UpdateShips(float dt)
@@ -99,24 +124,58 @@ namespace _Project.Scripts.Simulation
                     if (!ship.IsActive)
                         continue;
 
-                    float radius = ship.Position.magnitude;
-                    if (radius < 0.5f)
-                        radius = SpawnRadius;
+                    if (_context.Pilots == null || !_context.Pilots.TryGetMotiv(ship.PilotUid, out var motiv))
+                        continue;
 
-                    // Берём угол из текущей ориентации и продвигаем его по окружности
-                    float angle = ship.Rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    float angularSpeed = BaseAngularSpeed + ship.Speed * 0.05f;
-                    angle += angularSpeed * dt;
-
-                    ship.Position = new Vector3(
-                        Mathf.Cos(angle) * radius,
-                        Mathf.Sin(angle) * radius,
-                        0f);
-                    ship.Rotation = Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
+                    switch (motiv.Order)
+                    {
+                        case PilotOrderType.Patrol:
+                            UpdatePatrol(ref ship, ref motiv, dt);
+                            break;
+                        case PilotOrderType.Idle:
+                        default:
+                            break;
+                    }
 
                     _context.Systems.TryUpdateShip(systemId, slot, in ship);
+                    _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv);
                 }
             }
+        }
+
+        private static void UpdatePatrol(ref Ship ship, ref PilotMotiv motiv, float dt)
+        {
+            var points = motiv.Waypoints;
+            if (points == null || points.Length == 0)
+                return;
+
+            if (motiv.CurrentIndex < 0 || motiv.CurrentIndex >= points.Length)
+                motiv.CurrentIndex = 0;
+
+            var target = points[motiv.CurrentIndex];
+            var toTarget = target - ship.Position;
+            var distance = toTarget.magnitude;
+
+            if (distance <= ArriveDistance)
+            {
+                motiv.CurrentIndex = (motiv.CurrentIndex + 1) % points.Length;
+                target = points[motiv.CurrentIndex];
+                toTarget = target - ship.Position;
+                distance = toTarget.magnitude;
+            }
+
+            if (distance <= Mathf.Epsilon)
+                return;
+
+            float speed = Mathf.Max(0.1f, motiv.DesiredSpeed);
+            var direction = toTarget.normalized;
+            var move = direction * speed * dt;
+            if (move.magnitude > distance)
+                move = direction * distance;
+
+            ship.Position += move;
+            float angleDeg = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
         }
 
         private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Galaxy.Data;
@@ -7,7 +7,7 @@ using _Project.Scripts.Ships;
 namespace _Project.Scripts.Core.GameState
 {
     /// <summary>
-    /// Хранит состояние игры и рассылает снимки для логики и отображения.
+    /// Хранит текущее состояние игры и снапшот для UI.
     /// </summary>
     public sealed class GameStateService
     {
@@ -23,7 +23,7 @@ namespace _Project.Scripts.Core.GameState
             public int            SelectedSystemIndex;
         }
 
-        // ----- данные для UI/рендера -----
+        // ----- данные для UI -----
         public struct RenderSnapshot
         {
             public ERunMode       RunMode;
@@ -32,14 +32,16 @@ namespace _Project.Scripts.Core.GameState
             public float          LogicStepSeconds;
             public StarSys[]      Galaxy;
             public int            SelectedSystemIndex;
-            public Ship[]         Ships;      // снимок кораблей активной системы
-            public int            ShipCount;  // фактическое количество кораблей в снимке
+            public Ship[]         Ships;
+            public int            ShipCount;
+            public int            ShipsVersion; // увеличивается при каждом обновлении динамики
         }
 
         private Snapshot _current;
         private RenderSnapshot _render;
         private RuntimeContext _runtimeContext;
         private Ship[] _renderShipsBuffer = Array.Empty<Ship>();
+        private int _shipsVersion;
 
         public event Action<Snapshot> SnapshotChanged;
         public event Action<RenderSnapshot> RenderChanged;
@@ -204,8 +206,8 @@ namespace _Project.Scripts.Core.GameState
         }
 
         /// <summary>
-        /// Запускаем перерасчёт только динамической части (корабли), без изменения Snapshot.
-        /// Полезно, когда Executor породил новые корабли вне шага Commit.
+        /// Обновляем только динамические данные (корабли) без изменения Snapshot.
+        /// Вызывать после того, как мир изменился, но состояние логики осталось прежним.
         /// </summary>
         public void RefreshDynamicSnapshot()
         {
@@ -233,7 +235,8 @@ namespace _Project.Scripts.Core.GameState
                 Galaxy              = snapshot.Galaxy,
                 SelectedSystemIndex = snapshot.SelectedSystemIndex,
                 Ships               = Array.Empty<Ship>(),
-                ShipCount           = 0
+                ShipCount           = 0,
+                ShipsVersion        = _shipsVersion
             };
 
             if (_runtimeContext != null &&
@@ -247,6 +250,8 @@ namespace _Project.Scripts.Core.GameState
                     var count = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _renderShipsBuffer);
                     render.ShipCount = count;
                     render.Ships = count > 0 ? _renderShipsBuffer : Array.Empty<Ship>();
+                    _shipsVersion++;
+                    render.ShipsVersion = _shipsVersion;
                 }
             }
 
@@ -262,7 +267,7 @@ namespace _Project.Scripts.Core.GameState
                 previous.SelectedSystemIndex != next.SelectedSystemIndex ||
                 previous.TickIndex           != next.TickIndex ||
                 previous.ShipCount           != next.ShipCount ||
-                !ReferenceEquals(previous.Ships, next.Ships) ||
+                previous.ShipsVersion        != next.ShipsVersion ||
                 !ReferenceEquals(previous.Galaxy, next.Galaxy);
         }
 

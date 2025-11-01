@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
@@ -9,19 +9,20 @@ using _Project.Scripts.Ships;
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// Управляет набором слоёв на экране системы и передаёт им снимки данных.
+    /// Управляет слоями рендера карты системы, подсовывает им актуальные данные.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SystemMapRenderer : MonoBehaviour
     {
         [Header("Корневой объект для слоёв")]
-        [SerializeField] private Transform layersRoot;           // сюда вешаем все созданные GO
-        [SerializeField] private SystemMapGeoRenderer geoLayer;  // слой геометрии (звезда, орбиты, планеты)
-        [SerializeField] private MonoBehaviour[] extraLayers;    // дополнительные слои (корабли и т.п.)
+        [SerializeField] private Transform layersRoot;
+        [SerializeField] private SystemMapGeoRenderer geoLayer;
+        [SerializeField] private MonoBehaviour[] extraLayers;
 
         private GameBootstrap _core;
         private GameStateService _state;
         private bool _isExiting;
+        private UID _currentSystemUid;
 
         private void Awake()
         {
@@ -44,7 +45,7 @@ namespace _Project.Scripts.SystemMap
             if (_state != null)
             {
                 _state.RenderChanged += OnRenderChanged;
-                OnRenderChanged(_state.Render); // сразу показываем актуальные данные
+                OnRenderChanged(_state.Render);
             }
         }
 
@@ -77,16 +78,22 @@ namespace _Project.Scripts.SystemMap
                 return;
             }
 
-            RenderSystem(system.Value, snapshot.Ships, snapshot.ShipCount);
+            bool systemChanged = !_currentSystemUid.Equals(system.Value.Uid);
+            if (systemChanged)
+            {
+                ClearLayers();
+                _currentSystemUid = system.Value.Uid;
+            }
+
+            RenderSystem(system.Value, snapshot.Ships, snapshot.ShipCount, systemChanged);
         }
 
-        private void RenderSystem(in StarSys system, Ship[] ships, int shipCount)
+        private void RenderSystem(in StarSys system, Ship[] ships, int shipCount, bool systemChanged)
         {
-            ClearLayers();
-
             if (geoLayer != null)
             {
-                geoLayer.Init(layersRoot);
+                if (systemChanged)
+                    geoLayer.Init(layersRoot);
                 geoLayer.Render(system, ships, shipCount);
             }
 
@@ -97,7 +104,8 @@ namespace _Project.Scripts.SystemMap
             {
                 if (extraLayers[i] is ISystemMapLayer layer)
                 {
-                    layer.Init(layersRoot);
+                    if (systemChanged)
+                        layer.Init(layersRoot);
                     layer.Render(system, ships, shipCount);
                 }
             }

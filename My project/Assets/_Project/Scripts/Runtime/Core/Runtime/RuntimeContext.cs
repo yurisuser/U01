@@ -10,6 +10,7 @@ namespace _Project.Scripts.Core.Runtime
         public GalaxyService Galaxy { get; }
         public SystemRegistry Systems { get; }
         public ShipRegistry Ships { get; }
+        public PilotRegistry Pilots { get; }
         public TaskScheduler Tasks { get; }
         public OwnershipMap Ownership { get; }
 
@@ -19,6 +20,7 @@ namespace _Project.Scripts.Core.Runtime
             Galaxy = new GalaxyService();
             Systems = new SystemRegistry();
             Ships = new ShipRegistry(Systems, Ownership); // отдельный учет всех кораблей
+            Pilots = new PilotRegistry();
             Tasks = new TaskScheduler();
         }
 
@@ -26,6 +28,7 @@ namespace _Project.Scripts.Core.Runtime
         {
             Tasks.Reset();
             Ships.Reset();
+            Pilots.Reset();
             Systems.Reset();
             Galaxy.Reset();
             Ownership.Reset();
