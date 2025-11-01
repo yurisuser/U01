@@ -17,7 +17,7 @@ namespace _Project.Scripts.Simulation
             if (_context != null)
             {
                 _context.Tasks.Tick(dt);
-                _context.Fleets.Tick(dt);
+                _context.Ships.Tick(dt); // здесь позже будет обновление живых кораблей
             }
 
             DoLogicStep(ref snapshot, dt);

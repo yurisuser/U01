@@ -3,12 +3,17 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    public sealed class FleetRegistry
+    /// <summary>
+    /// Простая база одиночных кораблей. Здесь мы знаем, в какой системе стоит каждый корабль,
+    /// и по UID можно быстро получить его позицию или переставить в другую систему.
+    /// Отдельных "флотов" пока нет, поэтому класс так и называется — ShipRegistry.
+    /// </summary>
+    public sealed class ShipRegistry
     {
         private readonly SystemRegistry _systems;
         private readonly OwnershipMap _ownership;
 
-        public FleetRegistry(SystemRegistry systems, OwnershipMap ownership)
+        public ShipRegistry(SystemRegistry systems, OwnershipMap ownership)
         {
             _systems = systems;
             _ownership = ownership;
@@ -16,11 +21,14 @@ namespace _Project.Scripts.Core.Runtime
 
         public void Reset()
         {
-            // Здесь ничего не очищаем напрямую — SystemRegistry и OwnershipMap уже сброшены контекстом.
+            // Нам не нужно чистить что-то вручную. SystemRegistry и OwnershipMap
+            // сбрасываются через свой Reset(), и этого хватает.
         }
 
         public int RegisterShip(int systemId, in Ship ship)
         {
+            // Добавляем корабль в нужную систему и запоминаем,
+            // где он стоит (systemId + номер слота).
             var slot = _systems.AddShip(systemId, in ship);
             _ownership.Register(ship.Uid, new EntityLocation(systemId, slot));
             return slot;
@@ -67,7 +75,8 @@ namespace _Project.Scripts.Core.Runtime
 
         public void Tick(float dt)
         {
-            // Заглушка — логику движения/приказов добавим позже.
+            // Пока движение кораблей будет реализовано позже, поэтому здесь пусто.
+            // Позже сюда можно добавить обновление приказов или автоматическое перемещение.
         }
     }
 }
