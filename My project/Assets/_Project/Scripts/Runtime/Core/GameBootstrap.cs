@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Input;
 using _Project.Scripts.Core.Runtime;
@@ -57,7 +57,7 @@ namespace _Project.Scripts.Core
             _gameState.SetGalaxy(galaxy);
             _gameState.AttachRuntimeContext(context);
 
-            _executor = new Executor(context);
+            _executor = new Executor(context, _gameState);
             _stepManager = new StepManager(_gameState, _executor);
 
             StartCoroutine(LoadMainMenuDelayed());
@@ -76,3 +76,4 @@ namespace _Project.Scripts.Core
         }
     }
 }
+

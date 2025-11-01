@@ -1,25 +1,29 @@
-using System;                                                     // Array.Empty
-using _Project.Scripts.Core;                                      // UID
-using _Project.Scripts.Galaxy.Data;                               // StarSys
+using System;
+using _Project.Scripts.Core;
 using _Project.Scripts.Core.Runtime;
+using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.GameState
 {
+    /// <summary>
+    /// Хранит состояние игры и рассылает снимки для логики и отображения.
+    /// </summary>
     public sealed class GameStateService
     {
-        // ---- ������ (POD) ----
+        // ----- данные для логики -----
         public struct Snapshot
         {
-            public ERunMode       RunMode;             // Paused | Step | Auto
-            public EPlayStepSpeed PlayStepSpeed;       // X1 | X3 | X5
-            public long           TickIndex;           // ����� �����᪮�� 蠣�
-            public float          LogicStepSeconds;    // ����. ���⥫쭮��� 蠣� ������
-            public bool           RequestStep;         // �������஢� 䫠� "�믮����� ���� 蠣"
-            public StarSys[]      Galaxy;              // ⥪�饥 ���ﭨ� �����⨪�
-            public int            SelectedSystemIndex; // -1, ���� �� ���⥫��
+            public ERunMode       RunMode;
+            public EPlayStepSpeed PlayStepSpeed;
+            public long           TickIndex;
+            public float          LogicStepSeconds;
+            public bool           RequestStep;
+            public StarSys[]      Galaxy;
+            public int            SelectedSystemIndex;
         }
 
+        // ----- данные для UI/рендера -----
         public struct RenderSnapshot
         {
             public ERunMode       RunMode;
@@ -28,37 +32,35 @@ namespace _Project.Scripts.Core.GameState
             public float          LogicStepSeconds;
             public StarSys[]      Galaxy;
             public int            SelectedSystemIndex;
-            public Ship[]         Ships;               // снимок кораблей выбранной системы
-            public int            ShipCount;           // фактическое количество записей в массиве
+            public Ship[]         Ships;      // снимок кораблей активной системы
+            public int            ShipCount;  // фактическое количество кораблей в снимке
         }
 
         private Snapshot _current;
         private RenderSnapshot _render;
         private RuntimeContext _runtimeContext;
-        private Ship[] _renderShipsBuffer = Array.Empty<Ship>(); // переиспользуем массив, чтобы не создавать мусор
+        private Ship[] _renderShipsBuffer = Array.Empty<Ship>();
 
-        public event Action<Snapshot> SnapshotChanged;          // ��������� ��� �������� �����
-        public event Action<RenderSnapshot> RenderChanged;      // ��������� ��� UI/рендеров
+        public event Action<Snapshot> SnapshotChanged;
+        public event Action<RenderSnapshot> RenderChanged;
 
         public GameStateService(float logicStepSeconds)
         {
             _current = new Snapshot
             {
-                RunMode              = ERunMode.Paused,
-                PlayStepSpeed        = EPlayStepSpeed.X1,
-                TickIndex            = 0,
-                LogicStepSeconds     = logicStepSeconds,
-                RequestStep          = false,
-                Galaxy               = Array.Empty<StarSys>(),
-                SelectedSystemIndex  = -1
+                RunMode             = ERunMode.Paused,
+                PlayStepSpeed       = EPlayStepSpeed.X1,
+                TickIndex           = 0,
+                LogicStepSeconds    = logicStepSeconds,
+                RequestStep         = false,
+                Galaxy              = Array.Empty<StarSys>(),
+                SelectedSystemIndex = -1
             };
 
             _render = BuildRenderSnapshot(_current);
         }
 
-        // ---- �⥭�� ⥪�饣� ���ﭨ� (��� ����� ��譨� ��ꥪ⮢) ----
         public Snapshot Current => _current;
-
         public RenderSnapshot Render => _render;
 
         public StarSys[] GetGalaxy() => _current.Galaxy;
@@ -72,13 +74,11 @@ namespace _Project.Scripts.Core.GameState
         {
             _runtimeContext = context;
             if (_runtimeContext != null)
-            {
-                // Перестраиваем снимок сразу, чтобы UI получил актуальные корабли
-                Commit(_current);
-            }
+                RefreshDynamicSnapshot();
         }
 
-        // ---- ��ࠢ����� �� UI ----
+        // ----- управление из UI -----
+
         public void SetRunMode(ERunMode mode)
         {
             var snapshot = _current;
@@ -108,7 +108,9 @@ namespace _Project.Scripts.Core.GameState
 
         public void SetLogicStepSeconds(float seconds)
         {
-            if (seconds <= 0f) return;
+            if (seconds <= 0f)
+                return;
+
             var snapshot = _current;
             snapshot.LogicStepSeconds = seconds;
             Commit(snapshot);
@@ -123,7 +125,9 @@ namespace _Project.Scripts.Core.GameState
 
         public void ClearStepRequest()
         {
-            if (!_current.RequestStep) return;
+            if (!_current.RequestStep)
+                return;
+
             var snapshot = _current;
             snapshot.RequestStep = false;
             Commit(snapshot);
@@ -162,15 +166,14 @@ namespace _Project.Scripts.Core.GameState
         public bool SelectSystemByUid(UID uid)
         {
             var galaxy = _current.Galaxy;
-            if (galaxy == null || galaxy.Length == 0) return false;
+            if (galaxy == null || galaxy.Length == 0)
+                return false;
 
             for (int i = 0; i < galaxy.Length; i++)
             {
                 var sys = galaxy[i];
                 if (sys.Uid.Type == uid.Type && sys.Uid.Id == uid.Id)
-                {
                     return SelectSystemByIndex(i);
-                }
             }
 
             return false;
@@ -178,34 +181,45 @@ namespace _Project.Scripts.Core.GameState
 
         public void ClearSelectedSystem()
         {
-            if (_current.SelectedSystemIndex == -1) return;
+            if (_current.SelectedSystemIndex == -1)
+                return;
+
             var snapshot = _current;
             snapshot.SelectedSystemIndex = -1;
             Commit(snapshot);
         }
 
-        // ---- �ᯮ����⥫쭮�: ���⥫쭮��� ���㠫쭮�� �ந��뢠��� 蠣� (ᥪ) ----
+        // ----- обновление состояния -----
+
         public void Commit(in Snapshot snapshot)
         {
-            var previousRender = _render;
-
             _current = snapshot;
-            _render  = BuildRenderSnapshot(_current);
+            var previousRender = _render;
+            _render = BuildRenderSnapshot(_current);
 
             SnapshotChanged?.Invoke(_current);
 
-            bool renderDirty =
-                previousRender.RunMode             != _render.RunMode ||
-                previousRender.PlayStepSpeed       != _render.PlayStepSpeed ||
-                previousRender.LogicStepSeconds    != _render.LogicStepSeconds ||
-                previousRender.SelectedSystemIndex != _render.SelectedSystemIndex ||
-                previousRender.TickIndex           != _render.TickIndex ||
-                previousRender.ShipCount           != _render.ShipCount ||
-                !ReferenceEquals(previousRender.Ships, _render.Ships) ||
-                !ReferenceEquals(previousRender.Galaxy, _render.Galaxy);
-
-            if (renderDirty)
+            if (IsRenderDirty(previousRender, _render))
                 RenderChanged?.Invoke(_render);
+        }
+
+        /// <summary>
+        /// Запускаем перерасчёт только динамической части (корабли), без изменения Snapshot.
+        /// Полезно, когда Executor породил новые корабли вне шага Commit.
+        /// </summary>
+        public void RefreshDynamicSnapshot()
+        {
+            if (_runtimeContext == null)
+                return;
+
+            var previousRender = _render;
+            var updatedRender = BuildRenderSnapshot(_current);
+
+            if (!IsRenderDirty(previousRender, updatedRender))
+                return;
+
+            _render = updatedRender;
+            RenderChanged?.Invoke(_render);
         }
 
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
@@ -239,10 +253,27 @@ namespace _Project.Scripts.Core.GameState
             return render;
         }
 
+        private static bool IsRenderDirty(in RenderSnapshot previous, in RenderSnapshot next)
+        {
+            return
+                previous.RunMode             != next.RunMode ||
+                previous.PlayStepSpeed       != next.PlayStepSpeed ||
+                previous.LogicStepSeconds    != next.LogicStepSeconds ||
+                previous.SelectedSystemIndex != next.SelectedSystemIndex ||
+                previous.TickIndex           != next.TickIndex ||
+                previous.ShipCount           != next.ShipCount ||
+                !ReferenceEquals(previous.Ships, next.Ships) ||
+                !ReferenceEquals(previous.Galaxy, next.Galaxy);
+        }
+
         private static StarSys? TryGetSystem(int index, StarSys[] galaxy)
         {
-            if (galaxy == null || galaxy.Length == 0) return null;
-            if (index < 0 || index >= galaxy.Length) return null;
+            if (galaxy == null || galaxy.Length == 0)
+                return null;
+
+            if (index < 0 || index >= galaxy.Length)
+                return null;
+
             return galaxy[index];
         }
     }
