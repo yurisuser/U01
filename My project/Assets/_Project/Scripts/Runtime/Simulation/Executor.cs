@@ -8,12 +8,13 @@ using UnityEngine;
 namespace _Project.Scripts.Simulation
 {
     /// <summary>
-    /// Центральный исполнитель игрового шага: тик задач, обновление кораблей и синхронизация снапшотов.
+    /// Выполняет игровой шаг: следит за задачами, обновляет корабли и сообщает UI об изменениях.
     /// </summary>
     public sealed class Executor
     {
-        private const int ShipsPerSystem = 3;          // сколько кораблей создаём на старт каждой системы
-        private const float SpawnRadius = 6f;          // расстояние от центра системы до стартовой точки корабля
+        private const int ShipsPerSystem = 3;   // сколько кораблей создаём на старте в каждой системе
+        private const float SpawnRadius = 6f;   // радиус размещения кораблей вокруг центра системы
+        private const float BaseAngularSpeed = 0.6f; // базовая угловая скорость патруля (рад/с)
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
@@ -33,12 +34,13 @@ namespace _Project.Scripts.Simulation
             if (_context != null)
             {
                 _context.Tasks.Tick(dt);
-                _context.Ships.Tick(dt); // позже здесь появится реальное обновление приказов и движения
+                _context.Ships.Tick(dt); // зарезервировано для будущей логики флотов
+                UpdateShips(dt);
             }
 
             DoLogicStep(ref snapshot, dt);
 
-            // Обновляем снапшот для UI, чтобы карта увидела новые позиции/добавления
+            // Сообщаем UI, что динамика обновилась (позиции кораблей и пр.)
             _state?.RefreshDynamicSnapshot();
         }
 
@@ -62,7 +64,7 @@ namespace _Project.Scripts.Simulation
                     var pilotUid = UIDService.Create(EntityType.Individ);
                     var ship = ShipCreator.CreateShip(faction, pilotUid);
 
-                    // Разбрасываем корабли по окружности, чтобы они не слипались в одну точку
+                    // Разбрасываем корабли по окружности, чтобы они не слипались
                     float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
                     ship.Position = new Vector3(
                         Mathf.Cos(angle) * SpawnRadius,
@@ -76,6 +78,45 @@ namespace _Project.Scripts.Simulation
             }
 
             _initialShipsSpawned = true;
+        }
+
+        private void UpdateShips(float dt)
+        {
+            if (_context?.Systems == null)
+                return;
+
+            for (int systemId = 0; systemId < _context.Systems.Count; systemId++)
+            {
+                if (!_context.Systems.TryGetState(systemId, out var state))
+                    continue;
+
+                var buffer = state.ShipsBuffer;
+                var count = state.ShipCount;
+
+                for (int slot = 0; slot < count; slot++)
+                {
+                    var ship = buffer[slot];
+                    if (!ship.IsActive)
+                        continue;
+
+                    float radius = ship.Position.magnitude;
+                    if (radius < 0.5f)
+                        radius = SpawnRadius;
+
+                    // Берём угол из текущей ориентации и продвигаем его по окружности
+                    float angle = ship.Rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    float angularSpeed = BaseAngularSpeed + ship.Speed * 0.05f;
+                    angle += angularSpeed * dt;
+
+                    ship.Position = new Vector3(
+                        Mathf.Cos(angle) * radius,
+                        Mathf.Sin(angle) * radius,
+                        0f);
+                    ship.Rotation = Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
+
+                    _context.Systems.TryUpdateShip(systemId, slot, in ship);
+                }
+            }
         }
 
         private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)

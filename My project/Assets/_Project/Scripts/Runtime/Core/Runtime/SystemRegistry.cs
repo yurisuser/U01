@@ -3,13 +3,12 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
+    /// <summary>
+    /// Хранилище состояния всех звёздных систем в рантайме (включая корабли).
+    /// </summary>
     public sealed class SystemRegistry
     {
         private StarSystemState[] _systems = Array.Empty<StarSystemState>();
-
-        public SystemRegistry()
-        {
-        }
 
         public int Count => _systems.Length;
 
@@ -31,7 +30,8 @@ namespace _Project.Scripts.Core.Runtime
 
         public void Reset()
         {
-            if (_systems == null) return;
+            if (_systems == null)
+                return;
 
             for (int i = 0; i < _systems.Length; i++)
                 _systems[i]?.Reset();
@@ -65,6 +65,11 @@ namespace _Project.Scripts.Core.Runtime
             return TryGetState(systemId, out var state) && state.TryGetShip(slot, out ship);
         }
 
+        public bool TryUpdateShip(int systemId, int slot, in Ship ship)
+        {
+            return TryGetState(systemId, out var state) && state.TryUpdateShip(slot, in ship);
+        }
+
         public bool TryRemoveShip(int systemId, int slot, out Ship ship)
         {
             ship = default;
@@ -72,9 +77,8 @@ namespace _Project.Scripts.Core.Runtime
         }
 
         /// <summary>
-        /// Заполняет переданный буфер актуальными кораблями системы.
-        /// Буфер можно переиспользовать между вызовами, чтобы не плодить мусор.
-        /// Возвращает фактическое количество записанных кораблей.
+        /// Копирует корабли системы в пользовательский буфер, чтобы отдать их UI без лишних аллокаций.
+        /// Возвращает количество скопированных кораблей.
         /// </summary>
         public int CopyShipsToBuffer(int systemId, ref Ship[] buffer)
         {
@@ -113,6 +117,15 @@ namespace _Project.Scripts.Core.Runtime
             return false;
         }
 
+        public bool TryUpdateShip(int slot, in Ship ship)
+        {
+            if ((uint)slot >= _shipCount)
+                return false;
+
+            _ships[slot] = ship;
+            return true;
+        }
+
         public bool TryRemoveShip(int slot, out Ship ship)
         {
             if ((uint)slot >= _shipCount)
@@ -139,23 +152,6 @@ namespace _Project.Scripts.Core.Runtime
             _shipCount = 0;
         }
 
-        private void EnsureCapacity(int needed)
-        {
-            if (_ships.Length >= needed)
-                return;
-
-            var newCapacity = _ships.Length == 0 ? 8 : _ships.Length * 2;
-            while (newCapacity < needed)
-                newCapacity *= 2;
-
-            Array.Resize(ref _ships, newCapacity);
-        }
-
-        /// <summary>
-        /// Копируем текущее содержимое в пользовательский буфер.
-        /// Если места не хватает — расширяем буфер.
-        /// Возвращаем число кораблей, которое теперь лежит в буфере.
-        /// </summary>
         public int CopyShips(ref Ship[] buffer)
         {
             if (_shipCount <= 0)
@@ -166,6 +162,18 @@ namespace _Project.Scripts.Core.Runtime
 
             Array.Copy(_ships, 0, buffer, 0, _shipCount);
             return _shipCount;
+        }
+
+        private void EnsureCapacity(int needed)
+        {
+            if (_ships.Length >= needed)
+                return;
+
+            var newCapacity = _ships.Length == 0 ? 8 : _ships.Length * 2;
+            while (newCapacity < needed)
+                newCapacity *= 2;
+
+            Array.Resize(ref _ships, newCapacity);
         }
     }
 }
