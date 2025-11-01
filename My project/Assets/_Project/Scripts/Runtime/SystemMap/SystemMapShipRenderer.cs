@@ -10,11 +10,11 @@ namespace _Project.Scripts.SystemMap
     [DisallowMultipleComponent]
     public sealed class SystemMapShipRenderer : MonoBehaviour, ISystemMapLayer
     {
-        [Header("Порядок слоя")]
+        [Header("РџРѕСЂСЏРґРѕРє СЃР»РѕСЏ")]
         [SerializeField] private int order = 10;
         public int Order => order;
 
-        [Header("Каталог префабов")]
+        [Header("РљР°С‚Р°Р»РѕРі РїСЂРµС„Р°Р±РѕРІ")]
         [SerializeField] private PrefabCatalog catalog;
 
         private Transform _root;

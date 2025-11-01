@@ -9,12 +9,12 @@ using _Project.Scripts.Ships;
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// Управляет слоями рендера карты системы, подсовывает им актуальные данные.
+    /// РЈРїСЂР°РІР»СЏРµС‚ СЃР»РѕСЏРјРё СЂРµРЅРґРµСЂР° РєР°СЂС‚С‹ СЃРёСЃС‚РµРјС‹, РїРѕРґСЃРѕРІС‹РІР°РµС‚ РёРј Р°РєС‚СѓР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SystemMapRenderer : MonoBehaviour
     {
-        [Header("Корневой объект для слоёв")]
+        [Header("РљРѕСЂРЅРµРІРѕР№ РѕР±СЉРµРєС‚ РґР»СЏ СЃР»РѕС‘РІ")]
         [SerializeField] private Transform layersRoot;
         [SerializeField] private SystemMapGeoRenderer geoLayer;
         [SerializeField] private MonoBehaviour[] extraLayers;
@@ -74,7 +74,7 @@ namespace _Project.Scripts.SystemMap
             if (system == null)
             {
                 ClearLayers();
-                Debug.LogWarning("[SystemMap] Нет выбранной системы для отображения.");
+                Debug.LogWarning("[SystemMap] РќРµС‚ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРёСЃС‚РµРјС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ.");
                 return;
             }
 
