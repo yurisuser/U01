@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Galaxy.Data;
@@ -7,7 +7,7 @@ using _Project.Scripts.Ships;
 namespace _Project.Scripts.Core.GameState
 {
     /// <summary>
-    /// Хранит текущее состояние игры и снапшот для UI.
+    /// Хранит логическое состояние игры и снапшоты для визуализации.
     /// </summary>
     public sealed class GameStateService
     {
@@ -32,16 +32,26 @@ namespace _Project.Scripts.Core.GameState
             public float          LogicStepSeconds;
             public StarSys[]      Galaxy;
             public int            SelectedSystemIndex;
-            public Ship[]         Ships;
-            public int            ShipCount;
-            public int            ShipsVersion; // увеличивается при каждом обновлении динамики
+            public Ship[]         PreviousShips;
+            public int            PreviousShipCount;
+            public Ship[]         CurrentShips;
+            public int            CurrentShipCount;
+            public int            ShipsVersion;
+            public float          StepProgress;
         }
 
         private Snapshot _current;
         private RenderSnapshot _render;
         private RuntimeContext _runtimeContext;
-        private Ship[] _renderShipsBuffer = Array.Empty<Ship>();
+
+        private Ship[] _shipsPrev = Array.Empty<Ship>();
+        private Ship[] _shipsCurr = Array.Empty<Ship>();
+        private int _shipsPrevCount;
+        private int _shipsCurrCount;
         private int _shipsVersion;
+        private int _lastDynamicSystemIndex = -1;
+        private float _stepProgress;
+        private bool _dynamicDirty;
 
         public event Action<Snapshot> SnapshotChanged;
         public event Action<RenderSnapshot> RenderChanged;
@@ -75,8 +85,10 @@ namespace _Project.Scripts.Core.GameState
         public void AttachRuntimeContext(RuntimeContext context)
         {
             _runtimeContext = context;
-            if (_runtimeContext != null)
-                RefreshDynamicSnapshot();
+            MarkDynamicDirty();
+            EnsureDynamicSnapshot(_current.SelectedSystemIndex);
+            _render = BuildRenderSnapshot(_current);
+            RenderChanged?.Invoke(_render);
         }
 
         // ----- управление из UI -----
@@ -196,6 +208,8 @@ namespace _Project.Scripts.Core.GameState
         public void Commit(in Snapshot snapshot)
         {
             _current = snapshot;
+            EnsureDynamicSnapshot(snapshot.SelectedSystemIndex);
+
             var previousRender = _render;
             _render = BuildRenderSnapshot(_current);
 
@@ -206,27 +220,89 @@ namespace _Project.Scripts.Core.GameState
         }
 
         /// <summary>
-        /// Обновляем только динамические данные (корабли) без изменения Snapshot.
-        /// Вызывать после того, как мир изменился, но состояние логики осталось прежним.
+        /// Отмечаем, что динамический снимок (корабли) устарел и его надо перечитать.
+        /// Вызывает Executor после расчёта шага.
+        /// </summary>
+        internal void MarkDynamicDirty()
+        {
+            _dynamicDirty = true;
+        }
+
+        /// <summary>
+        /// Обновляет прогресс логического шага (0..1) и уведомляет UI при изменении.
+        /// </summary>
+        internal void SetStepProgress(float progress)
+        {
+            progress = Clamp01(progress);
+            if (Math.Abs(_stepProgress - progress) < 0.0001f)
+                return;
+
+            _stepProgress = progress;
+            _render.StepProgress = _stepProgress;
+            RenderChanged?.Invoke(_render);
+        }
+
+        /// <summary>
+        /// Полностью перечитать динамический снимок (например, при смене выбора в UI).
         /// </summary>
         public void RefreshDynamicSnapshot()
         {
-            if (_runtimeContext == null)
-                return;
+            MarkDynamicDirty();
+            EnsureDynamicSnapshot(_current.SelectedSystemIndex);
 
             var previousRender = _render;
-            var updatedRender = BuildRenderSnapshot(_current);
+            _render = BuildRenderSnapshot(_current);
 
-            if (!IsRenderDirty(previousRender, updatedRender))
+            if (IsRenderDirty(previousRender, _render))
+                RenderChanged?.Invoke(_render);
+        }
+
+        private void EnsureDynamicSnapshot(int systemIndex)
+        {
+            if (_runtimeContext?.Systems == null)
+            {
+                _shipsPrevCount = 0;
+                _shipsCurrCount = 0;
+                _lastDynamicSystemIndex = -1;
+                _dynamicDirty = false;
+                return;
+            }
+
+            bool systemChanged = systemIndex != _lastDynamicSystemIndex;
+            if (!_dynamicDirty && !systemChanged)
                 return;
 
-            _render = updatedRender;
-            RenderChanged?.Invoke(_render);
+            if (systemIndex < 0 || systemIndex >= _runtimeContext.Systems.Count)
+            {
+                _shipsPrevCount = 0;
+                _shipsCurrCount = 0;
+                _lastDynamicSystemIndex = systemIndex;
+                _dynamicDirty = false;
+                return;
+            }
+
+            SwapShipBuffers();
+            _shipsCurrCount = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _shipsCurr);
+            _shipsVersion++;
+            _lastDynamicSystemIndex = systemIndex;
+            _dynamicDirty = false;
+            _stepProgress = 0f;
+        }
+
+        private void SwapShipBuffers()
+        {
+            var temp = _shipsPrev;
+            _shipsPrev = _shipsCurr;
+            _shipsCurr = temp;
+
+            _shipsPrevCount = _shipsCurrCount;
         }
 
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
         {
-            var render = new RenderSnapshot
+            EnsureDynamicSnapshot(snapshot.SelectedSystemIndex);
+
+            return new RenderSnapshot
             {
                 RunMode             = snapshot.RunMode,
                 PlayStepSpeed       = snapshot.PlayStepSpeed,
@@ -234,28 +310,13 @@ namespace _Project.Scripts.Core.GameState
                 LogicStepSeconds    = snapshot.LogicStepSeconds,
                 Galaxy              = snapshot.Galaxy,
                 SelectedSystemIndex = snapshot.SelectedSystemIndex,
-                Ships               = Array.Empty<Ship>(),
-                ShipCount           = 0,
-                ShipsVersion        = _shipsVersion
+                PreviousShips       = _shipsPrev,
+                PreviousShipCount   = _shipsPrevCount,
+                CurrentShips        = _shipsCurr,
+                CurrentShipCount    = _shipsCurrCount,
+                ShipsVersion        = _shipsVersion,
+                StepProgress        = _stepProgress
             };
-
-            if (_runtimeContext != null &&
-                _runtimeContext.Systems != null &&
-                snapshot.Galaxy != null &&
-                snapshot.Galaxy.Length > 0)
-            {
-                var systemIndex = snapshot.SelectedSystemIndex;
-                if (systemIndex >= 0 && systemIndex < _runtimeContext.Systems.Count)
-                {
-                    var count = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _renderShipsBuffer);
-                    render.ShipCount = count;
-                    render.Ships = count > 0 ? _renderShipsBuffer : Array.Empty<Ship>();
-                    _shipsVersion++;
-                    render.ShipsVersion = _shipsVersion;
-                }
-            }
-
-            return render;
         }
 
         private static bool IsRenderDirty(in RenderSnapshot previous, in RenderSnapshot next)
@@ -266,9 +327,11 @@ namespace _Project.Scripts.Core.GameState
                 previous.LogicStepSeconds    != next.LogicStepSeconds ||
                 previous.SelectedSystemIndex != next.SelectedSystemIndex ||
                 previous.TickIndex           != next.TickIndex ||
-                previous.ShipCount           != next.ShipCount ||
                 previous.ShipsVersion        != next.ShipsVersion ||
-                !ReferenceEquals(previous.Galaxy, next.Galaxy);
+                previous.StepProgress        != next.StepProgress ||
+                !ReferenceEquals(previous.Galaxy, next.Galaxy) ||
+                !ReferenceEquals(previous.CurrentShips, next.CurrentShips) ||
+                !ReferenceEquals(previous.PreviousShips, next.PreviousShips);
         }
 
         private static StarSys? TryGetSystem(int index, StarSys[] galaxy)
@@ -280,6 +343,13 @@ namespace _Project.Scripts.Core.GameState
                 return null;
 
             return galaxy[index];
+        }
+
+        private static float Clamp01(float value)
+        {
+            if (value < 0f) return 0f;
+            if (value > 1f) return 1f;
+            return value;
         }
     }
 }

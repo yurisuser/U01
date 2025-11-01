@@ -39,7 +39,7 @@ namespace _Project.Scripts.Simulation
             }
 
             DoLogicStep(ref snapshot, dt);
-            _state?.RefreshDynamicSnapshot();
+            _state?.MarkDynamicDirty();
         }
 
         private void EnsureInitialShips()

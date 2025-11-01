@@ -1,4 +1,4 @@
-п»їusing UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
@@ -9,12 +9,12 @@ using _Project.Scripts.Ships;
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// РЈРїСЂР°РІР»СЏРµС‚ СЃР»РѕСЏРјРё СЂРµРЅРґРµСЂР° РєР°СЂС‚С‹ СЃРёСЃС‚РµРјС‹, РїРѕРґСЃРѕРІС‹РІР°РµС‚ РёРј Р°РєС‚СѓР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ.
+    /// Управляет слоями рендера карты системы, подсовывает им актуальные данные.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SystemMapRenderer : MonoBehaviour
     {
-        [Header("РљРѕСЂРЅРµРІРѕР№ РѕР±СЉРµРєС‚ РґР»СЏ СЃР»РѕС‘РІ")]
+        [Header("Корневой объект для слоёв")]
         [SerializeField] private Transform layersRoot;
         [SerializeField] private SystemMapGeoRenderer geoLayer;
         [SerializeField] private MonoBehaviour[] extraLayers;
@@ -74,7 +74,7 @@ namespace _Project.Scripts.SystemMap
             if (system == null)
             {
                 ClearLayers();
-                Debug.LogWarning("[SystemMap] РќРµС‚ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРёСЃС‚РµРјС‹ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ.");
+                Debug.LogWarning("[SystemMap] Нет выбранной системы для отображения.");
                 return;
             }
 
@@ -85,16 +85,29 @@ namespace _Project.Scripts.SystemMap
                 _currentSystemUid = system.Value.Uid;
             }
 
-            RenderSystem(system.Value, snapshot.Ships, snapshot.ShipCount, systemChanged);
+            RenderSystem(system.Value,
+                snapshot.PreviousShips,
+                snapshot.PreviousShipCount,
+                snapshot.CurrentShips,
+                snapshot.CurrentShipCount,
+                snapshot.StepProgress,
+                systemChanged);
         }
 
-        private void RenderSystem(in StarSys system, Ship[] ships, int shipCount, bool systemChanged)
+        private void RenderSystem(
+            in StarSys system,
+            Ship[] prevShips,
+            int prevCount,
+            Ship[] currShips,
+            int currCount,
+            float progress,
+            bool systemChanged)
         {
             if (geoLayer != null)
             {
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
-                geoLayer.Render(system, ships, shipCount);
+                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, progress);
             }
 
             if (extraLayers == null)
@@ -106,7 +119,7 @@ namespace _Project.Scripts.SystemMap
                 {
                     if (systemChanged)
                         layer.Init(layersRoot);
-                    layer.Render(system, ships, shipCount);
+                    layer.Render(system, prevShips, prevCount, currShips, currCount, progress);
                 }
             }
         }
@@ -139,3 +152,4 @@ namespace _Project.Scripts.SystemMap
         }
     }
 }
+

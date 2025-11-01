@@ -10,15 +10,16 @@ namespace _Project.Scripts.SystemMap
     [DisallowMultipleComponent]
     public sealed class SystemMapShipRenderer : MonoBehaviour, ISystemMapLayer
     {
-        [Header("Порядок слоя")]
-        [SerializeField] private int order = 10;     // чем больше число, тем позже рисуем
+        [Header("������� ����")]
+        [SerializeField] private int order = 10;
         public int Order => order;
 
-        [Header("Каталог префабов")]
+        [Header("������� ��������")]
         [SerializeField] private PrefabCatalog catalog;
 
-        private Transform _root;                     // общий родитель для всех кораблей на карте
+        private Transform _root;
         private readonly Dictionary<UID, GameObject> _views = new();
+        private readonly Dictionary<UID, Ship> _prevShips = new();
 
         public void Init(Transform parentRoot)
         {
@@ -30,16 +31,29 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        public void Render(in StarSys sys, Ship[] ships, int shipCount)
+        public void Render(in StarSys sys,
+                            Ship[] prevShips,
+                            int prevCount,
+                            Ship[] currShips,
+                            int currCount,
+                            float progress)
         {
-            // ships и shipCount — свежий снимок кораблей от GameStateService
+            progress = Mathf.Clamp01(progress);
+
+            _prevShips.Clear();
+            if (prevShips != null && prevCount > 0)
+            {
+                for (int i = 0; i < prevCount; i++)
+                    _prevShips[prevShips[i].Uid] = prevShips[i];
+            }
+
             var seen = HashSetPool<UID>.Get();
 
-            if (ships != null && shipCount > 0)
+            if (currShips != null && currCount > 0)
             {
-                for (int i = 0; i < shipCount; i++)
+                for (int i = 0; i < currCount; i++)
                 {
-                    var sh = ships[i];
+                    var sh = currShips[i];
                     seen.Add(sh.Uid);
 
                     if (!_views.TryGetValue(sh.Uid, out var view) || !view)
@@ -53,8 +67,19 @@ namespace _Project.Scripts.SystemMap
                         _views[sh.Uid] = view;
                     }
 
-                    // пока обновляем только позицию — разворот добавим в следующих итерациях
-                    view.transform.localPosition = sh.Position;
+                    Vector3 startPos = sh.Position;
+                    Quaternion startRot = sh.Rotation;
+                    if (_prevShips.TryGetValue(sh.Uid, out var prev))
+                    {
+                        startPos = prev.Position;
+                        startRot = prev.Rotation;
+                    }
+
+                    var pos = Vector3.Lerp(startPos, sh.Position, progress);
+                    var rot = Quaternion.Slerp(startRot, sh.Rotation, progress);
+
+                    view.transform.localPosition = pos;
+                    view.transform.localRotation = rot;
                 }
             }
 
@@ -76,6 +101,7 @@ namespace _Project.Scripts.SystemMap
             }
 
             HashSetPool<UID>.Release(seen);
+            _prevShips.Clear();
         }
 
         public void Dispose() => ClearAll();
@@ -85,7 +111,6 @@ namespace _Project.Scripts.SystemMap
             if (!catalog || catalog.ShipPrefabsByClass == null || catalog.ShipPrefabsByClass.Length == 0)
                 return null;
 
-            // временно берём первый класс корабля
             return catalog.ShipPrefabsByClass[0];
         }
 
@@ -103,6 +128,8 @@ namespace _Project.Scripts.SystemMap
                 for (int i = _root.childCount - 1; i >= 0; i--)
                     Destroy(_root.GetChild(i).gameObject);
             }
+
+            _prevShips.Clear();
         }
 
         private static class HashSetPool<T>
@@ -121,3 +148,4 @@ namespace _Project.Scripts.SystemMap
         private static readonly List<UID> ScratchKeys = new();
     }
 }
+

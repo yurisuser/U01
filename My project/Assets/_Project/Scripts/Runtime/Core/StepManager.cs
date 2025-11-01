@@ -13,14 +13,15 @@ namespace _Project.Scripts.Core
 
         public StepManager(GameStateService state, Executor executor)
         {
-            _state     = state ?? throw new ArgumentNullException(nameof(state));
-            _executor  = executor ?? throw new ArgumentNullException(nameof(executor));
-            _accum     = 0f;
+            _state    = state ?? throw new ArgumentNullException(nameof(state));
+            _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+            _accum    = 0f;
         }
 
         public void Update(float dt)
         {
-            if (dt < 0f) dt = 0f;
+            if (dt < 0f)
+                dt = 0f;
 
             var snapshot     = _state.Current;
             var stepDuration = GetStepDuration(snapshot);
@@ -35,13 +36,15 @@ namespace _Project.Scripts.Core
             if (snapshot.RunMode != ERunMode.Auto)
             {
                 _accum = 0f;
+                _state.SetStepProgress(0f);
                 return;
             }
 
             stepDuration = Math.Max(0.0001f, stepDuration);
             _accum += dt;
+            _state.SetStepProgress(Clamp01(_accum / stepDuration));
 
-            const int safetyCap = 1000; // защита от зацикливания при экстремально малых тиках
+            const int safetyCap = 1000;
             int loops = 0;
 
             while (_accum >= stepDuration && loops++ < safetyCap)
@@ -51,11 +54,17 @@ namespace _Project.Scripts.Core
 
                 snapshot     = _state.Current;
                 stepDuration = Math.Max(0.0001f, GetStepDuration(snapshot));
+                _state.SetStepProgress(Clamp01(_accum / stepDuration));
             }
 
             if (loops >= safetyCap)
             {
-                _accum = 0f; // аварийная защита, чтобы не зависнуть
+                _accum = 0f;
+                _state.SetStepProgress(0f);
+            }
+            else
+            {
+                _state.SetStepProgress(Clamp01(_accum / stepDuration));
             }
         }
 
@@ -67,6 +76,7 @@ namespace _Project.Scripts.Core
             _executor.Execute(ref next, dt);
             next.TickIndex++;
             next.RequestStep = false;
+            _state.SetStepProgress(0f);
 
             _state.Commit(next);
         }
@@ -76,6 +86,13 @@ namespace _Project.Scripts.Core
             var baseSeconds = snapshot.LogicStepSeconds > 0f ? snapshot.LogicStepSeconds : 0.0001f;
             var speedMul    = Math.Max(1, (int)snapshot.PlayStepSpeed);
             return baseSeconds / speedMul;
+        }
+
+        private static float Clamp01(float value)
+        {
+            if (value < 0f) return 0f;
+            if (value > 1f) return 1f;
+            return value;
         }
     }
 }

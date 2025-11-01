@@ -1,40 +1,40 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
-using _Project.Prefabs;                                        // добавлено — для доступа к PrefabCatalog
+using _Project.Prefabs;                                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ PrefabCatalog
 using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// Географический слой карты системы: звезда, планеты, орбиты планет и лун.
-    /// Реализует ISystemMapLayer и живёт под оркестратором SystemMapRenderer.
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ.
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ISystemMapLayer пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ SystemMapRenderer.
     /// </summary>
     public sealed class SystemMapGeoRenderer : MonoBehaviour, ISystemMapLayer
     {
-        [Header("Порядок слоя")]
+        [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ")]
         [SerializeField] private int order = 0;
         public int Order => order;
 
-        [Header("Материал и цвета орбит")]
+        [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ")]
         [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new(0.6f, 0.8f, 1f, 0.35f);
         [SerializeField] private Color moonOrbitColor   = new(1f, 1f, 1f, 0.18f);
 
-        [Header("Геометрия окружностей")]
+        [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]
         [SerializeField, Min(16)] private int segments = 128;
         [SerializeField] private float orbitUnitPlanet = 10f;
         [SerializeField] private float orbitUnitMoon   = 1.5f;
 
-        [Header("Экранная толщина линий (без шейдера)")]
+        [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)")]
         [SerializeField] private float lineWidthAtRefZoom = 0.015f;
         [SerializeField] private float referenceOrthoSize = 10f;
         [SerializeField] private Camera targetCamera;
 
-        [Header("Каталог префабов")]                           // добавлено
-        [SerializeField] private PrefabCatalog catalog;         // добавлено
+        [Header("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")]                           // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        [SerializeField] private PrefabCatalog catalog;         // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-        // Корни слоя
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         private Transform _layerRoot;
         private Transform _starRoot;
         private Transform _planetOrbitsRoot;
@@ -62,7 +62,7 @@ namespace _Project.Scripts.SystemMap
             ClearAll();
         }
 
-        public void Render(in StarSys sys, Ship[] ships, int shipCount)
+        public void Render(in StarSys sys, Ship[] prevShips, int prevCount, Ship[] currShips, int currCount, float progress)
         {
             if (_layerRoot == null) return;
 
@@ -74,7 +74,7 @@ namespace _Project.Scripts.SystemMap
 
         public void Dispose() => ClearAll();
 
-        // ---------------- Рисование ----------------
+        // ---------------- пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ----------------
 
         private void DrawStar(in StarSys system)
         {
@@ -154,7 +154,7 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        // ---------------- Технические хелперы ----------------
+        // ---------------- пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ ----------------
 
         private void EnsureCamera()
         {
@@ -198,7 +198,7 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        // === заменено: теперь читаем из PrefabCatalog ===
+        // === пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ PrefabCatalog ===
 
         private GameObject GetStarPrefab(EStarType type)
         {
@@ -299,3 +299,5 @@ namespace _Project.Scripts.SystemMap
         }
     }
 }
+
+
