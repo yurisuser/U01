@@ -36,6 +36,8 @@ namespace _Project.Scripts.SystemMap
                             int prevCount,
                             Ship[] currShips,
                             int currCount,
+                            Ship[] nextShips,
+                            int nextCount,
                             float progress)
         {
             progress = Mathf.Clamp01(progress);

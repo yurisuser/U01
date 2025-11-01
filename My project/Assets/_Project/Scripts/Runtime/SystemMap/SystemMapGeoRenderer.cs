@@ -62,7 +62,14 @@ namespace _Project.Scripts.SystemMap
             ClearAll();
         }
 
-        public void Render(in StarSys sys, Ship[] prevShips, int prevCount, Ship[] currShips, int currCount, float progress)
+        public void Render(in StarSys sys,
+            Ship[] prevShips,
+            int prevCount,
+            Ship[] currShips,
+            int currCount,
+            Ship[] nextShips,
+            int nextCount,
+            float progress)
         {
             if (_layerRoot == null) return;
 

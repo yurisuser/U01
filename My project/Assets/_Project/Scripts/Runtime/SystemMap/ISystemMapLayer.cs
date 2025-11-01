@@ -8,7 +8,14 @@ namespace _Project.Scripts.SystemMap
     {
         int Order { get; }
         void Init(Transform parentRoot);
-        void Render(in StarSys sys, Ship[] prevShips, int prevCount, Ship[] currShips, int currCount, float progress);
+        void Render(in StarSys sys,
+            Ship[] prevShips,
+            int prevCount,
+            Ship[] currShips,
+            int currCount,
+            Ship[] nextShips,
+            int nextCount,
+            float progress);
         void Dispose();
     }
 }

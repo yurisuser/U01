@@ -36,6 +36,8 @@ namespace _Project.Scripts.Core.GameState
             public int            PreviousShipCount;
             public Ship[]         CurrentShips;
             public int            CurrentShipCount;
+            public Ship[]         NextShips;
+            public int            NextShipCount;
             public int            ShipsVersion;
             public float          StepProgress;
         }
@@ -46,12 +48,15 @@ namespace _Project.Scripts.Core.GameState
 
         private Ship[] _shipsPrev = Array.Empty<Ship>();
         private Ship[] _shipsCurr = Array.Empty<Ship>();
+        private Ship[] _shipsNext = Array.Empty<Ship>();
         private int _shipsPrevCount;
         private int _shipsCurrCount;
+        private int _shipsNextCount;
         private int _shipsVersion;
         private int _lastDynamicSystemIndex = -1;
         private float _stepProgress;
         private volatile bool _dynamicDirty;
+        private bool _forceRebuildCurrentShips;
 
         public event Action<Snapshot> SnapshotChanged;
         public event Action<RenderSnapshot> RenderChanged;
@@ -86,6 +91,7 @@ namespace _Project.Scripts.Core.GameState
         {
             _runtimeContext = context;
             MarkDynamicDirty();
+            _forceRebuildCurrentShips = true;
             EnsureDynamicSnapshot(_current.SelectedSystemIndex);
             _render = BuildRenderSnapshot(_current);
             RenderChanged?.Invoke(_render);
@@ -208,15 +214,8 @@ namespace _Project.Scripts.Core.GameState
         public void Commit(in Snapshot snapshot)
         {
             _current = snapshot;
-            EnsureDynamicSnapshot(snapshot.SelectedSystemIndex);
-
-            var previousRender = _render;
-            _render = BuildRenderSnapshot(_current);
-
             SnapshotChanged?.Invoke(_current);
-
-            if (IsRenderDirty(previousRender, _render))
-                RenderChanged?.Invoke(_render);
+            UpdateRenderSnapshot();
         }
 
         /// <summary>
@@ -226,6 +225,26 @@ namespace _Project.Scripts.Core.GameState
         internal void MarkDynamicDirty()
         {
             _dynamicDirty = true;
+        }
+
+        internal bool TryPromoteNextShips()
+        {
+            if (_shipsNextCount <= 0)
+                return false;
+
+            var oldPrev       = _shipsPrev;
+
+            _shipsPrev       = _shipsCurr;
+            _shipsPrevCount  = _shipsCurrCount;
+            _shipsCurr       = _shipsNext;
+            _shipsCurrCount  = _shipsNextCount;
+            _shipsNext       = oldPrev;
+            _shipsNextCount  = 0;
+            _shipsVersion++;
+            _stepProgress = 0f;
+
+            UpdateRenderSnapshot();
+            return true;
         }
 
         /// <summary>
@@ -248,27 +267,29 @@ namespace _Project.Scripts.Core.GameState
         public void RefreshDynamicSnapshot()
         {
             MarkDynamicDirty();
+            _forceRebuildCurrentShips = true;
             EnsureDynamicSnapshot(_current.SelectedSystemIndex);
-
-            var previousRender = _render;
-            _render = BuildRenderSnapshot(_current);
-
-            if (IsRenderDirty(previousRender, _render))
-                RenderChanged?.Invoke(_render);
+            UpdateRenderSnapshot();
         }
 
         private void EnsureDynamicSnapshot(int systemIndex)
         {
             if (_runtimeContext?.Systems == null)
             {
+                _shipsPrev      = Array.Empty<Ship>();
+                _shipsCurr      = Array.Empty<Ship>();
+                _shipsNext      = Array.Empty<Ship>();
                 _shipsPrevCount = 0;
                 _shipsCurrCount = 0;
+                _shipsNextCount = 0;
                 _lastDynamicSystemIndex = -1;
                 _dynamicDirty = false;
+                _forceRebuildCurrentShips = false;
+                _stepProgress = 0f;
                 return;
             }
 
-            bool systemChanged = systemIndex != _lastDynamicSystemIndex;
+            bool systemChanged = systemIndex != _lastDynamicSystemIndex || _forceRebuildCurrentShips;
             if (!_dynamicDirty && !systemChanged)
                 return;
 
@@ -276,26 +297,34 @@ namespace _Project.Scripts.Core.GameState
             {
                 _shipsPrevCount = 0;
                 _shipsCurrCount = 0;
+                _shipsNextCount = 0;
                 _lastDynamicSystemIndex = systemIndex;
                 _dynamicDirty = false;
+                _forceRebuildCurrentShips = false;
                 return;
             }
 
-            SwapShipBuffers();
-            _shipsCurrCount = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _shipsCurr);
-            _shipsVersion++;
-            _lastDynamicSystemIndex = systemIndex;
+            if (systemChanged)
+            {
+                _shipsCurrCount = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _shipsCurr);
+                EnsureBufferCapacity(ref _shipsPrev, _shipsCurrCount);
+                if (_shipsCurrCount > 0)
+                    Array.Copy(_shipsCurr, 0, _shipsPrev, 0, _shipsCurrCount);
+                _shipsPrevCount = _shipsCurrCount;
+
+                EnsureBufferCapacity(ref _shipsNext, _shipsCurrCount);
+                _shipsNextCount = 0;
+
+                _shipsVersion++;
+                _stepProgress = 0f;
+                _lastDynamicSystemIndex = systemIndex;
+                _dynamicDirty = false;
+                _forceRebuildCurrentShips = false;
+                return;
+            }
+
+            _shipsNextCount = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _shipsNext);
             _dynamicDirty = false;
-            _stepProgress = 0f;
-        }
-
-        private void SwapShipBuffers()
-        {
-            var temp = _shipsPrev;
-            _shipsPrev = _shipsCurr;
-            _shipsCurr = temp;
-
-            _shipsPrevCount = _shipsCurrCount;
         }
 
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
@@ -314,6 +343,8 @@ namespace _Project.Scripts.Core.GameState
                 PreviousShipCount   = _shipsPrevCount,
                 CurrentShips        = _shipsCurr,
                 CurrentShipCount    = _shipsCurrCount,
+                NextShips           = _shipsNext,
+                NextShipCount       = _shipsNextCount,
                 ShipsVersion        = _shipsVersion,
                 StepProgress        = _stepProgress
             };
@@ -331,7 +362,30 @@ namespace _Project.Scripts.Core.GameState
                 previous.StepProgress        != next.StepProgress ||
                 !ReferenceEquals(previous.Galaxy, next.Galaxy) ||
                 !ReferenceEquals(previous.CurrentShips, next.CurrentShips) ||
-                !ReferenceEquals(previous.PreviousShips, next.PreviousShips);
+                !ReferenceEquals(previous.PreviousShips, next.PreviousShips) ||
+                !ReferenceEquals(previous.NextShips, next.NextShips);
+        }
+
+        private void UpdateRenderSnapshot()
+        {
+            var previousRender = _render;
+            _render = BuildRenderSnapshot(_current);
+
+            if (IsRenderDirty(previousRender, _render))
+                RenderChanged?.Invoke(_render);
+        }
+
+        private static void EnsureBufferCapacity(ref Ship[] buffer, int needed)
+        {
+            if (needed <= 0)
+            {
+                if (buffer == null)
+                    buffer = Array.Empty<Ship>();
+                return;
+            }
+
+            if (buffer == null || buffer.Length < needed)
+                Array.Resize(ref buffer, needed);
         }
 
         private static StarSys? TryGetSystem(int index, StarSys[] galaxy)
