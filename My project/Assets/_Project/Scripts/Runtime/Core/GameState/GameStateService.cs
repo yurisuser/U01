@@ -2,6 +2,7 @@ using System;                                                     // Array.Empty
 using _Project.Scripts.Core;                                      // UID
 using _Project.Scripts.Galaxy.Data;                               // StarSys
 using _Project.Scripts.Core.Runtime;
+using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.GameState
 {
@@ -27,11 +28,14 @@ namespace _Project.Scripts.Core.GameState
             public float          LogicStepSeconds;
             public StarSys[]      Galaxy;
             public int            SelectedSystemIndex;
+            public Ship[]         Ships;               // снимок кораблей выбранной системы
+            public int            ShipCount;           // фактическое количество записей в массиве
         }
 
         private Snapshot _current;
         private RenderSnapshot _render;
         private RuntimeContext _runtimeContext;
+        private Ship[] _renderShipsBuffer = Array.Empty<Ship>(); // переиспользуем массив, чтобы не создавать мусор
 
         public event Action<Snapshot> SnapshotChanged;          // ��������� ��� �������� �����
         public event Action<RenderSnapshot> RenderChanged;      // ��������� ��� UI/рендеров
@@ -67,6 +71,11 @@ namespace _Project.Scripts.Core.GameState
         public void AttachRuntimeContext(RuntimeContext context)
         {
             _runtimeContext = context;
+            if (_runtimeContext != null)
+            {
+                // Перестраиваем снимок сразу, чтобы UI получил актуальные корабли
+                Commit(_current);
+            }
         }
 
         // ---- ��ࠢ����� �� UI ----
@@ -190,23 +199,44 @@ namespace _Project.Scripts.Core.GameState
                 previousRender.PlayStepSpeed       != _render.PlayStepSpeed ||
                 previousRender.LogicStepSeconds    != _render.LogicStepSeconds ||
                 previousRender.SelectedSystemIndex != _render.SelectedSystemIndex ||
+                previousRender.TickIndex           != _render.TickIndex ||
+                previousRender.ShipCount           != _render.ShipCount ||
+                !ReferenceEquals(previousRender.Ships, _render.Ships) ||
                 !ReferenceEquals(previousRender.Galaxy, _render.Galaxy);
 
             if (renderDirty)
                 RenderChanged?.Invoke(_render);
         }
 
-        private static RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
+        private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
         {
-            return new RenderSnapshot
+            var render = new RenderSnapshot
             {
-                RunMode              = snapshot.RunMode,
-                PlayStepSpeed        = snapshot.PlayStepSpeed,
-                TickIndex            = snapshot.TickIndex,
-                LogicStepSeconds     = snapshot.LogicStepSeconds,
-                Galaxy               = snapshot.Galaxy,
-                SelectedSystemIndex  = snapshot.SelectedSystemIndex
+                RunMode             = snapshot.RunMode,
+                PlayStepSpeed       = snapshot.PlayStepSpeed,
+                TickIndex           = snapshot.TickIndex,
+                LogicStepSeconds    = snapshot.LogicStepSeconds,
+                Galaxy              = snapshot.Galaxy,
+                SelectedSystemIndex = snapshot.SelectedSystemIndex,
+                Ships               = Array.Empty<Ship>(),
+                ShipCount           = 0
             };
+
+            if (_runtimeContext != null &&
+                _runtimeContext.Systems != null &&
+                snapshot.Galaxy != null &&
+                snapshot.Galaxy.Length > 0)
+            {
+                var systemIndex = snapshot.SelectedSystemIndex;
+                if (systemIndex >= 0 && systemIndex < _runtimeContext.Systems.Count)
+                {
+                    var count = _runtimeContext.Systems.CopyShipsToBuffer(systemIndex, ref _renderShipsBuffer);
+                    render.ShipCount = count;
+                    render.Ships = count > 0 ? _renderShipsBuffer : Array.Empty<Ship>();
+                }
+            }
+
+            return render;
         }
 
         private static StarSys? TryGetSystem(int index, StarSys[] galaxy)

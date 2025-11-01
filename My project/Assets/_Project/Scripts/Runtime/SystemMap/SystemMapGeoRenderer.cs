@@ -1,39 +1,40 @@
-п»їusing System.Collections.Generic;
+using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
-using _Project.Prefabs;                                        // РґРѕР±Р°РІР»РµРЅРѕ вЂ” РґР»СЏ РґРѕСЃС‚СѓРїР° Рє PrefabCatalog
+using _Project.Prefabs;                                        // добавлено — для доступа к PrefabCatalog
+using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// Р“РµРѕРіСЂР°С„РёС‡РµСЃРєРёР№ СЃР»РѕР№ РєР°СЂС‚С‹ СЃРёСЃС‚РµРјС‹: Р·РІРµР·РґР°, РїР»Р°РЅРµС‚С‹, РѕСЂР±РёС‚С‹ РїР»Р°РЅРµС‚ Рё Р»СѓРЅ.
-    /// Р РµР°Р»РёР·СѓРµС‚ ISystemMapLayer Рё Р¶РёРІС‘С‚ РїРѕРґ РѕСЂРєРµСЃС‚СЂР°С‚РѕСЂРѕРј SystemMapRenderer.
+    /// Географический слой карты системы: звезда, планеты, орбиты планет и лун.
+    /// Реализует ISystemMapLayer и живёт под оркестратором SystemMapRenderer.
     /// </summary>
     public sealed class SystemMapGeoRenderer : MonoBehaviour, ISystemMapLayer
     {
-        [Header("РџРѕСЂСЏРґРѕРє СЃР»РѕСЏ")]
+        [Header("Порядок слоя")]
         [SerializeField] private int order = 0;
         public int Order => order;
 
-        [Header("РњР°С‚РµСЂРёР°Р» Рё С†РІРµС‚Р° РѕСЂР±РёС‚")]
+        [Header("Материал и цвета орбит")]
         [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new(0.6f, 0.8f, 1f, 0.35f);
         [SerializeField] private Color moonOrbitColor   = new(1f, 1f, 1f, 0.18f);
 
-        [Header("Р“РµРѕРјРµС‚СЂРёСЏ РѕРєСЂСѓР¶РЅРѕСЃС‚РµР№")]
+        [Header("Геометрия окружностей")]
         [SerializeField, Min(16)] private int segments = 128;
         [SerializeField] private float orbitUnitPlanet = 10f;
         [SerializeField] private float orbitUnitMoon   = 1.5f;
 
-        [Header("Р­РєСЂР°РЅРЅР°СЏ С‚РѕР»С‰РёРЅР° Р»РёРЅРёР№ (Р±РµР· С€РµР№РґРµСЂР°)")]
+        [Header("Экранная толщина линий (без шейдера)")]
         [SerializeField] private float lineWidthAtRefZoom = 0.015f;
         [SerializeField] private float referenceOrthoSize = 10f;
         [SerializeField] private Camera targetCamera;
 
-        [Header("РљР°С‚Р°Р»РѕРі РїСЂРµС„Р°Р±РѕРІ")]                           // РґРѕР±Р°РІР»РµРЅРѕ
-        [SerializeField] private PrefabCatalog catalog;         // РґРѕР±Р°РІР»РµРЅРѕ
+        [Header("Каталог префабов")]                           // добавлено
+        [SerializeField] private PrefabCatalog catalog;         // добавлено
 
-        // РљРѕСЂРЅРё СЃР»РѕСЏ
+        // Корни слоя
         private Transform _layerRoot;
         private Transform _starRoot;
         private Transform _planetOrbitsRoot;
@@ -61,7 +62,7 @@ namespace _Project.Scripts.SystemMap
             ClearAll();
         }
 
-        public void Render(in StarSys sys)
+        public void Render(in StarSys sys, Ship[] ships, int shipCount)
         {
             if (_layerRoot == null) return;
 
@@ -73,7 +74,7 @@ namespace _Project.Scripts.SystemMap
 
         public void Dispose() => ClearAll();
 
-        // ---------------- Р РёСЃРѕРІР°РЅРёРµ ----------------
+        // ---------------- Рисование ----------------
 
         private void DrawStar(in StarSys system)
         {
@@ -153,7 +154,7 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        // ---------------- РўРµС…РЅРёС‡РµСЃРєРёРµ С…РµР»РїРµСЂС‹ ----------------
+        // ---------------- Технические хелперы ----------------
 
         private void EnsureCamera()
         {
@@ -197,7 +198,7 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        // === Р·Р°РјРµРЅРµРЅРѕ: С‚РµРїРµСЂСЊ С‡РёС‚Р°РµРј РёР· PrefabCatalog ===
+        // === заменено: теперь читаем из PrefabCatalog ===
 
         private GameObject GetStarPrefab(EStarType type)
         {

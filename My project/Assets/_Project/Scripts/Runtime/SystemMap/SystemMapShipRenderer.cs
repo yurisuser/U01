@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using _Project.Prefabs;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Ships;
 using UnityEngine;
-using _Project.Scripts.SystemMap;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -11,13 +11,13 @@ namespace _Project.Scripts.SystemMap
     public sealed class SystemMapShipRenderer : MonoBehaviour, ISystemMapLayer
     {
         [Header("Порядок слоя")]
-        [SerializeField] private int order = 10;     // позже кораблей можно рисовать поверх гео
+        [SerializeField] private int order = 10;     // чем больше число, тем позже рисуем
         public int Order => order;
 
         [Header("Каталог префабов")]
         [SerializeField] private PrefabCatalog catalog;
 
-        private Transform _root;                     // ShipsRoot
+        private Transform _root;                     // общий родитель для всех кораблей на карте
         private readonly Dictionary<UID, GameObject> _views = new();
 
         public void Init(Transform parentRoot)
@@ -28,48 +28,50 @@ namespace _Project.Scripts.SystemMap
                 go.transform.SetParent(parentRoot, false);
                 _root = go.transform;
             }
+
             ClearAll();
         }
 
-        public void Render(in StarSys sys)
+        public void Render(in StarSys sys, Ship[] ships, int shipCount)
         {
-            // если кораблей нет — просто подчистим "лишние" из словаря
-            var ships = sys.ShipArr;
-            var seen = HashSetPool<UID>.Get();       // маленький пул локального набора id
+            // ships и shipCount — свежий снимок кораблей от GameStateService
+            var seen = HashSetPool<UID>.Get();
 
-            if (ships != null)
+            if (ships != null && shipCount > 0)
             {
-                for (int i = 0; i < ships.Length; i++)
+                for (int i = 0; i < shipCount; i++)
                 {
                     var sh = ships[i];
                     seen.Add(sh.Uid);
 
-                    // 1) Добавление
-                    if (!_views.TryGetValue(sh.Uid, out var go) || !go)
+                    if (!_views.TryGetValue(sh.Uid, out var view) || !view)
                     {
-                        var prefab = GetShipPrefab(); // пока один тип
-                        if (!prefab) continue;
-                        go = Instantiate(prefab, _root);
-                        go.name = $"Ship_{sh.Uid.Id}";
-                        _views[sh.Uid] = go;
+                        var prefab = GetShipPrefab();
+                        if (!prefab)
+                            continue;
+
+                        view = Instantiate(prefab, _root);
+                        view.name = $"Ship_{sh.Uid.Id}";
+                        _views[sh.Uid] = view;
                     }
 
-                    // 2) Обновление позиции (ориентацию добавим позже)
-                    go.transform.localPosition = sh.Position;
+                    // пока обновляем только позицию — разворот добавим в следующих итерациях
+                    view.transform.localPosition = sh.Position;
                 }
             }
 
-            // 3) Удаление пропавших
             if (_views.Count > 0)
             {
                 ScratchKeys.Clear();
                 ScratchKeys.AddRange(_views.Keys);
+
                 for (int k = 0; k < ScratchKeys.Count; k++)
                 {
                     var id = ScratchKeys[k];
                     if (!seen.Contains(id))
                     {
-                        if (_views[id]) Destroy(_views[id]);
+                        if (_views[id])
+                            Destroy(_views[id]);
                         _views.Remove(id);
                     }
                 }
@@ -80,21 +82,24 @@ namespace _Project.Scripts.SystemMap
 
         public void Dispose() => ClearAll();
 
-        // --- helpers ---
-
         private GameObject GetShipPrefab()
         {
-            // Минимально: берём первый элемент Ship Prefabs By Class из каталога.
             if (!catalog || catalog.ShipPrefabsByClass == null || catalog.ShipPrefabsByClass.Length == 0)
                 return null;
+
+            // временно берём первый класс корабля
             return catalog.ShipPrefabsByClass[0];
         }
 
         private void ClearAll()
         {
             foreach (var kv in _views)
-                if (kv.Value) Destroy(kv.Value);
+            {
+                if (kv.Value)
+                    Destroy(kv.Value);
+            }
             _views.Clear();
+
             if (_root)
             {
                 for (int i = _root.childCount - 1; i >= 0; i--)
@@ -102,15 +107,19 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        // Небольшой локальный пул для HashSet, чтобы не мусорить GC
-        static class HashSetPool<T>
+        private static class HashSetPool<T>
         {
-            static readonly Stack<HashSet<T>> Pool = new();
+            private static readonly Stack<HashSet<T>> Pool = new();
+
             public static HashSet<T> Get() => Pool.Count > 0 ? Pool.Pop() : new HashSet<T>();
-            public static void Release(HashSet<T> set) { set.Clear(); Pool.Push(set); }
+
+            public static void Release(HashSet<T> set)
+            {
+                set.Clear();
+                Pool.Push(set);
+            }
         }
 
-        // временный буфер ключей на удаление
         private static readonly List<UID> ScratchKeys = new();
     }
 }

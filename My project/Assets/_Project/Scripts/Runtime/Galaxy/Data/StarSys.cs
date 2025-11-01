@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Individ;
-using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Galaxy.Data
 {
+    /// <summary>
+    /// Статичное описание системы: звезда, планеты, вспомогательные данные.
+    /// Живые объекты (корабли, события) отныне не храним здесь,
+    /// их состояние берём из SystemRegistry, когда нужно показать систему.
+    /// </summary>
     public struct StarSys
     {
         public UID Uid;
@@ -12,7 +16,6 @@ namespace _Project.Scripts.Galaxy.Data
         public Vector3 GalaxyPosition;
         public Star Star;
         public PlanetSys[] PlanetSysArr;
-        public Ship[] ShipArr;
         public Individ[] IndividArr;
         
         public int[] PlanetOrbits;

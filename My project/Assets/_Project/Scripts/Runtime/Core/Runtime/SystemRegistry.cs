@@ -70,6 +70,19 @@ namespace _Project.Scripts.Core.Runtime
             ship = default;
             return TryGetState(systemId, out var state) && state.TryRemoveShip(slot, out ship);
         }
+
+        /// <summary>
+        /// Заполняет переданный буфер актуальными кораблями системы.
+        /// Буфер можно переиспользовать между вызовами, чтобы не плодить мусор.
+        /// Возвращает фактическое количество записанных кораблей.
+        /// </summary>
+        public int CopyShipsToBuffer(int systemId, ref Ship[] buffer)
+        {
+            if (!TryGetState(systemId, out var state))
+                return 0;
+
+            return state.CopyShips(ref buffer);
+        }
     }
 
     public sealed class StarSystemState
@@ -136,6 +149,23 @@ namespace _Project.Scripts.Core.Runtime
                 newCapacity *= 2;
 
             Array.Resize(ref _ships, newCapacity);
+        }
+
+        /// <summary>
+        /// Копируем текущее содержимое в пользовательский буфер.
+        /// Если места не хватает — расширяем буфер.
+        /// Возвращаем число кораблей, которое теперь лежит в буфере.
+        /// </summary>
+        public int CopyShips(ref Ship[] buffer)
+        {
+            if (_shipCount <= 0)
+                return 0;
+
+            if (buffer == null || buffer.Length < _shipCount)
+                buffer = new Ship[_shipCount];
+
+            Array.Copy(_ships, 0, buffer, 0, _shipCount);
+            return _shipCount;
         }
     }
 }
