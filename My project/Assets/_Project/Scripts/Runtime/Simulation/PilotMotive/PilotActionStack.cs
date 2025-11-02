@@ -87,7 +87,7 @@ namespace _Project.Scripts.Simulation.PilotMotive
         {
             if (_buffer == null || _buffer.Length == 0)
             {
-                var capacity = Math.Max(size, 4);
+                var capacity = Math.Max(size, 16);
                 _buffer = new PilotAction[capacity];
                 return;
             }
