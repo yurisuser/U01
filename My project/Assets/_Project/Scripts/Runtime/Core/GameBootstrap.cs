@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using System.Collections;
+using System.IO;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Input;
 using _Project.Scripts.Core.Runtime;
@@ -50,6 +51,9 @@ namespace _Project.Scripts.Core
                 _gameState = new GameStateService(stepDurationSeconds);
             else
                 _gameState.SetLogicStepSeconds(stepDurationSeconds);
+
+            var localizationPath = Path.Combine(Application.dataPath, "_Project/Localization/JSONS/en");
+            LocalizationDatabase.Initialize(localizationPath);
 
             var galaxy = GalaxyCreator.Create();
             var context = RuntimeWorldService.RequireContext();

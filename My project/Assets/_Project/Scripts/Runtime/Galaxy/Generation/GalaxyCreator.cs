@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 
@@ -21,42 +21,50 @@ namespace _Project.Scripts.Galaxy.Generation
         private static float _lastRawX;
         private static float _lastRawY;
         
-public static StarSys[] Create()
-{
-    var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
-    for (int i = 0; i < galaxy.Length; i++) // для каждой звезды на карте делаю следующее
-    {
-        if (i == 0)
+        public static StarSys[] Create()
         {
-            //к этой херне вернуться потом
-            //
-            // Центральный объект: чёрная дыра, без планет
-            //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size по желанию
-            //int[] noPlanets = Array.Empty<int>();
-            //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
-            continue;
-        }
-        var star = StarCreator.Create(); //создаю звезду
-        var planetOrbits = PlanetOrbitCreator.Create(star); //Используемые планетами орбиты
-        var planetsArr = new Planet[planetOrbits.Length]; //на каждой орбите по планете
-        var planetSysArr = new PlanetSys[planetOrbits.Length]; //и не только, а целая планетная система
-        for (var j = 0; j < planetOrbits.Length; j++) //перебираем орбиты с планетными системами
-        {
-            planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //для каждой планетной системы делаю планету
-            var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]); // прикидываю сколько будет орбит для лун
-            var moonsArr = new Moon[moonOrbits.Length]; // делаю столько же и лун
-            for (var k = 0; k < moonOrbits.Length; k++) //для каждой лунной орбиты
+            var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
+            LocalizationDatabase.PrepareStarNames(galaxy.Length);
+            for (int i = 0; i < galaxy.Length; i++) // для каждой звезды на карте делаю следующее
             {
-                moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //создаю луну
-            } 
-            planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //И все что получилось - в планетную систему. 
+                var starName = LocalizationDatabase.GetStarName(i);
+
+                if (i == 0)
+                {
+                    //к этой херне вернуться потом
+                    //
+                    // Центральный объект: чёрная дыра, без планет
+                    //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size по желанию
+                    //int[] noPlanets = Array.Empty<int>();
+                    //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
+                    galaxy[i].Name = starName;
+                    var coreStar = galaxy[i].Star;
+                    coreStar.name = starName;
+                    galaxy[i].Star = coreStar;
+                    continue;
+                }
+                var star = StarCreator.Create(); //создаю звезду
+                star.name = starName;
+                var planetOrbits = PlanetOrbitCreator.Create(star); //Используемые планетами орбиты
+                var planetsArr = new Planet[planetOrbits.Length]; //на каждой орбите по планете
+                var planetSysArr = new PlanetSys[planetOrbits.Length]; //и не только, а целая планетная система
+                for (var j = 0; j < planetOrbits.Length; j++) //перебираем орбиты с планетными системами
+                {
+                    planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //для каждой планетной системы делаю планету
+                    var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]); // прикидываю сколько будет орбит для лун
+                    var moonsArr = new Moon[moonOrbits.Length]; // делаю столько же и лун
+                    for (var k = 0; k < moonOrbits.Length; k++) //для каждой лунной орбиты
+                    {
+                        moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //создаю луну
+                    }
+                    planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //И все что получилось - в планетную систему.
+                }
+
+                galaxy[i] = StarSysCreator.Create(galaxy[i], star, planetSysArr, planetOrbits); //планетные системы и звезду упаковываю в звездную систему
+            }
+
+            return galaxy;
         }
-
-        galaxy[i] = StarSysCreator.Create(galaxy[i], star, planetSysArr, planetOrbits); //планетные системы и звезду упаковываю в звездную систему
-    }
-
-    return galaxy;
-}
 private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
         {
             if (count <= 0) return Array.Empty<StarSys>();

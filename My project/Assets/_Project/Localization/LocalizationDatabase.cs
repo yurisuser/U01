@@ -1,27 +1,30 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 public static class LocalizationDatabase
 {
-    // каждый диапазон – свой файл, свой массив
-    // 0-1000   – звезды
-    // 1001-2000 – планеты
-    // 2001-3000 – корабли
-    // 3001-4000 – оборудование
-    // 4001-5000 – товары
-    // 5001-6000 – имена персон
-    // 6001-7000 – фамилии персон
-    // 7001-8000 – интерфейс
-    // 8001-9000 – всякое разное
+    // каждый диапазон — свой файл и массив
+    // 0-1000   — звезды
+    // 1001-2000 — планеты
+    // 2001-3000 — корабли
+    // 3001-4000 — оборудование
+    // 4001-5000 — товары
+    // 5001-6000 — имена персон
+    // 6001-7000 — фамилии персон
+    // 7001-8000 — интерфейс
+    // 8001-9000 — всякое разное
+    private const int StarRangeStart = 0;
+    private const int StarRangeEnd = 1000;
+
     private static readonly List<LocalizationChunk> _chunks = new();
+    private static string[] _starNames = Array.Empty<string>();
     private static bool _isInitialized;
+    private static bool _starNamesPrepared;
+    public static IReadOnlyList<string> StarNames => _starNames;
 
     public static IReadOnlyList<LocalizationChunk> Chunks => _chunks;
     public static bool IsInitialized => _isInitialized;
 
-    /// <summary>
-    /// Loads all English localization chunks from the specified directory.
-    /// </summary>
     public static void Initialize(string directoryPath)
     {
         var reader = new LocalizationReader();
@@ -34,6 +37,7 @@ public static class LocalizationDatabase
 
         _chunks.Sort((a, b) => a.StartId.CompareTo(b.StartId));
         _isInitialized = true;
+        _starNamesPrepared = false;
     }
 
     public static bool TryGet(int id, out string value)
@@ -60,6 +64,60 @@ public static class LocalizationDatabase
             return value;
 
         throw new KeyNotFoundException($"Localization id {id} was not loaded.");
+    }
+
+    public static string GetStarName(int index)
+    {
+        EnsureInitialized();
+
+        if (index < 0)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        if (!_starNamesPrepared || index >= _starNames.Length)
+            PrepareStarNames(index + 1);
+
+        return _starNames[index];
+    }
+
+    public static void PrepareStarNames(int requiredCount)
+    {
+        EnsureInitialized();
+
+        if (requiredCount <= 0)
+        {
+            _starNames = Array.Empty<string>();
+            _starNamesPrepared = true;
+            return;
+        }
+
+        var baseNames = new List<string>();
+        foreach (var chunk in _chunks)
+        {
+            if (chunk.EndId < StarRangeStart || chunk.StartId > StarRangeEnd)
+                continue;
+
+            var values = chunk.Values;
+            for (int i = 0; i < values.Count; i++)
+            {
+                var value = values[i]?.Trim();
+                if (!string.IsNullOrWhiteSpace(value))
+                    baseNames.Add(value);
+            }
+        }
+
+        if (baseNames.Count == 0)
+            throw new InvalidOperationException("No star names found in localization data.");
+
+        _starNames = new string[requiredCount];
+        int baseCount = baseNames.Count;
+        for (int i = 0; i < requiredCount; i++)
+        {
+            var root = baseNames[i % baseCount];
+            int repeat = i / baseCount;
+            _starNames[i] = repeat == 0 ? root : $"{root}-{repeat + 1}";
+        }
+
+        _starNamesPrepared = true;
     }
 
     private static void EnsureInitialized()
