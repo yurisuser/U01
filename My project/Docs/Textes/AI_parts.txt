@@ -1,0 +1,34 @@
+Приказы:
+Idle
+MoveToCoordinats
+MoveToSystem
+AtackTarget
+AtackAllEnemies
+Patrol
+DefenceTarget
+DefencePosition
+Explore
+
+Другие действия:(нужно продумать концепцию)
+KeepDistance (например для атаки с расстояния) (нужно продумать концепцию)
+Avoid (target? position?)
+Fight (????)
+
+
+атомарные действия:
+MoveToCoordinats
+MoveToTarget
+JD_Jamp - прыжок с JumpDrive
+ScanTarget
+ScanSpace
+
+режимы для автоматических пушек
+Idle — бездействие.
+AttackAllEnemies — атаковать всех врагов.
+AttackTarget — атаковать выбранную цель.
+AttackNearest — атаковать ближайшего врага.
+AttackFarthest — атаковать самого дальнего врага.
+AttackStrongest — атаковать самого сильного врага.
+AttackWeakest — атаковать самого слабого врага.
+RocketDefense — приоритетная защита от ракет.
+FighterDefense — приоритетная защита от истребителей.
