@@ -3,6 +3,16 @@ using System.Collections.Generic;
 
 public static class LocalizationDatabase
 {
+    // каждый диапазон – свой файл, свой массив
+    // 0-1000   – звезды
+    // 1001-2000 – планеты
+    // 2001-3000 – корабли
+    // 3001-4000 – оборудование
+    // 4001-5000 – товары
+    // 5001-6000 – имена персон
+    // 6001-7000 – фамилии персон
+    // 7001-8000 – интерфейс
+    // 8001-9000 – всякое разное
     private static readonly List<LocalizationChunk> _chunks = new();
     private static bool _isInitialized;
 
