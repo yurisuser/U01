@@ -3,9 +3,7 @@ using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Simulation.Motives;
 using _Project.Scripts.Simulation.PilotMotivation;
-using sim = _Project.Scripts.Simulation;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation
@@ -19,7 +17,7 @@ namespace _Project.Scripts.Simulation
         private const float SpawnRadius = 6f;
         private const float ArriveDistance = 0.2f; // расстояние, с которого патруль считается достигшим цели и берёт новую точку маршрута
         private const float DefaultPatrolSpeed = 5f;
-        private static float DefaultPatrolRadius = PatrolParameters.DefaultPatrolRadius;
+        private static float DefaultPatrolRadius = 100f;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
