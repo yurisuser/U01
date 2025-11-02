@@ -43,7 +43,7 @@ namespace _Project.Scripts.Simulation.Motives
 
         public void UpdatePatrol(ref Ship ship, ref PilotMotiv motiv, float dt)
         {
-            if (motiv.Mission.Kind != PilotMissionKind.Patrol)
+            if (motiv.Mission.Kind != EPilotTasks.Patrol)
                 return;
 
             var execution = motiv.Execution;
@@ -52,7 +52,7 @@ namespace _Project.Scripts.Simulation.Motives
                 return;
 
             var frame = stack.Peek();
-            if (frame.Kind != PilotTaskKind.PatrolMove)
+            if (frame.Kind != EPilotSubTasks.PatrolMove)
                 return;
 
             EnsureTarget(ref motiv, ship.Position);
@@ -102,7 +102,7 @@ namespace _Project.Scripts.Simulation.Motives
                 return;
 
             var frame = stack.Peek();
-            if (frame.Kind != PilotTaskKind.PatrolMove)
+            if (frame.Kind != EPilotSubTasks.PatrolMove)
                 return;
 
             if (!frame.Payload.Patrol.HasTarget)
@@ -112,7 +112,7 @@ namespace _Project.Scripts.Simulation.Motives
         private void AssignNextPatrolTarget(ref PilotMotiv motiv, Vector3 origin)
         {
             var mission = motiv.Mission;
-            if (mission.Kind != PilotMissionKind.Patrol)
+            if (mission.Kind != EPilotTasks.Patrol)
                 return;
 
             var execution = motiv.Execution;
@@ -121,7 +121,7 @@ namespace _Project.Scripts.Simulation.Motives
                 return;
 
             var frame = stack.Peek();
-            if (frame.Kind != PilotTaskKind.PatrolMove)
+            if (frame.Kind != EPilotSubTasks.PatrolMove)
                 return;
 
             var patrolMission = mission.Parameters.Patrol;

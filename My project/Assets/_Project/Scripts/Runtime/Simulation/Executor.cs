@@ -116,10 +116,10 @@ namespace _Project.Scripts.Simulation
 
                     switch (motiv.ActiveTaskKind)
                     {
-                        case PilotTaskKind.PatrolMove:
+                        case EPilotSubTasks.PatrolMove:
                             _pilotMotivService.UpdatePatrol(ref ship, ref motiv, dt);
                             break;
-                        case PilotTaskKind.None:
+                        case EPilotSubTasks.None:
                         default:
                             break;
                     }

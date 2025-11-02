@@ -20,25 +20,25 @@ namespace _Project.Scripts.Simulation
             };
         }
 
-        public readonly PilotTaskKind ActiveTaskKind
+        public readonly EPilotSubTasks ActiveTaskKind
         {
             get
             {
                 var stack = Execution.TaskStack;
-                return stack.Count > 0 ? stack.Peek().Kind : PilotTaskKind.None;
+                return stack.Count > 0 ? stack.Peek().Kind : EPilotSubTasks.None;
             }
         }
 
         public struct MissionState
         {
-            public PilotMissionKind Kind;
+            public EPilotTasks Kind;
             public MissionParameters Parameters;
 
             public static MissionState CreateIdle()
             {
                 return new MissionState
                 {
-                    Kind = PilotMissionKind.None,
+                    Kind = EPilotTasks.None,
                     Parameters = default
                 };
             }
@@ -47,7 +47,7 @@ namespace _Project.Scripts.Simulation
             {
                 return new MissionState
                 {
-                    Kind = PilotMissionKind.Patrol,
+                    Kind = EPilotTasks.Patrol,
                     Parameters = new MissionParameters
                     {
                         Patrol = new PatrolMissionParameters
@@ -146,14 +146,14 @@ namespace _Project.Scripts.Simulation
 
         public struct TaskFrame
         {
-            public PilotTaskKind Kind;
+            public EPilotSubTasks Kind;
             public TaskPayload Payload;
 
             public static TaskFrame CreatePatrolMove(float desiredSpeed, uint randomState)
             {
                 return new TaskFrame
                 {
-                    Kind = PilotTaskKind.PatrolMove,
+                    Kind = EPilotSubTasks.PatrolMove,
                     Payload = new TaskPayload
                     {
                         Patrol = new PatrolTaskPayload
