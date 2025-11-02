@@ -2,28 +2,28 @@ using System.Collections.Generic;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Prefabs; // prefab catalog access
 using UnityEngine;
-using _Project.Prefabs; //  ���������
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
     [DisallowMultipleComponent]
     public class GalaxyMapRenderer : MonoBehaviour
     {
-        [Header("��⠫�� ��䠡�� (�������᪠� ����)")]
-        [SerializeField] private PrefabCatalog catalog;          //  ���������
+        [Header("Prefab catalogue")]
+        [SerializeField] private PrefabCatalog catalog; // maps star types to prefabs
 
-        [Header("��䮫�� ��䠡 (�᫨ � ��⠫��� ��� �祩��)")]
+        [Header("Fallback prefab")]
         [SerializeField] private GameObject defaultPrefab;
 
-        [Header("����� �� ࠧ���� (�᫨ �� �㦥� - ���⠢� �� = 1)")]
-        [SerializeField] private float dwarfMul      = 0.7f;
-        [SerializeField] private float normalMul     = 1.0f;
-        [SerializeField] private float giantMul      = 2.4f;
-        [SerializeField] private float supergiantMul = 3.8f;
-        [SerializeField] private float globalScale   = 4.0f;
+        [Header("Star size multipliers (default = 1)")]
+         private float dwarfMul = 0.7f;
+         private float normalMul = 1.0f;
+        private float giantMul = 1.4f;
+         private float supergiantMul = 2.0f;
+        private float globalScale = 2.5f;
 
-        [Header("�㤠 ᪫��뢠�� ���⠭��")]
+        [Header("Spawn root transform")]
         [SerializeField] private Transform starsRoot;
 
         private readonly List<GameObject> _spawned = new();
@@ -47,7 +47,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_state != null)
             {
                 _state.RenderChanged += OnRenderChanged;
-                OnRenderChanged(_state.Render); // моментально приводим в синхрон
+                OnRenderChanged(_state.Render); // update immediately to keep map in sync
             }
         }
 
@@ -68,7 +68,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (clearBefore)
                 ClearSpawned();
 
-            if (systems == null || systems.Length == 0) return;
+            if (systems == null || systems.Length == 0)
+                return;
 
             var parent = starsRoot ? starsRoot : transform;
 
@@ -76,23 +77,24 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 var s = systems[i];
 
-                var prefab = GetPrefabFor(s.Star.type) ?? defaultPrefab; //  ���� �� ��⠫���
-                if (!prefab) continue;
+                var prefab = GetPrefabFor(s.Star.type) ?? defaultPrefab; // prefer type-specific prefab
+                if (!prefab)
+                    continue;
 
                 var go = Instantiate(prefab, s.GalaxyPosition, Quaternion.identity, parent);
                 go.name = string.IsNullOrWhiteSpace(s.Name) ? $"SYS-{i:0000}" : s.Name;
 
-                // ����⠡ �� ࠧ���� �� ������ �����樨
+                // scale the visual based on star size and global multiplier
                 var mul = GetSizeMul(s.Star.size) * Mathf.Max(0.0001f, globalScale);
                 go.transform.localScale = go.transform.localScale * mul;
 
-                // �᫨ �� ��䠡� ���� ������ - �ப��뢠�� �����
+                // configure click handler with metadata if present
                 var click = go.GetComponent<StarGalaxyMapClick>();
                 if (click != null)
                 {
-                    click.type       = s.Star.type;
+                    click.type = s.Star.type;
                     click.systemName = go.name;
-                    click.System     = s;
+                    click.System = s;
                 }
 
                 _spawned.Add(go);
@@ -104,7 +106,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             for (int i = 0; i < _spawned.Count; i++)
             {
                 var go = _spawned[i];
-                if (!go) continue;
+                if (!go)
+                    continue;
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                     DestroyImmediate(go);
@@ -115,25 +118,29 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             _spawned.Clear();
         }
 
-        // === �������쭠� �ࠢ��: �⠥� ��䠡 �� PrefabCatalog ===
+        // === Prefab catalog helpers ===
         private GameObject GetPrefabFor(EStarType t)
         {
-            if (!catalog || catalog.StarGalaxyPrefabsByType == null) return null;
-            int idx = (int)t;
+            if (!catalog || catalog.StarGalaxyPrefabsByType == null)
+                return null;
+
             var arr = catalog.StarGalaxyPrefabsByType;
-            if (idx < 0 || idx >= arr.Length) return null;
-            return arr[idx];
+            var index = (int)t;
+            if (index < 0 || index >= arr.Length)
+                return null;
+
+            return arr[index];
         }
-        // ==========================================================
+        // ==============================
 
         private float GetSizeMul(EStarSize z) =>
             z switch
             {
-                EStarSize.Dwarf      => dwarfMul,
-                EStarSize.Normal     => normalMul,
-                EStarSize.Giant      => giantMul,
+                EStarSize.Dwarf => dwarfMul,
+                EStarSize.Normal => normalMul,
+                EStarSize.Giant => giantMul,
                 EStarSize.Supergiant => supergiantMul,
-                _                    => normalMul
+                _ => normalMul
             };
     }
 }

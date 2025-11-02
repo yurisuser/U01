@@ -1,40 +1,46 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using _Project.Prefabs;
 using _Project.Scripts.Galaxy.Data;
-using UnityEngine;
-using _Project.Prefabs;                                        // ��������� � ��� ������� � PrefabCatalog
 using _Project.Scripts.Ships;
+using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
 {
     /// <summary>
-    /// �������������� ���� ����� �������: ������, �������, ������ ������ � ���.
-    /// ��������� ISystemMapLayer � ���� ��� ������������� SystemMapRenderer.
+    /// Renders static geometry of the system map: star, planets, moons and their orbits.
+    /// Works as a layer consumed by <see cref="SystemMapRenderer"/>.
     /// </summary>
     public sealed class SystemMapGeoRenderer : MonoBehaviour, ISystemMapLayer
     {
-        [Header("������� ����")]
+        [Header("Render order")]
         [SerializeField] private int order = 0;
         public int Order => order;
 
-        [Header("�������� � ����� �����")]
+        [Header("Orbit rendering")]
         [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new(0.6f, 0.8f, 1f, 0.35f);
-        [SerializeField] private Color moonOrbitColor   = new(1f, 1f, 1f, 0.18f);
+        [SerializeField] private Color moonOrbitColor = new(1f, 1f, 1f, 0.18f);
 
-        [Header("��������� �����������")]
-        [SerializeField, Min(16)] private int segments = 128;
-        [SerializeField] private float orbitUnitPlanet = 10f;
-        [SerializeField] private float orbitUnitMoon   = 1.5f;
+        [Header("Orbit geometry")]
+        private int segments = 128;
+         private float orbitUnitPlanet = 10f;
+        private float orbitUnitMoon = 1.5f;
 
-        [Header("�������� ������� ����� (��� �������)")]
+        [Header("Base scale factors")]
+        private float baseStarScale = 10f;
+        private float basePlanetScale = 1.5f;
+        private float baseMoonScale = 0.2f;
+        private float basePlanetOrbitScale = 1f;
+        private float baseMoonOrbitScale = 1f;
+
+        [Header("Line width settings")]
         [SerializeField] private float lineWidthAtRefZoom = 0.015f;
         [SerializeField] private float referenceOrthoSize = 10f;
         [SerializeField] private Camera targetCamera;
 
-        [Header("������� ��������")]                           // ���������
-        [SerializeField] private PrefabCatalog catalog;         // ���������
+        [Header("Prefab catalog")]
+        [SerializeField] private PrefabCatalog catalog;
 
-        // ����� ����
         private Transform _layerRoot;
         private Transform _starRoot;
         private Transform _planetOrbitsRoot;
@@ -42,8 +48,11 @@ namespace _Project.Scripts.SystemMap
         private Transform _planetsRoot;
 
         private readonly List<LineRenderer> _allOrbitLines = new();
-
-        // ---------------- ISystemMapLayer ----------------
+        private float _starScaleOverride = 1f;
+        private float _planetScaleOverride = 1f;
+        private float _moonScaleOverride = 1f;
+        private float _planetOrbitScaleOverride = 1f;
+        private float _moonOrbitScaleOverride = 1f;
 
         public void Init(Transform parentRoot)
         {
@@ -52,17 +61,18 @@ namespace _Project.Scripts.SystemMap
             if (!_layerRoot)
             {
                 _layerRoot = CreateRoot("GeoLayer", parentRoot);
-                _starRoot        = CreateRoot("StarRoot",        _layerRoot);
-                _planetOrbitsRoot= CreateRoot("PlanetOrbits",    _layerRoot);
-                _moonOrbitsRoot  = CreateRoot("MoonOrbits",      _layerRoot);
-                _planetsRoot     = CreateRoot("Planets",         _layerRoot);
+                _starRoot = CreateRoot("StarRoot", _layerRoot);
+                _planetOrbitsRoot = CreateRoot("PlanetOrbits", _layerRoot);
+                _moonOrbitsRoot = CreateRoot("MoonOrbits", _layerRoot);
+                _planetsRoot = CreateRoot("Planets", _layerRoot);
             }
 
             EnsureMaterial();
             ClearAll();
         }
 
-        public void Render(in StarSys sys,
+        public void Render(
+            in StarSys system,
             Ship[] prevShips,
             int prevCount,
             Ship[] currShips,
@@ -71,110 +81,144 @@ namespace _Project.Scripts.SystemMap
             int nextCount,
             float progress)
         {
-            if (_layerRoot == null) return;
+            if (_layerRoot == null)
+                return;
 
             ClearAll();
-            DrawStar(sys);
-            DrawPlanetsAndMoons(sys);
+            DrawStar(system);
+            DrawPlanetsAndMoons(system);
             UpdateLineWidthsImmediate();
         }
 
         public void Dispose() => ClearAll();
 
-        // ---------------- ��������� ----------------
+        public void SetScaleOverrides(
+            float starScale,
+            float planetScale,
+            float moonScale,
+            float planetOrbitScale,
+            float moonOrbitScale)
+        {
+            _starScaleOverride = Mathf.Max(0.0001f, starScale);
+            _planetScaleOverride = Mathf.Max(0.0001f, planetScale);
+            _moonScaleOverride = Mathf.Max(0.0001f, moonScale);
+            _planetOrbitScaleOverride = Mathf.Max(0.0001f, planetOrbitScale);
+            _moonOrbitScaleOverride = Mathf.Max(0.0001f, moonOrbitScale);
+        }
 
         private void DrawStar(in StarSys system)
         {
             var starPrefab = GetStarPrefab(system.Star.type);
-            if (starPrefab == null) return;
+            if (!starPrefab)
+                return;
 
             var starGo = Instantiate(starPrefab, _starRoot);
             starGo.name = $"Star_{system.Star.type}";
             starGo.transform.localPosition = Vector3.zero;
+
+            var scale = Mathf.Max(0.0001f, baseStarScale * _starScaleOverride);
+            starGo.transform.localScale = starGo.transform.localScale * scale;
         }
 
         private void DrawPlanetsAndMoons(in StarSys system)
         {
-            var arr = system.PlanetSysArr;
-            if (arr == null) return;
+            var planets = system.PlanetSysArr;
+            if (planets == null)
+                return;
 
-            for (int i = 0; i < arr.Length; i++)
+            for (int i = 0; i < planets.Length; i++)
             {
-                PlanetSys ps = arr[i];
+                var planetSys = planets[i];
 
-                float rPlanet = Mathf.Max(0, ps.OrbitIndex) * orbitUnitPlanet;
-                float ang = ps.OrbitPosition;
-                Vector3 planetPos = new(Mathf.Cos(ang) * rPlanet, Mathf.Sin(ang) * rPlanet, 0f);
+                float orbitRadius =
+                    Mathf.Max(0, planetSys.OrbitIndex) *
+                    orbitUnitPlanet *
+                    Mathf.Max(0.0001f, basePlanetOrbitScale * _planetOrbitScaleOverride);
 
-                var planetOrbit = CreateCircle(_planetOrbitsRoot, Vector3.zero, rPlanet, planetOrbitColor);
+                float angle = planetSys.OrbitPosition;
+                Vector3 planetPos = new(Mathf.Cos(angle) * orbitRadius, Mathf.Sin(angle) * orbitRadius, 0f);
+
+                var planetOrbit = CreateCircle(_planetOrbitsRoot, Vector3.zero, orbitRadius, planetOrbitColor);
                 _allOrbitLines.Add(planetOrbit);
 
-                var planetPrefab = GetPlanetPrefab(ps.Planet.Type);
-                if (planetPrefab != null)
+                var planetPrefab = GetPlanetPrefab(planetSys.Planet.Type);
+                if (planetPrefab)
                 {
-                    var pGo = Instantiate(planetPrefab, _planetsRoot);
-                    pGo.name = $"Planet_{i}_{ps.Planet.Type}_Orbit{ps.OrbitIndex}";
-                    pGo.transform.localPosition = planetPos;
+                    var planetGo = Instantiate(planetPrefab, _planetsRoot);
+                    planetGo.name = $"Planet_{i}_{planetSys.Planet.Type}_Orbit{planetSys.OrbitIndex}";
+                    planetGo.transform.localPosition = planetPos;
+                    var planetScale = Mathf.Max(0.0001f, basePlanetScale * _planetScaleOverride);
+                    planetGo.transform.localScale = planetGo.transform.localScale * planetScale;
                 }
 
-                DrawMoonsForPlanet(i, ps, planetPos, _planetsRoot, _moonOrbitsRoot);
+                DrawMoonsForPlanet(i, planetSys, planetPos, _planetsRoot, _moonOrbitsRoot);
             }
         }
 
         private void DrawMoonsForPlanet(
             int planetIndex,
-            PlanetSys ps,
+            PlanetSys planetSys,
             Vector3 planetPos,
             Transform moonsRoot,
             Transform moonOrbitsRoot)
         {
-            if (ps.Moons == null || ps.Moons.Length == 0) return;
+            if (planetSys.Moons == null || planetSys.Moons.Length == 0)
+                return;
 
-            var center = new GameObject($"Moons_Planet_{planetIndex}").transform;
-            center.SetParent(moonsRoot, false);
-            center.localPosition = planetPos;
+            var moonRoot = new GameObject($"Moons_Planet_{planetIndex}").transform;
+            moonRoot.SetParent(moonsRoot, false);
+            moonRoot.localPosition = planetPos;
 
-            var orbitsCenter = new GameObject($"MoonOrbits_Planet_{planetIndex}").transform;
-            orbitsCenter.SetParent(moonOrbitsRoot, false);
-            orbitsCenter.localPosition = planetPos;
+            var orbitRoot = new GameObject($"MoonOrbits_Planet_{planetIndex}").transform;
+            orbitRoot.SetParent(moonOrbitsRoot, false);
+            orbitRoot.localPosition = planetPos;
 
-            for (int k = 0; k < ps.Moons.Length; k++)
+            for (int k = 0; k < planetSys.Moons.Length; k++)
             {
-                var moon = ps.Moons[k];
-                int orbitIdx = Mathf.Max(0, moon.OrbitIndex);
-                if (orbitIdx <= 0) continue;
+                var moon = planetSys.Moons[k];
+                int orbitIndex = Mathf.Max(0, moon.OrbitIndex);
+                if (orbitIndex <= 0)
+                    continue;
 
-                float rMoon = orbitIdx * orbitUnitMoon;
-                var moonOrbit = CreateCircle(orbitsCenter, Vector3.zero, rMoon, moonOrbitColor);
+                float orbitRadius =
+                    orbitIndex *
+                    orbitUnitMoon *
+                    Mathf.Max(0.0001f, baseMoonOrbitScale * _moonOrbitScaleOverride);
+
+                var moonOrbit = CreateCircle(orbitRoot, Vector3.zero, orbitRadius, moonOrbitColor);
                 _allOrbitLines.Add(moonOrbit);
 
-                float angle = Hash01((planetIndex + 1) * 73856093 ^ (k + 1) * 19349663 ^ orbitIdx * 83492791) * (Mathf.PI * 2f);
-                Vector3 local = new(Mathf.Cos(angle) * rMoon, Mathf.Sin(angle) * rMoon, 0f);
+                float angle = Hash01((planetIndex + 1) * 73856093 ^
+                                     (k + 1) * 19349663 ^
+                                     orbitIndex * 83492791) * Mathf.PI * 2f;
+
+                Vector3 localPos = new(Mathf.Cos(angle) * orbitRadius, Mathf.Sin(angle) * orbitRadius, 0f);
 
                 var moonPrefab = GetMoonPrefab(moon.Type);
-                if (moonPrefab != null)
-                {
-                    var mGo = Instantiate(moonPrefab, center);
-                    mGo.name = $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIdx}";
-                    mGo.transform.localPosition = local;
-                }
+                if (!moonPrefab)
+                    continue;
+
+                var moonGo = Instantiate(moonPrefab, moonRoot);
+                moonGo.name = $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIndex}";
+                moonGo.transform.localPosition = localPos;
+                var moonScale = Mathf.Max(0.0001f, baseMoonScale * _moonScaleOverride);
+                moonGo.transform.localScale = moonGo.transform.localScale * moonScale;
             }
         }
 
-        // ---------------- ����������� ������� ----------------
-
         private void EnsureCamera()
         {
-            if (!targetCamera) targetCamera = Camera.main;
+            if (!targetCamera)
+                targetCamera = Camera.main;
         }
 
         private void EnsureMaterial()
         {
-            if (!orbitMaterial)
-            {
-                var shader = Shader.Find("Sprites/Default");
-                orbitMaterial = new Material(shader) { color = Color.white };
-            }
+            if (orbitMaterial)
+                return;
+
+            var shader = Shader.Find("Sprites/Default");
+            orbitMaterial = new Material(shader) { color = Color.white };
         }
 
         private Transform CreateRoot(string name, Transform parent)
@@ -194,44 +238,56 @@ namespace _Project.Scripts.SystemMap
             ClearChildren(_planetsRoot);
         }
 
-        private static void ClearChildren(Transform t)
+        private static void ClearChildren(Transform target)
         {
-            if (!t) return;
-            for (int i = t.childCount - 1; i >= 0; i--)
+            if (!target)
+                return;
+
+            for (int i = target.childCount - 1; i >= 0; i--)
             {
-                var c = t.GetChild(i);
-                if (Application.isPlaying) Object.Destroy(c.gameObject);
-                else Object.DestroyImmediate(c.gameObject);
+                var child = target.GetChild(i);
+                if (Application.isPlaying)
+                    Destroy(child.gameObject);
+                else
+                    DestroyImmediate(child.gameObject);
             }
         }
 
-        // === ��������: ������ ������ �� PrefabCatalog ===
-
         private GameObject GetStarPrefab(EStarType type)
         {
-            if (!catalog || catalog.StarSystemPrefabsByType == null) return null;
-            int idx = (int)type;
-            if (idx < 0 || idx >= catalog.StarSystemPrefabsByType.Length) return null;
-            return catalog.StarSystemPrefabsByType[idx];
+            if (!catalog || catalog.StarSystemPrefabsByType == null)
+                return null;
+
+            var index = (int)type;
+            if (index < 0 || index >= catalog.StarSystemPrefabsByType.Length)
+                return null;
+
+            return catalog.StarSystemPrefabsByType[index];
         }
 
         private GameObject GetPlanetPrefab(EPlanetType type)
         {
-            if (!catalog || catalog.PlanetPrefabsByType == null) return null;
-            int idx = (int)type;
-            if (idx < 0 || idx >= catalog.PlanetPrefabsByType.Length) return null;
-            return catalog.PlanetPrefabsByType[idx];
+            if (!catalog || catalog.PlanetPrefabsByType == null)
+                return null;
+
+            var index = (int)type;
+            if (index < 0 || index >= catalog.PlanetPrefabsByType.Length)
+                return null;
+
+            return catalog.PlanetPrefabsByType[index];
         }
 
         private GameObject GetMoonPrefab(EMoonType type)
         {
-            if (!catalog || catalog.MoonPrefabsByType == null) return null;
-            int idx = (int)type;
-            if (idx < 0 || idx >= catalog.MoonPrefabsByType.Length) return null;
-            return catalog.MoonPrefabsByType[idx];
-        }
+            if (!catalog || catalog.MoonPrefabsByType == null)
+                return null;
 
-        // ================================================
+            var index = (int)type;
+            if (index < 0 || index >= catalog.MoonPrefabsByType.Length)
+                return null;
+
+            return catalog.MoonPrefabsByType[index];
+        }
 
         private LineRenderer CreateCircle(Transform parent, Vector3 center, float radius, Color color)
         {
@@ -248,15 +304,16 @@ namespace _Project.Scripts.SystemMap
             lr.positionCount = segments;
             lr.widthMultiplier = lineWidthAtRefZoom;
 
-            var pts = new Vector3[segments];
+            var points = new Vector3[segments];
             float twoPi = Mathf.PI * 2f;
             for (int i = 0; i < segments; i++)
             {
                 float t = (float)i / segments;
-                float a = twoPi * t;
-                pts[i] = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f);
+                float angle = twoPi * t;
+                points[i] = new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0f);
             }
-            lr.SetPositions(pts);
+
+            lr.SetPositions(points);
             lr.startColor = color;
             lr.endColor = color;
 
@@ -278,8 +335,11 @@ namespace _Project.Scripts.SystemMap
 
         private void LateUpdate()
         {
-            if (_allOrbitLines.Count == 0) return;
-            if (!targetCamera) return;
+            if (_allOrbitLines.Count == 0)
+                return;
+
+            if (!targetCamera)
+                return;
 
             float camOrtho = Mathf.Max(0.0001f, targetCamera.orthographicSize);
             float width = lineWidthAtRefZoom * (camOrtho / referenceOrthoSize);
@@ -287,24 +347,29 @@ namespace _Project.Scripts.SystemMap
             for (int i = 0; i < _allOrbitLines.Count; i++)
             {
                 var lr = _allOrbitLines[i];
-                if (!lr) continue;
+                if (!lr)
+                    continue;
+
                 lr.widthMultiplier = width;
             }
         }
 
         private void UpdateLineWidthsImmediate()
         {
-            if (!targetCamera) return;
+            if (!targetCamera)
+                return;
+
             float camOrtho = Mathf.Max(0.0001f, targetCamera.orthographicSize);
             float width = lineWidthAtRefZoom * (referenceOrthoSize / camOrtho);
+
             for (int i = 0; i < _allOrbitLines.Count; i++)
             {
                 var lr = _allOrbitLines[i];
-                if (!lr) continue;
+                if (!lr)
+                    continue;
+
                 lr.widthMultiplier = width;
             }
         }
     }
 }
-
-

@@ -20,6 +20,13 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private SystemMapGeoRenderer geoLayer;
         [SerializeField] private MonoBehaviour[] extraLayers;
 
+        [Header("Масштаб элементов системы")]
+        [SerializeField] private float starScale = 1f;
+        [SerializeField] private float planetScale = 1f;
+        [SerializeField] private float moonScale = 1f;
+        [SerializeField] private float planetOrbitScale = 1f;
+        [SerializeField] private float moonOrbitScale = 1f;
+
         private GameBootstrap _core;
         private GameStateService _state;
         private bool _isExiting;
@@ -110,6 +117,13 @@ namespace _Project.Scripts.SystemMap
         {
             if (geoLayer != null)
             {
+                geoLayer.SetScaleOverrides(
+                    Mathf.Max(0.0001f, starScale),
+                    Mathf.Max(0.0001f, planetScale),
+                    Mathf.Max(0.0001f, moonScale),
+                    Mathf.Max(0.0001f, planetOrbitScale),
+                    Mathf.Max(0.0001f, moonOrbitScale));
+
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
                 geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress);
