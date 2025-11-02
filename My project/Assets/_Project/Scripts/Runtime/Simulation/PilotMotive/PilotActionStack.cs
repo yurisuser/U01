@@ -1,6 +1,6 @@
 using System;
 
-namespace _Project.Scripts.Simulation.PilotMotive
+namespace _Project.Scripts.Simulation.PilotMotivation
 {
     /// <summary>
     /// Value-type stack wrapper for pilot actions that avoids direct dependency on Stack{T}.
@@ -10,14 +10,33 @@ namespace _Project.Scripts.Simulation.PilotMotive
         private PilotAction[] _buffer;
         private int _count;
 
+        private const int DefaultCapacity = 16;
+
         public int Count => _count;
+        public bool IsCreated => _buffer != null;
+
+        public void Initialize(int initialCapacity = DefaultCapacity)
+        {
+            if (initialCapacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Capacity must be non-negative.");
+
+            var capacity = initialCapacity == 0 ? 0 : Math.Max(initialCapacity, DefaultCapacity);
+
+            if (_buffer == null || _buffer.Length < capacity)
+                _buffer = capacity == 0 ? Array.Empty<PilotAction>() : new PilotAction[capacity];
+            else
+                Array.Clear(_buffer, 0, _count);
+
+            _count = 0;
+        }
 
         public PilotActionStack(int initialCapacity)
         {
             if (initialCapacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Capacity must be non-negative.");
 
-            _buffer = initialCapacity == 0 ? Array.Empty<PilotAction>() : new PilotAction[initialCapacity];
+            var capacity = initialCapacity == 0 ? 0 : Math.Max(initialCapacity, DefaultCapacity);
+            _buffer = capacity == 0 ? Array.Empty<PilotAction>() : new PilotAction[capacity];
             _count = 0;
         }
 
@@ -25,6 +44,14 @@ namespace _Project.Scripts.Simulation.PilotMotive
         {
             EnsureCapacity(_count + 1);
             _buffer[_count++] = action;
+        }
+
+        public void ReplaceTop(in PilotAction action)
+        {
+            if (_count == 0)
+                throw new InvalidOperationException("Cannot replace top element of an empty stack.");
+
+            _buffer[_count - 1] = action;
         }
 
         public PilotAction Pop()
@@ -74,7 +101,12 @@ namespace _Project.Scripts.Simulation.PilotMotive
 
         public void Clear()
         {
-            Array.Clear(_buffer, 0, _count);
+            if (_count == 0)
+                return;
+
+            if (_buffer != null)
+                Array.Clear(_buffer, 0, _count);
+
             _count = 0;
         }
 
@@ -87,7 +119,7 @@ namespace _Project.Scripts.Simulation.PilotMotive
         {
             if (_buffer == null || _buffer.Length == 0)
             {
-                var capacity = Math.Max(size, 16);
+                var capacity = Math.Max(size, DefaultCapacity);
                 _buffer = new PilotAction[capacity];
                 return;
             }

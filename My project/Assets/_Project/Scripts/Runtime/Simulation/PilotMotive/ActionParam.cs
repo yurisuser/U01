@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.PilotMotive
+namespace _Project.Scripts.Simulation.PilotMotivation
 {
     using _Project.Scripts.Core;
     using UnityEngine;

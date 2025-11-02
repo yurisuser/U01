@@ -4,6 +4,7 @@ using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Motives;
+using _Project.Scripts.Simulation.PilotMotivation;
 using sim = _Project.Scripts.Simulation;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ namespace _Project.Scripts.Simulation
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
-        private readonly PilotMotivService _pilotMotivService;
+        private readonly Motivator _motivator;
 
         private bool _initialShipsSpawned;
 
@@ -32,7 +33,7 @@ namespace _Project.Scripts.Simulation
         {
             _context = context;
             _state = state;
-            _pilotMotivService = new PilotMotivService(DefaultPatrolRadius1, ArriveDistance);
+            _motivator = new Motivator(DefaultPatrolRadius1, ArriveDistance, DefaultPatrolSpeed);
         }
 
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
@@ -82,8 +83,7 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        // центрируем патруль вокруг нулевой точки системы (условное расположение звезды)
-                        var motiv = _pilotMotivService.CreateDefaultPatrol(Vector3.zero, DefaultPatrolSpeed);
+                        var motiv = _motivator.CreateDefaultPatrol(ship.Position);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
                 }
@@ -114,19 +114,54 @@ namespace _Project.Scripts.Simulation
                     if (_context.Pilots == null || !_context.Pilots.TryGetMotiv(ship.PilotUid, out var motiv))
                         continue;
 
-                    switch (motiv.ActiveTaskKind)
+                    _motivator.Update(ref motiv, ship.Position);
+
+                    if (motiv.TryPeekAction(out var action))
                     {
-                        case EPilotSubTasks.PatrolMove:
-                            _pilotMotivService.UpdatePatrol(ref ship, ref motiv, dt);
-                            break;
-                        case EPilotSubTasks.None:
-                        default:
-                            break;
+                        switch (action.Action)
+                        {
+                            case EAction.MoveToCoordinates:
+                                ExecuteMove(ref ship, ref motiv, in action, dt);
+                                break;
+                            default:
+                                break;
+                        }
                     }
 
                     _context.Systems.TryUpdateShip(systemId, slot, in ship);
                     _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv);
                 }
+            }
+        }
+
+        private void ExecuteMove(ref Ship ship, ref PilotMotive motive, in PilotAction action, float dt)
+        {
+            var move = action.Parameters.Move;
+            var target = move.Destination;
+            var arriveDistance = Mathf.Max(move.ArriveDistance, 0.01f);
+            var toTarget = target - ship.Position;
+            var distance = toTarget.magnitude;
+
+            if (distance <= arriveDistance)
+            {
+                ship.Position = target;
+                motive.CompleteCurrentAction();
+                _motivator.OnActionCompleted(ref motive, ship.Position);
+                return;
+            }
+
+            var speed = Mathf.Max(move.DesiredSpeed, 0.1f);
+            var direction = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero;
+            var stepDistance = speed * dt;
+            if (stepDistance > distance)
+                stepDistance = distance;
+
+            ship.Position += direction * stepDistance;
+
+            if (direction.sqrMagnitude > Mathf.Epsilon)
+            {
+                float angleDeg = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
             }
         }
 

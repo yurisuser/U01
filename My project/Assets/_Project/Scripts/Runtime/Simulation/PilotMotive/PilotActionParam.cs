@@ -1,7 +1,19 @@
-namespace _Project.Scripts.Simulation.PilotMotive
+using UnityEngine;
+
+namespace _Project.Scripts.Simulation.PilotMotivation
 {
+    /// <summary>
+    /// Payload for a pilot action. Acts as a tagged union via the owning PilotAction.Action value.
+    /// </summary>
     public struct PilotActionParam
     {
-        // Placeholder for action-specific payloads.
+        public MoveParameters Move;
+
+        public struct MoveParameters
+        {
+            public Vector3 Destination;
+            public float DesiredSpeed;
+            public float ArriveDistance;
+        }
     }
 }
