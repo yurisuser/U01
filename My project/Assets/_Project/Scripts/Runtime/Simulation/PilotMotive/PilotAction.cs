@@ -1,5 +1,8 @@
-public struct PilotAction
+namespace _Project.Scripts.Simulation.PilotMotive
 {
-    EAction Action { get; set; }
-    PilotActionParam ActionParam { get; set; }
+    public struct PilotAction
+    {
+        public EAction Action;
+        public PilotActionParam Parameters;
+    }
 }

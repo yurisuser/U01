@@ -1,9 +1,12 @@
-public enum EAction
+namespace _Project.Scripts.Simulation.PilotMotive
 {
-    Idle = 0,
-    MoveToCoordinates = 1,
-    MoveToTarget = 2,
-    JumpDriveJump = 3, //прыжок с JumpDrive
-    ScanTarget = 4,
-    ScanSpace = 5, //скан пространства вокруг
+    public enum EAction
+    {
+        Idle = 0,
+        MoveToCoordinates = 1,
+        MoveToTarget = 2,
+        JumpDriveJump = 3, // ??? JumpDrive
+        ScanTarget = 4,
+        ScanSpace = 5 // ???
+    }
 }
