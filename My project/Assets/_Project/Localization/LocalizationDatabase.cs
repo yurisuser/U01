@@ -98,6 +98,21 @@ public static class LocalizationDatabase
         return ComposeStarName(root, oldX, oldY);
     }
 
+    public static bool TryGetStarName(int index, float oldX, float oldY, out string value)
+    {
+        if (!IsInitialized || index < 0)
+        {
+            value = string.Empty;
+            return false;
+        }
+
+        if (!_starNamesPrepared || index >= _starNames.Length)
+            PrepareStarNames(index + 1);
+
+        value = ComposeStarName(_starNames[index], oldX, oldY);
+        return true;
+    }
+
     public static void PrepareStarNames(int requiredCount)
     {
         EnsureInitialized();

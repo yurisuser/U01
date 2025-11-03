@@ -1,21 +1,34 @@
-﻿using _Project.Scripts.Core;
+using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Galaxy.Data
 {
     public struct Moon
     {
         public Core.UID Uid;
-        public string Name;            // Имя луны
-        public EMoonType Type;          // Тип луны
-        public EMoonSize Size;          // Размер
-        public int OrbitIndex;         // Номер орбиты
-        public float Mass;             // Масса
-        public float Radius;           // Радиус
-        public float OrbitDistance;    // Расстояние от планеты
-        public float OrbitPeriod;      // Период обращения 
-        public float Inclination;      // Наклон орбиты
-        public float Atmosphere;       // Плотность атмосферы
-        public float Temperature;      // Средняя температура поверхности
-        public float Gravity;          // Ускорение свободного падения
+        public int NameId;            // ID записи в локализации
+        public EMoonType Type;        // ��� ���
+        public EMoonSize Size;        // ������
+        public int OrbitIndex;        // ����� �ࡨ��
+        public float Mass;            // ����
+        public float Radius;          // ������
+        public float OrbitDistance;   // �����ﭨ� �� �������
+        public float OrbitPeriod;     // ��ਮ� ���饭�� 
+        public float Inclination;     // ������ �ࡨ��
+        public float Atmosphere;      // ���⭮��� �⬮����
+        public float Temperature;     // �।��� ⥬������ �����孮��
+        public float Gravity;         // �᪮७�� ᢮������� �������
+
+        public string Name
+        {
+            get
+            {
+                if (NameId < 0)
+                    return string.Empty;
+
+                return LocalizationDatabase.TryGet(NameId, out var value)
+                    ? value
+                    : string.Empty;
+            }
+        }
     }
 }

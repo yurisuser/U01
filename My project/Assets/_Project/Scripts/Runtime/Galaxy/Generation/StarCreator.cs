@@ -85,7 +85,9 @@ namespace _Project.Scripts.Galaxy.Generation
             return new Star
             {
                 Uid = UIDService.Create(EntityType.Star),
-                name = null,
+                NameId = -1,
+                OldX = float.NaN,
+                OldY = float.NaN,
                 type = type,
                 size = size,
                 temperature = temperature,

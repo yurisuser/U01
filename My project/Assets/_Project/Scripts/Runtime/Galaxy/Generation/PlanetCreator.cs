@@ -137,6 +137,7 @@ namespace _Project.Scripts.Galaxy.Generation
             return new Planet
             {
                 Uid = UIDService.Create(EntityType.Planet),
+                NameId = -1,
                 Type = pType,
                 Radius = r
             };

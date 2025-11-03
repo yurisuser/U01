@@ -1,17 +1,30 @@
-﻿namespace _Project.Scripts.Galaxy.Data
+namespace _Project.Scripts.Galaxy.Data
 {
     public struct Planet
     {
         public Core.UID Uid;
-        public string Name;         // Имя планеты
-        public float Mass;          // Масса (в условных ед.)
-        public EPlanetType Type;         // Тип планеты (газовый гигант, каменная, ледяная и т.д.)
-        public float Atmosphere;    // Плотность атмосферы (0 = нет, 1 = земная, >1 = плотнее)
-        public float Radius;        // Радиус (в земных радиусах или условных ед.)
-        public float OrbitalDistance; // Расстояние от звезды (AU или условные ед.)
-        public float OrbitalPeriod; // Период обращения (в земных годах или условных ед.)
-        public float Temperature;   // Средняя температура поверхности (K)
-        public float Gravity;       // Гравитация на поверхности (g)
-        public PlanetResource[] Resources;  // Какие ресурсы есть
+        public int NameId;         // ID записи в локализации
+        public float Mass;         // ���� (� �᫮���� ��.)
+        public EPlanetType Type;   // ��� ������� (������ ������, ��������, ���ﭠ� � �.�.)
+        public float Atmosphere;   // ���⭮��� �⬮���� (0 = ���, 1 = ������, >1 = ���⭥�)
+        public float Radius;       // ������ (� ������ ࠤ���� ��� �᫮���� ��.)
+        public float OrbitalDistance; // �����ﭨ� �� ������ (AU ��� �᫮��� ��.)
+        public float OrbitalPeriod;   // ��ਮ� ���饭�� (� ������ ����� ��� �᫮���� ��.)
+        public float Temperature;  // �।��� ⥬������ �����孮�� (K)
+        public float Gravity;      // �ࠢ���� �� �����孮�� (g)
+        public PlanetResource[] Resources;  // ����� ������ ����
+
+        public string Name
+        {
+            get
+            {
+                if (NameId < 0)
+                    return string.Empty;
+
+                return LocalizationDatabase.TryGet(NameId, out var value)
+                    ? value
+                    : string.Empty;
+            }
+        }
     }
 }

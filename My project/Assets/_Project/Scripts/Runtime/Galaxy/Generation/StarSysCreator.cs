@@ -8,7 +8,7 @@ namespace _Project.Scripts.Galaxy.Generation
         {
             starSys.Star = star;
             starSys.Uid = star.Uid;
-            starSys.Name = star.name;
+            starSys.NameId = star.NameId;
             starSys.PlanetSysArr = planetSysArray;
             starSys.PlanetOrbits = planetOrbits;
             return starSys;

@@ -6,77 +6,87 @@ namespace _Project.Scripts.Galaxy.Generation
 {
     public static class GalaxyCreator
     {
-        // === настройки ===
-        private const int   StarCount                 = 1300;  // количество звёзд в галактике 
-        private const float GalaxyRadius              = 500f;  // радиус галактики (юниты)
-        private const float GalaxyStarLayer           = 0f;    // смещение звёзд по Z
-        private const float DensityArms               = 3f;  // плотность вдоль рукавов
-        private const float WidthArms                 = 60f;  // ширина рукавов
-        private const float MinStarInterval           = 3.5f;  // минимальное расстояние между звёздами
-        private const float CentralBlackHoleIntervalK = 10f;   // отступ от центра (чёрной дыры)
-        private const int   MaxAttemptsPerStar        = 64;    // максимум попыток разместить звезду
+        // === ����ன�� ===
+        private const int   StarCount                 = 1300;  // ������⢮ ��� � �����⨪�
+        private const float GalaxyRadius              = 500f;  // ࠤ��� �����⨪� (��)
+        private const float GalaxyStarLayer           = 0f;    // ᬥ饭�� ��� �� Z
+        private const float DensityArms               = 3f;    // ���⭮��� ����� �㪠���
+        private const float WidthArms                 = 60f;   // �ਭ� �㪠���
+        private const float MinStarInterval           = 3.5f;  // �������쭮� ����ﭨ� ����� ��񧤠��
+        private const float CentralBlackHoleIntervalK = 10f;   // ����� �� 業�� (��୮� ����)
+        private const int   MaxAttemptsPerStar        = 64;    // ���ᨬ� ����⮪ ࠧ������ ������
 
-
-        // внутреннее
+        // ����७���
         private static float _lastRawX;
         private static float _lastRawY;
-        
+
         public static StarSys[] Create()
         {
-            var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // создаём шаблон
+            var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // ᮧ��� 蠡���
             LocalizationDatabase.PrepareStarNames(galaxy.Length);
-            for (int i = 0; i < galaxy.Length; i++) // для каждой звезды на карте делаю следующее
+
+            for (int i = 0; i < galaxy.Length; i++) // ��� ������ ������ �� ���� ����� ᫥���饥
             {
-                var sysData = galaxy[i];
-                var starName = LocalizationDatabase.GetStarName(i, sysData.OldX, sysData.OldY);
+                ref var sysData = ref galaxy[i];
+                sysData.NameId = i;
+
                 if (i == 0)
                 {
-                    //к этой херне вернуться потом
+                    //� �⮩ �୥ �������� ��⮬
                     //
-                    // Центральный объект: чёрная дыра, без планет
-                    //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size по желанию
+                    // ����ࠫ�� ��ꥪ�: ��ୠ� ���, ��� ������
+                    //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size �� �������
                     //int[] noPlanets = Array.Empty<int>();
                     //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
-                    galaxy[i].Name = starName;
-                    var coreStar = galaxy[i].Star;
-                    coreStar.name = starName;
-                    galaxy[i].Star = coreStar;
+                    var coreStar = sysData.Star;
+                    coreStar.NameId = i;
+                    coreStar.OldX = sysData.OldX;
+                    coreStar.OldY = sysData.OldY;
+                    sysData.Star = coreStar;
                     continue;
                 }
-                var star = StarCreator.Create(); //создаю звезду
-                star.name = starName;
-                var planetOrbits = PlanetOrbitCreator.Create(star); //Используемые планетами орбиты
-                var planetsArr = new Planet[planetOrbits.Length]; //на каждой орбите по планете
-                var planetSysArr = new PlanetSys[planetOrbits.Length]; //и не только, а целая планетная система
-                for (var j = 0; j < planetOrbits.Length; j++) //перебираем орбиты с планетными системами
+
+                var star = StarCreator.Create(); //ᮧ��� ������
+                star.NameId = i;
+                star.OldX = sysData.OldX;
+                star.OldY = sysData.OldY;
+
+                var planetOrbits = PlanetOrbitCreator.Create(star); //�ᯮ��㥬� �����⠬� �ࡨ��
+                var planetsArr = new Planet[planetOrbits.Length];   //�� ������ �ࡨ� �� ������
+                var planetSysArr = new PlanetSys[planetOrbits.Length]; //� �� ⮫쪮, � 楫�� �����⭠� ��⥬�
+
+                for (var j = 0; j < planetOrbits.Length; j++) //��ॡ�ࠥ� �ࡨ�� � ������묨 ��⥬���
                 {
-                    planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //для каждой планетной системы делаю планету
-                    var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]); // прикидываю сколько будет орбит для лун
-                    var moonsArr = new Moon[moonOrbits.Length]; // делаю столько же и лун
-                    for (var k = 0; k < moonOrbits.Length; k++) //для каждой лунной орбиты
+                    planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //��� ������ �����⭮� ��⥬� ����� �������
+                    var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]);     // �ਪ��뢠� ᪮�쪮 �㤥� �ࡨ� ��� ��
+                    var moonsArr = new Moon[moonOrbits.Length];                  // ����� �⮫쪮 �� � ��
+
+                    for (var k = 0; k < moonOrbits.Length; k++) //��� ������ �㭭�� �ࡨ��
                     {
-                        moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //создаю луну
+                        moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //ᮧ��� ���
                     }
-                    planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //И все что получилось - в планетную систему.
+
+                    planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //� �� �� ����稫��� - � �������� ��⥬�.
                 }
 
-                galaxy[i] = StarSysCreator.Create(galaxy[i], star, planetSysArr, planetOrbits); //планетные системы и звезду упаковываю в звездную систему
+                sysData = StarSysCreator.Create(sysData, star, planetSysArr, planetOrbits); //������� ��⥬� � ������ 㯠���뢠� � �������� ��⥬�
             }
 
             return galaxy;
         }
-private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
+
+        private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
         {
             if (count <= 0) return Array.Empty<StarSys>();
             var arr = new StarSys[count];
-            // центр
-            arr[0] = new StarSys //Центральная черная дыра
+            // 業��
+            arr[0] = new StarSys //����ࠫ쭠� �ୠ� ���
             {
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
                 OldY = 0f
             };
-            //Другие системы
+            //��㣨� ��⥬�
             for (int i = 1; i < count; i++)
             {
                 var sys = new StarSys();
@@ -99,15 +109,16 @@ private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
 
             return arr;
         }
+
         private static Vector3 GenerateStarsNoGaussianDistr(float zLayer)
         {
-            // семя X в [-1;1], избегаем точного нуля (для Atan(y/x))
+            // ᥬ� X � [-1;1], �������� �筮�� ��� (��� Atan(y/x))
             float xSeed = UnityEngine.Random.Range(-1f, 1f);
             if (Mathf.Approximately(xSeed, 0f)) xSeed = 0.0001f;
 
             float y = UnityEngine.Random.Range(-GalaxyRadius, GalaxyRadius);
 
-            // ВНИМАНИЕ: степень берём от |xSeed|, знак задаём позже — так не будет NaN при нецелой степени
+            // ��������: �⥯��� ���� �� |xSeed|, ���� ����� ����� - ⠪ �� �㤥� NaN �� ��楫�� �⥯���
             float xCore = Mathf.Pow(Mathf.Abs(xSeed), DensityArms) * GalaxyRadius
                         + UnityEngine.Random.Range(-WidthArms, WidthArms);
 
@@ -120,16 +131,16 @@ private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
             return TwistCoordinates(new Vector3(x, y, zLayer));
         }
 
-        // — как было: Atan(y/x) + смена знака радиуса для второго рукава —
+        // - ��� �뫮: Atan(y/x) + ᬥ�� ����� ࠤ��� ��� ��ண� �㪠�� -
         private static Vector3 TwistCoordinates(Vector3 vec)
         {
-            // защищаемся от деления на ноль маленьким эпсилоном со знаком X
+            // ���頥��� �� ������� �� ���� �����쪨� ��ᨫ���� � ������ X
             float xSafe = Mathf.Abs(vec.x) < 1e-4f ? (vec.x >= 0f ? 1e-4f : -1e-4f) : vec.x;
 
-            float angle  = Mathf.Atan(vec.y / xSafe); // как в старом файле
+            float angle  = Mathf.Atan(vec.y / xSafe); // ��� � ��஬ 䠩��
             float radius = Mathf.Sqrt(vec.x * vec.x + vec.y * vec.y);
 
-            // этот приём и даёт второй рукав
+            // ��� ��� � ���� ��ன �㪠�
             radius *= (vec.x - vec.y) < 0f ? -1f : 1f;
 
             float normalizedRadius = Mathf.Abs(radius) / GalaxyRadius;
@@ -150,7 +161,7 @@ private static StarSys[] CreateSpiralGalaxy(int count, float zLayer)
                 var candidate = sampleFunc();
                 lastSample = candidate;
 
-                // фильтр на случай каких-то экзотических значений
+                // 䨫��� �� ��砩 �����-� ������᪨� ���祭��
                 if (!IsFinite(candidate.x) || !IsFinite(candidate.y)) continue;
 
                 bool ok = true;
