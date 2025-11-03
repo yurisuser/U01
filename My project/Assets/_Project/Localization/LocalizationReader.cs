@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 public sealed class LocalizationReader
 {
-    private static readonly Regex RangePattern = new(@"^[a-z]{2}-(\d+)-(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex RangePattern = new(@"^[a-z]{2}-(\d+)(?:-|_)(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     /// <summary>
     /// Reads all English localization files from the provided directory.
     /// </summary>
@@ -31,13 +31,15 @@ public sealed class LocalizationReader
     {
         var fileName = Path.GetFileNameWithoutExtension(filePath);
         var match = RangePattern.Match(fileName ?? string.Empty);
-        if (!match.Success || match.Groups.Count < 3)
-            throw new InvalidOperationException($"File name \"{fileName}\" does not match expected pattern en-<start>-<end>.json");
-
-        int startId = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-        int endId = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        if (endId < startId)
-            throw new InvalidOperationException($"Invalid range in file name \"{fileName}\": end < start.");
+        int? declaredStartId = null;
+        int? declaredEndId = null;
+        if (match.Success && match.Groups.Count >= 3)
+        {
+            declaredStartId = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+            declaredEndId = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+            if (declaredEndId < declaredStartId)
+                throw new InvalidOperationException($"Invalid range in file name \"{fileName}\": end < start.");
+        }
 
         var serializer = new DataContractJsonSerializer(typeof(List<LocalizationEntry>));
         List<LocalizationEntry> entries;
@@ -46,9 +48,40 @@ public sealed class LocalizationReader
             entries = serializer.ReadObject(stream) as List<LocalizationEntry> ?? new List<LocalizationEntry>();
         }
 
-        var chunk = new LocalizationChunk(startId, endId);
+        if (entries.Count == 0)
+        {
+            if (declaredStartId.HasValue && declaredEndId.HasValue)
+                return new LocalizationChunk(declaredStartId.Value, declaredEndId.Value);
+
+            throw new InvalidOperationException($"File \"{fileName}\" does not contain localization entries and its name does not declare an id range.");
+        }
+
+        int minId = int.MaxValue;
+        int maxId = int.MinValue;
         foreach (var entry in entries)
         {
+            if (entry == null)
+                continue;
+
+            if (entry.Id < minId)
+                minId = entry.Id;
+
+            if (entry.Id > maxId)
+                maxId = entry.Id;
+        }
+
+        if (minId == int.MaxValue || maxId == int.MinValue)
+            throw new InvalidOperationException($"File \"{fileName}\" does not contain valid localization entries.");
+
+        int chunkStartId = minId;
+        int chunkEndId = maxId;
+
+        var chunk = new LocalizationChunk(chunkStartId, chunkEndId);
+        foreach (var entry in entries)
+        {
+            if (entry == null)
+                continue;
+
             if (!chunk.TryAdd(entry.Id, entry.Value ?? string.Empty, out var error))
                 throw new InvalidOperationException($"Error in file \"{fileName}\": {error}");
         }

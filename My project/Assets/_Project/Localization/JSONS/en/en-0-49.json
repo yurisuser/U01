@@ -1,202 +1,52 @@
 [
-  {
-    "id": 0,
-    "value": "STAR_0"
-  },
-  {
-    "id": 1,
-    "value": "STAR_1"
-  },
-  {
-    "id": 2,
-    "value": "STAR_2"
-  },
-  {
-    "id": 3,
-    "value": "STAR_3"
-  },
-  {
-    "id": 4,
-    "value": "STAR_4"
-  },
-  {
-    "id": 5,
-    "value": "STAR_5"
-  },
-  {
-    "id": 6,
-    "value": "STAR_6"
-  },
-  {
-    "id": 7,
-    "value": "STAR_7"
-  },
-  {
-    "id": 8,
-    "value": "STAR_8"
-  },
-  {
-    "id": 9,
-    "value": "STAR_9"
-  },
-  {
-    "id": 10,
-    "value": "STAR_10"
-  },
-  {
-    "id": 11,
-    "value": "STAR_11"
-  },
-  {
-    "id": 12,
-    "value": "STAR_12"
-  },
-  {
-    "id": 13,
-    "value": "STAR_13"
-  },
-  {
-    "id": 14,
-    "value": "STAR_14"
-  },
-  {
-    "id": 15,
-    "value": "STAR_15"
-  },
-  {
-    "id": 16,
-    "value": "STAR_16"
-  },
-  {
-    "id": 17,
-    "value": "STAR_17"
-  },
-  {
-    "id": 18,
-    "value": "STAR_18"
-  },
-  {
-    "id": 19,
-    "value": "STAR_19"
-  },
-  {
-    "id": 20,
-    "value": "STAR_20"
-  },
-  {
-    "id": 21,
-    "value": "STAR_21"
-  },
-  {
-    "id": 22,
-    "value": "STAR_22"
-  },
-  {
-    "id": 23,
-    "value": "STAR_23"
-  },
-  {
-    "id": 24,
-    "value": "STAR_24"
-  },
-  {
-    "id": 25,
-    "value": "STAR_25"
-  },
-  {
-    "id": 26,
-    "value": "STAR_26"
-  },
-  {
-    "id": 27,
-    "value": "STAR_27"
-  },
-  {
-    "id": 28,
-    "value": "STAR_28"
-  },
-  {
-    "id": 29,
-    "value": "STAR_29"
-  },
-  {
-    "id": 30,
-    "value": "STAR_30"
-  },
-  {
-    "id": 31,
-    "value": "STAR_31"
-  },
-  {
-    "id": 32,
-    "value": "STAR_32"
-  },
-  {
-    "id": 33,
-    "value": "STAR_33"
-  },
-  {
-    "id": 34,
-    "value": "STAR_34"
-  },
-  {
-    "id": 35,
-    "value": "STAR_35"
-  },
-  {
-    "id": 36,
-    "value": "STAR_36"
-  },
-  {
-    "id": 37,
-    "value": "STAR_37"
-  },
-  {
-    "id": 38,
-    "value": "STAR_38"
-  },
-  {
-    "id": 39,
-    "value": "STAR_39"
-  },
-  {
-    "id": 40,
-    "value": "STAR_40"
-  },
-  {
-    "id": 41,
-    "value": "STAR_41"
-  },
-  {
-    "id": 42,
-    "value": "STAR_42"
-  },
-  {
-    "id": 43,
-    "value": "STAR_43"
-  },
-  {
-    "id": 44,
-    "value": "STAR_44"
-  },
-  {
-    "id": 45,
-    "value": "STAR_45"
-  },
-  {
-    "id": 46,
-    "value": "STAR_46"
-  },
-  {
-    "id": 47,
-    "value": "STAR_47"
-  },
-  {
-    "id": 48,
-    "value": "STAR_48"
-  },
-  {
-    "id": 49,
-    "value": "STAR_49"
-  }
+  { "id": 0, "value": "HR" },
+  { "id": 1, "value": "HD" },
+  { "id": 2, "value": "BD" },
+  { "id": 3, "value": "CoD" },
+  { "id": 4, "value": "CPD" },
+  { "id": 5, "value": "SAO" },
+  { "id": 6, "value": "ADS" },
+  { "id": 7, "value": "WDS" },
+  { "id": 8, "value": "HIP" },
+  { "id": 9, "value": "TYC" },
+  { "id": 10, "value": "GAIA" },
+  { "id": 11, "value": "GSC" },
+  { "id": 12, "value": "UCAC" },
+  { "id": 13, "value": "PPM" },
+  { "id": 14, "value": "Kepler" },
+  { "id": 15, "value": "KOI" },
+  { "id": 16, "value": "KIC" },
+  { "id": 17, "value": "TOI" },
+  { "id": 18, "value": "TIC" },
+  { "id": 19, "value": "HAT P" },
+  { "id": 20, "value": "WASP" },
+  { "id": 21, "value": "OGLE TR" },
+  { "id": 22, "value": "PSR" },
+  { "id": 23, "value": "LHS" },
+  { "id": 24, "value": "GJ" },
+  { "id": 25, "value": "LP" },
+  { "id": 26, "value": "LTT" },
+  { "id": 27, "value": "2MASS" },
+  { "id": 28, "value": "IRAS" },
+  { "id": 29, "value": "SDSS" },
+  { "id": 30, "value": "DENIS" },
+  { "id": 31, "value": "NSVS" },
+  { "id": 32, "value": "RAVE" },
+  { "id": 33, "value": "ASAS" },
+  { "id": 34, "value": "HDE" },
+  { "id": 35, "value": "Gl" },
+  { "id": 36, "value": "NLTT" },
+  { "id": 37, "value": "PMI" },
+  { "id": 38, "value": "UPM" },
+  { "id": 39, "value": "LEHPM" },
+  { "id": 40, "value": "RXJ" },
+  { "id": 41, "value": "ROSAT" },
+  { "id": 42, "value": "XMMU" },
+  { "id": 43, "value": "EUVE" },
+  { "id": 44, "value": "WISE" },
+  { "id": 45, "value": "Gaia DR3" },
+  { "id": 46, "value": "TESS" },
+  { "id": 47, "value": "OGLE" },
+  { "id": 48, "value": "HATS" },
+  { "id": 49, "value": "NGTS" }
 ]
