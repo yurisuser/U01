@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 public static class LocalizationDatabase
 {
     // каждый диапазон — свой файл и массив
-    // 0-50 - префикс имени звезды (IRAS-3587, HIP-0749 etc)
+    // 0-49 - префикс имени звезды (IRAS-3587, HIP-0749 etc)
     // 51-100 - латинские названия звезд (Fraction 1)
     // 101-150 - ацтекские названия звезд (Fraction 2)
     // 151-200 - скандинавские названия звезд (Fraction 3)
@@ -12,7 +13,7 @@ public static class LocalizationDatabase
     // 251-300 - машинные названия звезд (Fraction 5)
     // 301-350 - ульевые названия звезд (Fraction 6)
     // 351-400 - древние названия звезд (Fraction 7)
-    // первоначально звезде и звездной системе присваивается случайный префикс, затем минус, затем XXYY - которые берутся из oldX и oldY звезды 
+    // первоначально звезде и звездной системе присваивается случайный префикс, затем минус, затем XXYY - которые берутся из oldX и oldY звездной системы 
     // пример "HIP-0749" при oldX=7 и oldY=49. по необходимости в литерал добавить первый ноль
     // названия планет по порядку от звезды (без буквы a - она для звезды), например - HIP-0749 b, HIP-0749 c и тд
     // название лун соответственно HIP-0749 b 1, HIP-0749 b 2
@@ -26,7 +27,7 @@ public static class LocalizationDatabase
     // 7001-8000 — интерфейс
     // 8001-9000 — всякое разное
     private const int StarRangeStart = 0;
-    private const int StarRangeEnd = 1000;
+    private const int StarRangeEnd = 49;
 
     private static readonly List<LocalizationChunk> _chunks = new();
     private static string[] _starNames = Array.Empty<string>();
@@ -80,6 +81,11 @@ public static class LocalizationDatabase
 
     public static string GetStarName(int index)
     {
+        return GetStarName(index, float.NaN, float.NaN);
+    }
+
+    public static string GetStarName(int index, float oldX, float oldY)
+    {
         EnsureInitialized();
 
         if (index < 0)
@@ -88,7 +94,8 @@ public static class LocalizationDatabase
         if (!_starNamesPrepared || index >= _starNames.Length)
             PrepareStarNames(index + 1);
 
-        return _starNames[index];
+        var root = _starNames[index];
+        return ComposeStarName(root, oldX, oldY);
     }
 
     public static void PrepareStarNames(int requiredCount)
@@ -123,14 +130,39 @@ public static class LocalizationDatabase
         _starNames = new string[requiredCount];
         int baseCount = baseNames.Count;
         for (int i = 0; i < requiredCount; i++)
-        {
-            var root = baseNames[i % baseCount];
-            int repeat = i / baseCount;
-            _starNames[i] = repeat == 0 ? root : $"{root}-{repeat + 1}";
-        }
+            _starNames[i] = baseNames[i % baseCount];
 
         _starNamesPrepared = true;
     }
+
+    private static string ComposeStarName(string root, float oldX, float oldY)
+    {
+        root = string.IsNullOrWhiteSpace(root) ? "STAR" : root.Trim();
+
+        if (!IsUsableCoordinate(oldX) || !IsUsableCoordinate(oldY))
+            return root;
+
+        var x = FormatCoordinate(oldX);
+        var y = FormatCoordinate(oldY);
+
+        if (x == null || y == null)
+            return root;
+
+        return $"{root}-{x}{y}";
+    }
+
+    private static string FormatCoordinate(float coord)
+    {
+        if (!IsUsableCoordinate(coord))
+            return null;
+
+        var rounded = (int)Math.Round(coord, MidpointRounding.AwayFromZero);
+        rounded = Math.Abs(rounded) % 100;
+
+        return rounded.ToString("00", CultureInfo.InvariantCulture);
+    }
+
+    private static bool IsUsableCoordinate(float coord) => !float.IsNaN(coord) && !float.IsInfinity(coord);
 
     private static void EnsureInitialized()
     {
@@ -200,3 +232,4 @@ public sealed class LocalizationChunk
 
     public string this[int id] => _values[id - StartId] ?? string.Empty;
 }
+

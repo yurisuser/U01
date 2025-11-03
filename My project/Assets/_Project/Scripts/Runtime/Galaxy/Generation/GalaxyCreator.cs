@@ -27,8 +27,8 @@ namespace _Project.Scripts.Galaxy.Generation
             LocalizationDatabase.PrepareStarNames(galaxy.Length);
             for (int i = 0; i < galaxy.Length; i++) // для каждой звезды на карте делаю следующее
             {
-                var starName = LocalizationDatabase.GetStarName(i);
-
+                var sysData = galaxy[i];
+                var starName = LocalizationDatabase.GetStarName(i, sysData.OldX, sysData.OldY);
                 if (i == 0)
                 {
                     //к этой херне вернуться потом
