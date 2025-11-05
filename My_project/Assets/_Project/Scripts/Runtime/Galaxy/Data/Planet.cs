@@ -18,9 +18,6 @@ namespace _Project.Scripts.Galaxy.Data
         {
             get
             {
-                if (NameId < 0)
-                    return string.Empty;
-
                 return LocalizationDatabase.TryGet(NameId, out var value)
                     ? value
                     : string.Empty;

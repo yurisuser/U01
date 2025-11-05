@@ -36,6 +36,8 @@ public static class LocalizationDatabase
     private const int StarRangeEnd = 49;
 
     private static readonly List<LocalizationChunk> _chunks = new();
+    private static readonly Dictionary<int, string> _dynamicEntries = new();
+    private static int _nextDynamicId = -1;
     private static string[] _starNames = Array.Empty<string>();
     private static bool _isInitialized;
     private static bool _starNamesPrepared;
@@ -49,6 +51,8 @@ public static class LocalizationDatabase
         var reader = new LocalizationReader();
 
         _chunks.Clear();
+        ResetDynamicValuesCore();
+
         foreach (var chunk in reader.ReadEnglishChunks(directoryPath))
         {
             _chunks.Add(chunk);
@@ -61,6 +65,15 @@ public static class LocalizationDatabase
 
     public static bool TryGet(int id, out string value)
     {
+        if (id < 0)
+        {
+            if (_dynamicEntries.TryGetValue(id, out value))
+                return true;
+
+            value = string.Empty;
+            return false;
+        }
+
         EnsureInitialized();
         foreach (var chunk in _chunks)
         {
@@ -185,6 +198,66 @@ public static class LocalizationDatabase
 
     private static bool IsUsableCoordinate(float coord) => !float.IsNaN(coord) && !float.IsInfinity(coord);
 
+    public static string ComposePlanetName(string starName, int planetIndex)
+    {
+        if (string.IsNullOrWhiteSpace(starName) || planetIndex < 0)
+            return string.Empty;
+
+        var suffix = BuildPlanetSuffix(planetIndex);
+        return $"{starName} {suffix}";
+    }
+
+    public static string ComposeMoonName(string starName, int planetIndex, int moonIndex)
+    {
+        if (string.IsNullOrWhiteSpace(starName) || planetIndex < 0 || moonIndex < 0)
+            return string.Empty;
+
+        var suffix = BuildPlanetSuffix(planetIndex);
+        var moonNumber = moonIndex + 1;
+        return $"{starName} {suffix} {moonNumber}";
+    }
+
+    public static int RegisterDynamicValue(string value)
+    {
+        EnsureInitialized();
+
+        if (string.IsNullOrWhiteSpace(value))
+            return int.MinValue;
+
+        var id = _nextDynamicId--;
+        _dynamicEntries[id] = value.Trim();
+        return id;
+    }
+
+    public static void ResetDynamicValues()
+    {
+        EnsureInitialized();
+        ResetDynamicValuesCore();
+    }
+
+    private static void ResetDynamicValuesCore()
+    {
+        _dynamicEntries.Clear();
+        _nextDynamicId = -1;
+    }
+
+    private static string BuildPlanetSuffix(int planetIndex)
+    {
+        // Astronomical convention: star = "a", planets start from "b".
+        var number = planetIndex + 2; // planetIndex 0 -> column 2 -> 'b'
+        Span<char> buffer = stackalloc char[8];
+        int pos = buffer.Length;
+
+        while (number > 0)
+        {
+            number--;
+            buffer[--pos] = (char)('a' + (number % 26));
+            number /= 26;
+        }
+
+        return new string(buffer[pos..]);
+    }
+
     private static void EnsureInitialized()
     {
         if (!_isInitialized)
@@ -253,4 +326,3 @@ public sealed class LocalizationChunk
 
     public string this[int id] => _values[id - StartId] ?? string.Empty;
 }
-

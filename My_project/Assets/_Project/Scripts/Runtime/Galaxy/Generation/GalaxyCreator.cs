@@ -24,6 +24,7 @@ namespace _Project.Scripts.Galaxy.Generation
         {
             var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // ᮧ��� 蠡���
             LocalizationDatabase.PrepareStarNames(galaxy.Length);
+            LocalizationDatabase.ResetDynamicValues();
 
             for (int i = 0; i < galaxy.Length; i++) // ��� ������ ������ �� ���� ����� ᫥���饥
             {
@@ -54,19 +55,38 @@ namespace _Project.Scripts.Galaxy.Generation
                 var planetOrbits = PlanetOrbitCreator.Create(star); //�ᯮ��㥬� �����⠬� �ࡨ��
                 var planetsArr = new Planet[planetOrbits.Length];   //�� ������ �ࡨ� �� ������
                 var planetSysArr = new PlanetSys[planetOrbits.Length]; //� �� ⮫쪮, � 楫�� �����⭠� ��⥬�
+                var starDisplayName = LocalizationDatabase.GetStarName(star.NameId, star.OldX, star.OldY);
 
                 for (var j = 0; j < planetOrbits.Length; j++) //��ॡ�ࠥ� �ࡨ�� � ������묨 ��⥬���
                 {
-                    planetsArr[j] = PlanetCreator.Create(planetOrbits[j], star); //��� ������ �����⭮� ��⥬� ����� �������
-                    var moonOrbits = MoonOrbitCreator.Create(planetsArr[j]);     // �ਪ��뢠� ᪮�쪮 �㤥� �ࡨ� ��� ��
+                    var planet = PlanetCreator.Create(planetOrbits[j], star); //��� ������ �����⭮� ��⥬� ����� �������
+                    var moonOrbits = MoonOrbitCreator.Create(planet);     // �ਪ��뢠� ᪮�쪮 �㤥� �ࡨ� ��� ��
                     var moonsArr = new Moon[moonOrbits.Length];                  // ����� �⮫쪮 �� � ��
 
                     for (var k = 0; k < moonOrbits.Length; k++) //��� ������ �㭭�� �ࡨ��
                     {
-                        moonsArr[k] = MoonCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits[k]); //ᮧ��� ���
+                        var moon = MoonCreator.Create(star, planetOrbits[j], planet, moonOrbits[k]); //ᮧ��� ���
+                        if (!string.IsNullOrWhiteSpace(starDisplayName))
+                        {
+                            var moonName = LocalizationDatabase.ComposeMoonName(starDisplayName, j, k);
+                            var moonId = LocalizationDatabase.RegisterDynamicValue(moonName);
+                            if (moonId != int.MinValue)
+                                moon.NameId = moonId;
+                        }
+                        moonsArr[k] = moon;
                     }
 
-                    planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planetsArr[j], moonOrbits, moonsArr); //� �� �� ����稫��� - � �������� ��⥬�.
+                    if (!string.IsNullOrWhiteSpace(starDisplayName))
+                    {
+                        var planetName = LocalizationDatabase.ComposePlanetName(starDisplayName, j);
+                        var planetId = LocalizationDatabase.RegisterDynamicValue(planetName);
+                        if (planetId != int.MinValue)
+                            planet.NameId = planetId;
+                    }
+
+                    planetsArr[j] = planet;
+
+                    planetSysArr[j] = PlanetSysCreator.Create(star, planetOrbits[j], planet, moonOrbits, moonsArr); //� �� �� ����稫��� - � �������� ��⥬�.
                 }
 
                 sysData = StarSysCreator.Create(sysData, star, planetSysArr, planetOrbits); //������� ��⥬� � ������ 㯠���뢠� � �������� ��⥬�

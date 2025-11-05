@@ -113,7 +113,10 @@ namespace _Project.Scripts.SystemMap
                 return;
 
             var starGo = Instantiate(starPrefab, _starRoot);
-            starGo.name = $"Star_{system.Star.type}";
+            var starName = system.Star.Name;
+            starGo.name = string.IsNullOrWhiteSpace(starName)
+                ? $"Star_{system.Star.type}"
+                : starName;
             starGo.transform.localPosition = Vector3.zero;
 
             var scale = Mathf.Max(0.0001f, baseStarScale * _starScaleOverride);
@@ -145,7 +148,10 @@ namespace _Project.Scripts.SystemMap
                 if (planetPrefab)
                 {
                     var planetGo = Instantiate(planetPrefab, _planetsRoot);
-                    planetGo.name = $"Planet_{i}_{planetSys.Planet.Type}_Orbit{planetSys.OrbitIndex}";
+                    var planetName = planetSys.Planet.Name;
+                    planetGo.name = string.IsNullOrWhiteSpace(planetName)
+                        ? $"Planet_{i}_{planetSys.Planet.Type}_Orbit{planetSys.OrbitIndex}"
+                        : planetName;
                     planetGo.transform.localPosition = planetPos;
                     var planetScale = Mathf.Max(0.0001f, basePlanetScale * _planetScaleOverride);
                     planetGo.transform.localScale = planetGo.transform.localScale * planetScale;
@@ -199,7 +205,10 @@ namespace _Project.Scripts.SystemMap
                     continue;
 
                 var moonGo = Instantiate(moonPrefab, moonRoot);
-                moonGo.name = $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIndex}";
+                var moonName = moon.Name;
+                moonGo.name = string.IsNullOrWhiteSpace(moonName)
+                    ? $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIndex}"
+                    : moonName;
                 moonGo.transform.localPosition = localPos;
                 var moonScale = Mathf.Max(0.0001f, baseMoonScale * _moonScaleOverride);
                 moonGo.transform.localScale = moonGo.transform.localScale * moonScale;
