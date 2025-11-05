@@ -67,5 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "My_project.slnx"
+    "dotnet.defaultSolution": "My_project.slnx",
+    "chatgpt.commentCodeLensEnabled": false
 }
