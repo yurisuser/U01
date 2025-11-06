@@ -1,7 +1,7 @@
 ﻿namespace _Project.CONSTANT
 {
     public static class GalaxyConstants {
-        // Орбиты
+        // Орбиты  Максимальный радиус 250. за ним корабли начинают медленно умирать, и чем дальше от звезды, тем быстрее
         public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
         // Типы звёзд (вес)
         public const int StarRedWeight     = 10; // красные
