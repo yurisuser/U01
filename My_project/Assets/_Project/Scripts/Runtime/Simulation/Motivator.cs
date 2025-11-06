@@ -23,9 +23,13 @@ namespace _Project.Scripts.Simulation
             _arriveDistance = Mathf.Max(0.01f, arriveDistance);
         }
 
-        public PilotMotive CreateDefaultPatrol(Vector3 origin)
+        public PilotMotive CreateDefaultPatrol(Vector3 origin, float desiredSpeedOverride = float.NaN)
         {
-            return CreatePatrol(origin, _defaultPatrolRadius, _defaultPatrolSpeed, origin);
+            var speed = float.IsNaN(desiredSpeedOverride)
+                ? _defaultPatrolSpeed
+                : Mathf.Max(0.0f, desiredSpeedOverride);
+
+            return CreatePatrol(origin, _defaultPatrolRadius, speed, origin);
         }
 
         public PilotMotive CreatePatrol(Vector3 center, float radius, float desiredSpeed, Vector3 origin)

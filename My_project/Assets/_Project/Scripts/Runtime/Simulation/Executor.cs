@@ -81,7 +81,8 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        var motiv = _motivator.CreateDefaultPatrol(ship.Position);
+                        float patrolSpeed = ship.MaxSpeed > 0f ? ship.MaxSpeed * 0.5f : ship.MaxSpeed;
+                        var motiv = _motivator.CreateDefaultPatrol(ship.Position, patrolSpeed);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
                 }

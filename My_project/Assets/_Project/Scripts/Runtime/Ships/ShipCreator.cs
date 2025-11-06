@@ -44,7 +44,7 @@ namespace _Project.Scripts.Ships
 
         private static float GetMaxSpeed()        // возвращает максимальную скорость
         {
-            return 300f;
+            return 30f;
         }
 
         private static float GetAgility()         // возвращает маневренность 0..1
