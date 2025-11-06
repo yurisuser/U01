@@ -17,7 +17,7 @@ namespace _Project.Scripts.Simulation
         private const float SpawnRadius = 6f;
         private const float ArriveDistance = 0.2f; // расстояние, с которого патруль считается достигшим цели и берёт новую точку маршрута
         private const float DefaultPatrolSpeed = 5f;
-        private static float DefaultPatrolRadius = 100f;
+        private static float DefaultPatrolRadius = 200f;
 
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
