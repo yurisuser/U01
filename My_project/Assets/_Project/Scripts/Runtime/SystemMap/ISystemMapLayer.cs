@@ -15,7 +15,8 @@ namespace _Project.Scripts.SystemMap
             int currCount,
             Ship[] nextShips,
             int nextCount,
-            float progress);
+            float progress,
+            float stepDuration);
         void Dispose();
     }
 }

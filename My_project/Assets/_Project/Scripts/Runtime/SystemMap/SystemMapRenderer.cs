@@ -101,6 +101,7 @@ namespace _Project.Scripts.SystemMap
                 snapshot.NextShips,
                 snapshot.NextShipCount,
                 snapshot.StepProgress,
+                Mathf.Max(0.0001f, snapshot.LogicStepSeconds),
                 systemChanged);
         }
 
@@ -113,6 +114,7 @@ namespace _Project.Scripts.SystemMap
             Ship[] nextShips,
             int nextCount,
             float progress,
+            float stepDuration,
             bool systemChanged)
         {
             if (geoLayer != null)
@@ -126,7 +128,7 @@ namespace _Project.Scripts.SystemMap
 
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
-                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress);
+                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
             }
 
             if (extraLayers == null)
@@ -138,7 +140,7 @@ namespace _Project.Scripts.SystemMap
                 {
                     if (systemChanged)
                         layer.Init(layersRoot);
-                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress);
+                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
                 }
             }
         }

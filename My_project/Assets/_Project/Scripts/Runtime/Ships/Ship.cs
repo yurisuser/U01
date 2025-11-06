@@ -15,6 +15,7 @@ namespace _Project.Scripts.Ships
         public int Hp;                    // текущее здоровье
         public float MaxSpeed;            // максимальная крейсерская скорость
         public float Agility;             //маневренность
+        public Vector3 Velocity;          // текущая линейная скорость (м/с в плоскости)
         public bool IsActive;             // активен ли корабль в мире
 
         public Ship(                      // конструктор, инициализирующий все поля
@@ -39,6 +40,7 @@ namespace _Project.Scripts.Ships
             Hp = hp;                      // сохраняем здоровье
             MaxSpeed = maxSpeed;
             Agility = agility;
+            Velocity = Vector3.zero;
             IsActive = isActive;          // сохраняем активность
         }
     }

@@ -208,13 +208,18 @@ namespace _Project.Scripts.Simulation
                 float angleDeg = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
                 ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
             }
-
-            if (reachedTarget || (target - ship.Position).sqrMagnitude <= arriveDistance * arriveDistance)
+            
+            var remaining = target - ship.Position;
+            if (reachedTarget || remaining.sqrMagnitude <= arriveDistance * arriveDistance)
             {
                 ship.Position = target;
+                ship.Velocity = Vector3.zero;
                 motive.CompleteCurrentAction();
                 _motivator.OnActionCompleted(ref motive, ship.Position);
+                return;
             }
+
+            ship.Velocity = forward * desiredSpeed;
         }
 
         private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)

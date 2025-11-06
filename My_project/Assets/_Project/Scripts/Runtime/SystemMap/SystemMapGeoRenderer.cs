@@ -79,7 +79,8 @@ namespace _Project.Scripts.SystemMap
             int currCount,
             Ship[] nextShips,
             int nextCount,
-            float progress)
+            float progress,
+            float stepDuration)
         {
             if (_layerRoot == null)
                 return;
