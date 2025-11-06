@@ -13,11 +13,12 @@ namespace _Project.Scripts.Ships
                 pilotUid,
                 frac,
                 GetShipType(),               // тип корабля
-                GetPosition(),           // позиция
-                GetRotation(),           // ориентация
-                GetHp(),                 // здоровье
-                GetAgility(),
-                GetIsActive()            // активность
+                GetPosition(),               // позиция
+                GetRotation(),               // ориентация
+                GetHp(),                     // здоровье
+                GetMaxSpeed(),               // максимальная скорость
+                GetAgility(),                // маневренность
+                GetIsActive()                // активность
             );
         }
         
@@ -41,7 +42,12 @@ namespace _Project.Scripts.Ships
             return 100;
         }
 
-        private static float GetAgility()
+        private static float GetMaxSpeed()        // возвращает максимальную скорость
+        {
+            return 3f;
+        }
+
+        private static float GetAgility()         // возвращает маневренность 0..1
         {
             return 0.3f;
         }

@@ -13,6 +13,7 @@ namespace _Project.Scripts.Ships
         public Vector3 Position;          // мировая позиция центра масс
         public Quaternion Rotation;       // мировая ориентация корабля
         public int Hp;                    // текущее здоровье
+        public float MaxSpeed;            // максимальная крейсерская скорость
         public float Agility;             //маневренность
         public bool IsActive;             // активен ли корабль в мире
 
@@ -24,6 +25,7 @@ namespace _Project.Scripts.Ships
             Vector3 position,             // мировая позиция
             Quaternion rotation,          // ориентация
             int hp,                       // здоровье
+            float maxSpeed,               // максимальная скорость
             float agility,
             bool isActive                 // активность
         )
@@ -35,6 +37,7 @@ namespace _Project.Scripts.Ships
             Position = position;          // сохраняем позицию
             Rotation = rotation;          // сохраняем ориентацию
             Hp = hp;                      // сохраняем здоровье
+            MaxSpeed = maxSpeed;
             Agility = agility;
             IsActive = isActive;          // сохраняем активность
         }
