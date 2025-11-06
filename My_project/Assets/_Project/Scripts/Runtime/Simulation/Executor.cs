@@ -148,18 +148,71 @@ namespace _Project.Scripts.Simulation
                 return;
             }
 
-            var speed = Mathf.Max(move.DesiredSpeed, 0.1f);
-            var direction = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero;
-            var stepDistance = speed * dt;
-            if (stepDistance > distance)
-                stepDistance = distance;
+            var desiredSpeed = Mathf.Max(move.DesiredSpeed, 0.1f);
+            if (ship.MaxSpeed > 0f)
+                desiredSpeed = Mathf.Min(desiredSpeed, ship.MaxSpeed);
 
-            ship.Position += direction * stepDistance;
+            var forward = ship.Rotation * Vector3.right;
+            if (forward.sqrMagnitude < 0.0001f)
+                forward = Vector3.right;
+            forward.Normalize();
 
-            if (direction.sqrMagnitude > Mathf.Epsilon)
+            float turnRadius = ship.Agility > 0f ? 1f / ship.Agility : float.PositiveInfinity;
+
+            const float MaxSubstep = 0.1f;
+            int steps = Mathf.Clamp(Mathf.CeilToInt(dt / MaxSubstep), 1, 60);
+            float subDt = dt / steps;
+            bool reachedTarget = false;
+
+            for (int i = 0; i < steps; i++)
             {
-                float angleDeg = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+                toTarget = target - ship.Position;
+                distance = toTarget.magnitude;
+
+                if (distance <= arriveDistance)
+                {
+                    ship.Position = target;
+                    reachedTarget = true;
+                    break;
+                }
+
+                var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero;
+
+                if (desiredDir.sqrMagnitude > Mathf.Epsilon && !float.IsInfinity(turnRadius))
+                {
+                    float maxTurnRate = desiredSpeed / Mathf.Max(turnRadius, 0.0001f);
+                    float maxTurn = maxTurnRate * subDt;
+                    forward = Vector3.RotateTowards(forward, desiredDir, maxTurn, 0f).normalized;
+                }
+
+                float subDistance = desiredSpeed * subDt;
+
+                if (!float.IsInfinity(turnRadius) && desiredDir.sqrMagnitude > Mathf.Epsilon)
+                {
+                    float distanceAlongForward = Vector3.Dot(toTarget, forward);
+                    if (distanceAlongForward <= 0f)
+                    {
+                        continue;
+                    }
+
+                    if (subDistance > distanceAlongForward)
+                        subDistance = distanceAlongForward;
+                }
+
+                ship.Position += forward * subDistance;
+            }
+
+            if (forward.sqrMagnitude > Mathf.Epsilon)
+            {
+                float angleDeg = Mathf.Atan2(forward.y, forward.x) * Mathf.Rad2Deg;
                 ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
+            }
+
+            if (reachedTarget || (target - ship.Position).sqrMagnitude <= arriveDistance * arriveDistance)
+            {
+                ship.Position = target;
+                motive.CompleteCurrentAction();
+                _motivator.OnActionCompleted(ref motive, ship.Position);
             }
         }
 
