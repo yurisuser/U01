@@ -7,7 +7,7 @@
         Ship,         // корабль
         Fraction,     // фракция
         Star,
-        System,       // звёздная система
+        StarSystem,       // звёздная система
         Planet,       // планета
         Moon,         // луна
         Station,      // космическая станция
