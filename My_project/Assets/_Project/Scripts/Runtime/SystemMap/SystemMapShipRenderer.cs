@@ -3,6 +3,8 @@ using _Project.Prefabs;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Core.Runtime;
+using _Project.Scripts.Simulation.PilotMotivation;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -20,6 +22,7 @@ namespace _Project.Scripts.SystemMap
         private Transform _root;
         private readonly Dictionary<UID, GameObject> _views = new();
         private readonly Dictionary<UID, Ship> _prevShips = new();
+        private readonly Dictionary<UID, LineRenderer> _paths = new();
 
         public void Init(Transform parentRoot)
         {
@@ -43,6 +46,8 @@ namespace _Project.Scripts.SystemMap
         {
             progress = Mathf.Clamp01(progress);
             stepDuration = Mathf.Max(0.0001f, stepDuration);
+            var runtimeContext = RuntimeWorldService.Instance?.Context;
+            var pilots = runtimeContext?.Pilots;
 
             _prevShips.Clear();
             if (prevShips != null && prevCount > 0)
@@ -86,6 +91,10 @@ namespace _Project.Scripts.SystemMap
 
                     view.transform.localPosition = pos;
                     view.transform.localRotation = rot;
+
+                    Vector3 target;
+                    bool hasTarget = TryGetDestination(pilots, sh.PilotUid, out target);
+                    UpdatePathRenderer(sh.Uid, pos, target, hasTarget);
                 }
             }
 
@@ -99,6 +108,10 @@ namespace _Project.Scripts.SystemMap
                     var id = ScratchKeys[k];
                     if (!seen.Contains(id))
                     {
+                        if (_paths.TryGetValue(id, out var path) && path)
+                            Destroy(path.gameObject);
+                        _paths.Remove(id);
+
                         if (_views[id])
                             Destroy(_views[id]);
                         _views.Remove(id);
@@ -128,6 +141,13 @@ namespace _Project.Scripts.SystemMap
                     Destroy(kv.Value);
             }
             _views.Clear();
+
+            foreach (var path in _paths.Values)
+            {
+                if (path)
+                    Destroy(path.gameObject);
+            }
+            _paths.Clear();
 
             if (_root)
             {
@@ -194,5 +214,76 @@ namespace _Project.Scripts.SystemMap
 
             return result;
         }
+
+        private static bool TryGetDestination(PilotRegistry pilots, UID pilotUid, out Vector3 destination)
+        {
+            destination = Vector3.zero;
+            if (pilots == null)
+                return false;
+
+            if (!pilots.TryGetMotiv(pilotUid, out var motive))
+                return false;
+
+            if (motive.TryPeekAction(out var action) && action.Action == EAction.MoveToCoordinates)
+            {
+                destination = action.Parameters.Move.Destination;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void UpdatePathRenderer(UID uid, in Vector3 startPos, in Vector3 targetPos, bool hasTarget)
+        {
+            if (!_paths.TryGetValue(uid, out var line) || !line)
+            {
+                if (!hasTarget)
+                    return;
+
+                line = CreatePathRenderer();
+                _paths[uid] = line;
+            }
+
+            if (!hasTarget)
+            {
+                line.gameObject.SetActive(false);
+                return;
+            }
+
+            line.gameObject.SetActive(true);
+            line.positionCount = 2;
+            line.SetPosition(0, startPos);
+            line.SetPosition(1, targetPos);
+        }
+
+        private LineRenderer CreatePathRenderer()
+        {
+            var go = new GameObject("ShipPath");
+            go.transform.SetParent(_root, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = false;
+            line.material = GetPathMaterial();
+            line.widthMultiplier = 0.05f;
+            line.positionCount = 0;
+            line.startColor = new Color(0.3f, 0.8f, 1f, 0.6f);
+            line.endColor = new Color(0.3f, 0.8f, 1f, 0.2f);
+            return line;
+        }
+
+        private static Material GetPathMaterial()
+        {
+            if (_pathMaterial == null)
+            {
+                var shader = Shader.Find("Sprites/Default");
+                _pathMaterial = shader != null
+                    ? new Material(shader)
+                    : new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended"));
+                _pathMaterial.hideFlags = HideFlags.HideAndDontSave;
+            }
+
+            return _pathMaterial;
+        }
+
+        private static Material _pathMaterial;
     }
 }
