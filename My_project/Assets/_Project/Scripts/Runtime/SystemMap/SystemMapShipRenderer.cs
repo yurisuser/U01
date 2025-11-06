@@ -159,6 +159,21 @@ namespace _Project.Scripts.SystemMap
             if (duration <= 0f)
                 return Vector3.Lerp(p0, p1, t);
 
+            var delta = p1 - p0;
+            float deltaSqr = delta.sqrMagnitude;
+            if (deltaSqr < 1e-8f)
+                return p0;
+
+            var dir = delta / Mathf.Sqrt(deltaSqr);
+
+            float v0Along = Vector3.Dot(v0, dir);
+            if (v0Along < 0f)
+                v0 -= dir * v0Along;
+
+            float v1Along = Vector3.Dot(v1, dir);
+            if (v1Along < 0f)
+                v1 -= dir * v1Along;
+
             var m0 = v0 * duration;
             var m1 = v1 * duration;
 
