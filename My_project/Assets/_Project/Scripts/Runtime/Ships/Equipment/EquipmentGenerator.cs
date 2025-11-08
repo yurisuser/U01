@@ -1,5 +1,4 @@
 using _Project.Scripts.NPC.Fraction; // для Fraction
-using UnityEngine; // для Random.Range
 
 namespace _Project.Scripts.Ships
 {
@@ -46,11 +45,10 @@ namespace _Project.Scripts.Ships
 
             var weapon = new WeaponEntity
             {
-                Damage = Random.Range(damageMin, damageMax), // случайный урон в диапазоне
-                Range = Random.Range(rangeMin, rangeMax) // случайная дальность в диапазоне
+                Damage = Rng.Range(damageMin, damageMax), // случайный урон в диапазоне (потокобезопасно)
+                Range = Rng.Range(rangeMin, rangeMax) // случайная дальность в диапазоне (потокобезопасно)
             };
             return weapon; // возвращаем сущность оружия
         }
     }
 }
-
