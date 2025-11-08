@@ -14,9 +14,10 @@ namespace _Project.Scripts.Ships
         public Quaternion Rotation;       // мировая ориентация корабля
         public int Hp;                    // текущее здоровье
         public float MaxSpeed;            // максимальная крейсерская скорость
-        public float Agility;             //маневренность
+        public float Agility;             // маневренность
         public Vector3 Velocity;          // текущая линейная скорость (м/с в плоскости)
         public bool IsActive;             // активен ли корабль в мире
+        public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
 
         public Ship(                      // конструктор, инициализирующий все поля
             Core.UID uid,                      // уникальный ID
@@ -42,6 +43,7 @@ namespace _Project.Scripts.Ships
             Agility = agility;
             Velocity = Vector3.zero;
             IsActive = isActive;          // сохраняем активность
+            Equipment = default;          // инициализируется позже (в ShipCreator)
         }
     }
 }

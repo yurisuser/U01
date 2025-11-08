@@ -8,18 +8,23 @@ namespace _Project.Scripts.Ships
     {
         public static Ship CreateShip(Fraction frac, UID pilotUid)
         {
-            return new Ship(
-                UIDService.Create(EntityType.Ship),
-                pilotUid,
-                frac,
-                GetShipType(),               // тип корабля
-                GetPosition(),               // позиция
-                GetRotation(),               // ориентация
-                GetHp(),                     // здоровье
-                GetMaxSpeed(),               // максимальная скорость
-                GetAgility(),                // маневренность
-                GetIsActive()                // активность
+            var ship = new Ship( // создаём корабль (без оборудования)
+                UIDService.Create(EntityType.Ship), // UID корабля
+                pilotUid, // UID пилота
+                frac, // фракция изготовителя
+                GetShipType(), // тип корабля
+                GetPosition(), // позиция
+                GetRotation(), // ориентация
+                GetHp(), // здоровье
+                GetMaxSpeed(), // максимальная скорость
+                GetAgility(), // маневренность
+                GetIsActive() // активность
             );
+
+            // Инициализируем и заполняем минимальное оборудование (только оружие)
+            EquipmentGenerator.InitForShip(ref ship, fillWeapons: true); // генератор создаст слоты и пушки
+
+            return ship; // возвращаем готовый корабль
         }
         
         private static EShipType GetShipType()        // возвращает тип корабля
