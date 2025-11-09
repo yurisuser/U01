@@ -8,21 +8,25 @@ namespace _Project.Scripts.Ships
     {
         public static Ship CreateShip(Fraction frac, UID pilotUid)
         {
-            var ship = new Ship( // создаём корабль (без оборудования)
+            var shipType = GetShipType(); // определяем тип корабля
+            var templateId = GetTemplateId(shipType); // выбираем шаблон для типа
+            var config = ShipConfigGenerator.Create(templateId); // получаем конфигурацию корабля
+            var stats = config.Stats; // базовые параметры
+
+            var ship = new Ship( // создаём корабль с параметрами из конфигурации
                 UIDService.Create(EntityType.Ship), // UID корабля
                 pilotUid, // UID пилота
                 frac, // фракция изготовителя
-                GetShipType(), // тип корабля
+                shipType, // тип корабля
                 GetPosition(), // позиция
                 GetRotation(), // ориентация
-                GetHp(), // здоровье
-                GetMaxSpeed(), // максимальная скорость
-                GetAgility(), // маневренность
+                stats.Hp, // здоровье из конфигурации
+                stats.MaxSpeed, // максимальная скорость
+                stats.Agility, // маневренность
                 GetIsActive() // активность
             );
 
-            // Инициализируем и заполняем минимальное оборудование (только оружие)
-            EquipmentGenerator.InitForShip(ref ship, fillWeapons: true); // генератор создаст слоты и пушки
+            ship.Equipment.Init(config.WeaponSlotsCount); // создаём пустые слоты оружия
 
             return ship; // возвращаем готовый корабль
         }
@@ -42,24 +46,20 @@ namespace _Project.Scripts.Ships
             return Quaternion.identity;
         }
 
-        private static int GetHp()                // возвращает здоровье
-        {
-            return 100;
-        }
-
-        private static float GetMaxSpeed()        // возвращает максимальную скорость
-        {
-            return 30f;
-        }
-
-        private static float GetAgility()         // возвращает маневренность 0..1
-        {
-            return 0.1f;
-        }
-
         private static bool GetIsActive()         // возвращает флаг активности
         {
             return true;
+        }
+
+        private static ShipConfigGenerator.TemplateId GetTemplateId(EShipType type) // выбор шаблона под тип
+        {
+            switch (type)
+            {
+                case EShipType.Transport:
+                    return ShipConfigGenerator.TemplateId.Transport; // транспорт
+                default:
+                    return ShipConfigGenerator.TemplateId.Default; // базовый для остальных
+            }
         }
     }
 }
