@@ -43,45 +43,58 @@ namespace _Project.Scripts.Core
                 return;
             }
 
-            if (snapshot.RunMode != ERunMode.Auto)
+            bool allowVisualProgress = snapshot.RunMode == ERunMode.Auto || _stepInFlight; // визуал может идти до конца шага
+            bool allowNewSteps = snapshot.RunMode == ERunMode.Auto; // новые шаги только в авто-режиме
+
+            if (!allowVisualProgress)
             {
-                _accum = 0f;
-                _visualTime = 0f;
-                _state.SetStepProgress(0f);
+                _visualTime = Math.Min(_visualTime + dt, stepDuration); // доигрываем текущий шаг
+                _accum = _visualTime >= stepDuration ? stepDuration : 0f; // если шаг завершён — готовы запустить следующий
+                _state.SetStepProgress(stepDuration > 0f ? Clamp01(_visualTime / stepDuration) : 1f);
                 return;
             }
 
-            _accum += dt;
-
-            if (_accum >= stepDuration && !_stepInFlight)
+            if (allowNewSteps)
             {
-                if (TryScheduleStep(snapshot, stepDuration))
+                _accum += dt;
+
+                if (_accum >= stepDuration && !_stepInFlight)
                 {
-                    _accum -= stepDuration;
+                    if (TryScheduleStep(snapshot, stepDuration))
+                    {
+                        _accum -= stepDuration;
+                    }
                 }
             }
 
             _visualTime += dt;
 
-            while (_visualTime >= stepDuration)
+            if (allowNewSteps)
             {
-                if (_state.TryPromoteNextShips())
+                while (_visualTime >= stepDuration)
                 {
-                    _visualTime -= stepDuration;
-                    if (_visualTime < 0f)
-                        _visualTime = 0f;
-
-                    if (!_stepInFlight && _accum >= stepDuration)
+                    if (_state.TryPromoteNextShips())
                     {
-                        if (TryScheduleStep(snapshot, stepDuration))
-                            _accum -= stepDuration;
+                        _visualTime -= stepDuration;
+                        if (_visualTime < 0f)
+                            _visualTime = 0f;
+
+                        if (!_stepInFlight && _accum >= stepDuration)
+                        {
+                            if (TryScheduleStep(snapshot, stepDuration))
+                                _accum -= stepDuration;
+                        }
+                    }
+                    else
+                    {
+                        _visualTime = stepDuration;
+                        break;
                     }
                 }
-                else
-                {
-                    _visualTime = stepDuration;
-                    break;
-                }
+            }
+            else if (_visualTime > stepDuration)
+            {
+                _visualTime = stepDuration; // фиксируемся на конце шага, пока пауза
             }
 
             float progress = stepDuration > 0f ? Clamp01(_visualTime / stepDuration) : 1f;
