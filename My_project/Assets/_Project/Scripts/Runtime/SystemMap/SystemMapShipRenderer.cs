@@ -76,6 +76,11 @@ namespace _Project.Scripts.SystemMap
                         _views[sh.Uid] = view;
                     }
 
+                    var reporter = view.GetComponent<ShipClickReporter>(); // ищем компонент отчёта
+                    if (!reporter)
+                        reporter = view.AddComponent<ShipClickReporter>(); // добавляем, если нет
+                    reporter.SetData(in sh); // обновляем данные
+
                     Vector3 startPos = sh.Position;
                     Quaternion startRot = sh.Rotation;
                     Vector3 startVel = sh.Velocity;

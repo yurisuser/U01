@@ -5,9 +5,10 @@ using UnityEngine.InputSystem;
 
 namespace _Project.Scripts.SystemMap
 {
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(Camera))]
-    public class SystemMapCameraController : MonoBehaviour
+[DisallowMultipleComponent]
+[RequireComponent(typeof(Camera))]
+[RequireComponent(typeof(SystemMapShipClickInput))]
+public class SystemMapCameraController : MonoBehaviour
     {
         [SerializeField] private float minOrtho = 2f;
         [SerializeField] private float maxOrtho = 100f;
@@ -16,13 +17,16 @@ namespace _Project.Scripts.SystemMap
 
         Camera _cam;
 
-        void Awake()
-        {
-            _cam = GetComponent<Camera>();
-            _cam.orthographic = true;
-            if (_cam.transform.position.z > -0.1f)
-                _cam.transform.position = new Vector3(0, 0, -10f);
-        }
+    void Awake()
+    {
+        _cam = GetComponent<Camera>();
+        _cam.orthographic = true;
+        if (_cam.transform.position.z > -0.1f)
+            _cam.transform.position = new Vector3(0, 0, -10f);
+
+        var clickInput = GetComponent<SystemMapShipClickInput>();
+        clickInput.Configure(_cam); // передаём камеру обработчику кликов
+    }
 
         public void Frame(float maxRadius)
         {
