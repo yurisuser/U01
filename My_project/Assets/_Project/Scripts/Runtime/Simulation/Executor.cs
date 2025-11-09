@@ -81,7 +81,7 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        float patrolSpeed = ship.MaxSpeed > 0f ? ship.MaxSpeed * 0.5f : ship.MaxSpeed;
+                        float patrolSpeed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed * 0.5f : ship.Stats.MaxSpeed; // скорость патруля от максимальной
                         var motiv = _motivator.CreateDefaultPatrol(ship.Position, patrolSpeed);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
@@ -150,15 +150,15 @@ namespace _Project.Scripts.Simulation
             }
 
             var desiredSpeed = Mathf.Max(move.DesiredSpeed, 0.1f);
-            if (ship.MaxSpeed > 0f)
-                desiredSpeed = Mathf.Min(desiredSpeed, ship.MaxSpeed);
+            if (ship.Stats.MaxSpeed > 0f)
+                desiredSpeed = Mathf.Min(desiredSpeed, ship.Stats.MaxSpeed); // ограничиваем желаемую скорость
 
             var forward = ship.Rotation * Vector3.right;
             if (forward.sqrMagnitude < 0.0001f)
                 forward = Vector3.right;
             forward.Normalize();
 
-            float turnRadius = ship.Agility > 0f ? 1f / ship.Agility : float.PositiveInfinity;
+            float turnRadius = ship.Stats.Agility > 0f ? 1f / ship.Stats.Agility : float.PositiveInfinity; // радиус разворота
 
             const float MaxSubstep = 0.1f;
             int steps = Mathf.Clamp(Mathf.CeilToInt(dt / MaxSubstep), 1, 60);

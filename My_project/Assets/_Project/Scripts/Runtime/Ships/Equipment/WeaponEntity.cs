@@ -7,7 +7,6 @@ namespace _Project.Scripts.Ships
     {
         public float Damage; // урон за выстрел
         public float Range; // дальность стрельбы
-
         public int Rate;    //скорострельность
     }
 }
