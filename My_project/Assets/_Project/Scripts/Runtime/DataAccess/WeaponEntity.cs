@@ -1,8 +1,8 @@
 namespace _Project.DataAccess
 {
-    public readonly struct WeaponRow
+    public readonly struct WeaponEntity
     {
-        public WeaponRow(int id, string key, string displayName, string description, float damage, float ratePerSecond, float range)
+        public WeaponEntity(int id, string key, string displayName, string description, float damage, float ratePerSecond, float range)
         {
             Id = id;
             Key = key;

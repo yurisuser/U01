@@ -14,20 +14,20 @@ namespace _Project.DataAccess
         private const string DatabaseRelativePath = "Data/game.db";
 
         private static string? _cachedPath;
-        private static IReadOnlyList<WeaponRow>? _weaponsCache;
-        private static IReadOnlyList<ShipTemplateRow>? _shipsCache;
+        private static IReadOnlyList<WeaponEntity>? _weaponsCache;
+        private static IReadOnlyList<ShipEntity>? _shipsCache;
 
         /// <summary>
         /// Возвращает все записи из таблицы Weapons. Передай forceReload=true, если обновил файл БД.
         /// </summary>
-        public static IReadOnlyList<WeaponRow> GetWeapons(bool forceReload = false)
+        public static IReadOnlyList<WeaponEntity> GetWeapons(bool forceReload = false)
         {
             if (!forceReload && _weaponsCache != null)
             {
                 return _weaponsCache;
             }
 
-            var result = new List<WeaponRow>();
+            var result = new List<WeaponEntity>();
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
             command.CommandText = @"SELECT Id, Key, DisplayName, Description, Damage, RatePerSecond, Range
@@ -37,7 +37,7 @@ namespace _Project.DataAccess
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                var row = new WeaponRow(
+                var row = new WeaponEntity(
                     id: reader.GetInt32(0),
                     key: reader.GetString(1),
                     displayName: reader.GetString(2),
@@ -56,14 +56,14 @@ namespace _Project.DataAccess
         /// <summary>
         /// Возвращает все записи из таблицы ShipTemplates. forceReload=true перечитает файл.
         /// </summary>
-        public static IReadOnlyList<ShipTemplateRow> GetShips(bool forceReload = false)
+        public static IReadOnlyList<ShipEntity> GetShips(bool forceReload = false)
         {
             if (!forceReload && _shipsCache != null)
             {
                 return _shipsCache;
             }
 
-            var result = new List<ShipTemplateRow>();
+            var result = new List<ShipEntity>();
             using var connection = OpenConnection();
             using var command = connection.CreateCommand();
             command.CommandText = @"SELECT Id, Key, DisplayName, Description, Hp, MaxSpeed, Agility, WeaponSlots
@@ -73,7 +73,7 @@ namespace _Project.DataAccess
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                var row = new ShipTemplateRow(
+                var row = new ShipEntity(
                     id: reader.GetInt32(0),
                     key: reader.GetString(1),
                     displayName: reader.GetString(2),

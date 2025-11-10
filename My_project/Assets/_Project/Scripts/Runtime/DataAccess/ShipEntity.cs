@@ -1,8 +1,8 @@
 namespace _Project.DataAccess
 {
-    public readonly struct ShipTemplateRow
+    public readonly struct ShipEntity
     {
-        public ShipTemplateRow(int id, string key, string displayName, string description, int hp, float maxSpeed, float agility, byte weaponSlots)
+        public ShipEntity(int id, string key, string displayName, string description, int hp, float maxSpeed, float agility, byte weaponSlots)
         {
             Id = id;
             Key = key;
