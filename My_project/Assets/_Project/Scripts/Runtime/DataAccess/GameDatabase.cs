@@ -16,6 +16,7 @@ namespace _Project.DataAccess
         private static string? _cachedPath;
         private static IReadOnlyList<WeaponEntity>? _weaponsCache;
         private static IReadOnlyList<ShipEntity>? _shipsCache;
+        private static IReadOnlyList<LocalizationEntry>? _localizationCache;
 
         /// <summary>
         /// Возвращает все записи из таблицы Weapons. Передай forceReload=true, если обновил файл БД.
@@ -97,6 +98,35 @@ namespace _Project.DataAccess
         {
             _weaponsCache = null;
             _shipsCache = null;
+            _localizationCache = null;
+        }
+
+        /// <summary>
+        /// Возвращает все строки локализации (Id, Value) из таблицы LocalizationEntries.
+        /// </summary>
+        public static IReadOnlyList<LocalizationEntry> GetLocalizationEntries(bool forceReload = false)
+        {
+            if (!forceReload && _localizationCache != null)
+            {
+                return _localizationCache;
+            }
+
+            var result = new List<LocalizationEntry>();
+            using var connection = OpenConnection();
+            using var command = connection.CreateCommand();
+            command.CommandText = @"SELECT Id, Value FROM LocalizationEntries ORDER BY Id;";
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                var entry = new LocalizationEntry(
+                    reader.GetInt32(0),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1));
+                result.Add(entry);
+            }
+
+            _localizationCache = result;
+            return result;
         }
 
         private static SqliteConnection OpenConnection()

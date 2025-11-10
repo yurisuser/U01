@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using _Project.DataAccess;
+using UnityEngine;
 
 public static class LocalizationDatabase
 {
@@ -48,14 +50,15 @@ public static class LocalizationDatabase
 
     public static void Initialize(string directoryPath)
     {
-        var reader = new LocalizationReader();
+        if (string.IsNullOrWhiteSpace(directoryPath))
+            throw new ArgumentException("Localization directory path is required when JSON fallback is needed.", nameof(directoryPath));
 
         _chunks.Clear();
         ResetDynamicValuesCore();
 
-        foreach (var chunk in reader.ReadEnglishChunks(directoryPath))
+        if (!TryLoadChunksFromDatabase())
         {
-            _chunks.Add(chunk);
+            LoadChunksFromJson(directoryPath);
         }
 
         _chunks.Sort((a, b) => a.StartId.CompareTo(b.StartId));
@@ -239,6 +242,76 @@ public static class LocalizationDatabase
     {
         _dynamicEntries.Clear();
         _nextDynamicId = -1;
+    }
+
+    private static bool TryLoadChunksFromDatabase()
+    {
+        IReadOnlyList<LocalizationEntry> entries;
+        try
+        {
+            entries = GameDatabase.GetLocalizationEntries();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Localization] Не удалось прочитать таблицу LocalizationEntries из game.db: {ex.Message}. Используем JSON.");
+            return false;
+        }
+
+        if (entries.Count == 0)
+            return false;
+
+        var buffer = new List<LocalizationEntry>();
+        int? lastId = null;
+
+        foreach (var entry in entries)
+        {
+            if (buffer.Count == 0 || (lastId.HasValue && entry.Id == lastId.Value + 1))
+            {
+                buffer.Add(entry);
+            }
+            else
+            {
+                _chunks.Add(CreateChunk(buffer));
+                buffer.Clear();
+                buffer.Add(entry);
+            }
+
+            lastId = entry.Id;
+        }
+
+        if (buffer.Count > 0)
+        {
+            _chunks.Add(CreateChunk(buffer));
+        }
+
+        return true;
+    }
+
+    private static void LoadChunksFromJson(string directoryPath)
+    {
+        var reader = new LocalizationReader();
+        foreach (var chunk in reader.ReadEnglishChunks(directoryPath))
+        {
+            _chunks.Add(chunk);
+        }
+    }
+
+    private static LocalizationChunk CreateChunk(List<LocalizationEntry> entries)
+    {
+        if (entries.Count == 0)
+            throw new ArgumentException("Cannot create chunk from empty entry list.", nameof(entries));
+
+        int startId = entries[0].Id;
+        int endId = entries[entries.Count - 1].Id;
+        var chunk = new LocalizationChunk(startId, endId);
+
+        foreach (var entry in entries)
+        {
+            if (!chunk.TryAdd(entry.Id, entry.Value ?? string.Empty, out var error))
+                throw new InvalidOperationException($"Localization chunk error: {error}");
+        }
+
+        return chunk;
     }
 
     private static string BuildPlanetSuffix(int planetIndex)
