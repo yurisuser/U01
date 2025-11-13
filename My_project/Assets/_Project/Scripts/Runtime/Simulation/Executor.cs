@@ -64,17 +64,16 @@ namespace _Project.Scripts.Simulation
             {
                 for (int i = 0; i < ShipsPerSystem; i++)
                 {
-                    var faction = Fractions.All.Length > 0
-                        ? Fractions.All[(systemId + i) % Fractions.All.Length]
-                        : new Fraction(EFraction.fraction1, "Default");
+                    var faction = PickFactionForSpawn(systemId, i);
 
                     var pilotUid = UIDService.Create(EntityType.Individ);
                     var ship = ShipCreator.CreateShip(faction, pilotUid);
 
                     float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
+                    float edgeRadius = SpawnRadius * 10f;
                     ship.Position = new Vector3(
-                        Mathf.Cos(angle) * SpawnRadius,
-                        Mathf.Sin(angle) * SpawnRadius,
+                        Mathf.Cos(angle) * edgeRadius,
+                        Mathf.Sin(angle) * edgeRadius,
                         0f);
                     ship.Rotation = Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
                     ship.IsActive = true;
@@ -83,8 +82,8 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        float patrolSpeed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed * 0.5f : ship.Stats.MaxSpeed; // скорость патруля от максимальной
-                        var motiv = _motivator.CreateDefaultPatrol(ship.Position, patrolSpeed);
+                        float searchRadius = Mathf.Max(SpawnRadius * 10f, 250f);
+                        var motiv = _motivator.CreateAttackAll(searchRadius, allowFriendlyFire: false);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
                 }
@@ -432,6 +431,21 @@ namespace _Project.Scripts.Simulation
         private static bool AreSameShip(in UID a, in UID b)
         {
             return a.Id == b.Id && a.Type == b.Type;
+        }
+
+        private static Fraction PickFactionForSpawn(int systemId, int shipIndex)
+        {
+            var fractions = Fractions.All;
+            if (fractions == null || fractions.Length == 0)
+                return new Fraction(EFraction.fraction1, "Default");
+
+            uint state = unchecked((uint)((systemId + 1) * 73856093) ^ (uint)((shipIndex + 1) * 19349663));
+            state ^= state << 13;
+            state ^= state >> 17;
+            state ^= state << 5;
+
+            var idx = (int)(state % (uint)fractions.Length);
+            return fractions[idx];
         }
 
         private static bool IsValidUid(in UID uid)
