@@ -4,6 +4,7 @@
     {
         public static readonly Fraction[] All =
         {
+            new Fraction(EFraction.fraction6, "Berserk"),  // Универсальный враг. атакует всех. атакован всеми. даже друг другом.
             new Fraction(EFraction.fraction1, "fraction1"), // люди
             new Fraction(EFraction.fraction2, "fraction2"), // органический рой
             new Fraction(EFraction.fraction3, "fraction3"), // машины
