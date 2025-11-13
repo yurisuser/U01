@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using _Project.Scripts.Core;
 using _Project.Scripts.Simulation.PilotMotivation;
 
 namespace _Project.Scripts.Simulation
@@ -40,6 +41,20 @@ namespace _Project.Scripts.Simulation
             return motive;
         }
 
+        public PilotMotive CreateAttackTarget(UID target, float desiredRange, bool allowFriendlyFire = false)
+        {
+            var motive = new PilotMotive();
+            ConfigureAttackTarget(ref motive, target, desiredRange, allowFriendlyFire);
+            return motive;
+        }
+
+        public PilotMotive CreateAttackAll(float searchRadius, bool allowFriendlyFire = false)
+        {
+            var motive = new PilotMotive();
+            ConfigureAttackAll(ref motive, searchRadius, allowFriendlyFire);
+            return motive;
+        }
+
         public void ConfigurePatrol(ref PilotMotive motive, Vector3 center, float radius, float desiredSpeed)
         {
             var clampedRadius = Mathf.Max(radius, _arriveDistance * 2f);
@@ -52,6 +67,31 @@ namespace _Project.Scripts.Simulation
 
             motive.SetOrder(EPilotOrder.Patrol, in actionParam);
             motive.ConfigurePatrol(center, clampedRadius, clampedSpeed, _arriveDistance, CreateSeed());
+        }
+
+        public void ConfigureAttackTarget(ref PilotMotive motive, UID target, float desiredRange, bool allowFriendlyFire = false)
+        {
+            var clampedRange = Mathf.Max(0.1f, desiredRange);
+            var param = new ActionParam
+            {
+                Target = target,
+                DesiredRange = clampedRange,
+                AllowFriendlyFire = allowFriendlyFire
+            };
+
+            motive.SetOrder(EPilotOrder.AttackTarget, in param);
+        }
+
+        public void ConfigureAttackAll(ref PilotMotive motive, float searchRadius, bool allowFriendlyFire = false)
+        {
+            var clampedRadius = Mathf.Max(0.1f, searchRadius);
+            var param = new ActionParam
+            {
+                Distance = clampedRadius,
+                AllowFriendlyFire = allowFriendlyFire
+            };
+
+            motive.SetOrder(EPilotOrder.AttackAllEnemies, in param);
         }
 
         public void Update(ref PilotMotive motive, Vector3 origin)

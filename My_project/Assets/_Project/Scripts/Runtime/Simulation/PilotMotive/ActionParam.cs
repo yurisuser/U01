@@ -9,5 +9,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
         public UID SystemUID;
         public UID Target;
         public float Distance;
+        public float DesiredRange;
+        public bool AllowFriendlyFire;
     }
 }
