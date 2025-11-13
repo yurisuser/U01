@@ -1,0 +1,209 @@
+Это вот нашел GPT/ 
+Это не обязательно к применению, просто заметка
+
+Коротко: да, структуру видно. Официальные скрипты ядер Egosoft мы целиком не вытащим из-за защиты форума, но есть:
+
+* полный список низкоуровневых команд X3 (MSCI), где прямо перечислены примитивы движения/боя;
+* названия и описания X4-скриптов (`fight.attack.object.*`, `order.move.*`, `order.fight.escort` и т.п.) в гайдах/модах;
+
+Из этого можно довольно уверенно восстановить **уровни поведения** и типичные «примитивы» наподобие твоих `MoveToPosition`, `MoveToTarget`, а сверху — `Patrol`, `AttackAllEnemies` и т.д.
+
+---
+
+## 1. Низкий уровень: примитивы в X3 (MSCI)
+
+В X3 есть отдельный раздел **Fly Commands**, где видны базовые действия корабля (это ровно твои «примитивы»):
+
+Из интересного для поведения:
+
+**Движение / позиционирование**
+
+* `@ ... fly to home base`
+* `@ ... fly to station <Station>`
+* `@ ... fly to sector <Sector>`
+* `@ ... move to position x=<x> y=<y> z=<z> with precision <meters>` – чистый `MoveToPosition`
+* `@ ... follow object <Ship> with precision <meters>` / с timeout – `FollowTarget`
+* `@ ... move around <ms>` – рандомное движение (манёвр / рассеивание)
+
+**Поиск целей**
+
+* `<RetVar> = ship find nearest enemy ship: max.dist=<Number>`
+* `<RetVar> = ship find nearest enemy station: max.dist=<Number>`
+* `<RetVar> = find enemy in firing range of turret <Number>`
+
+**Атака / защита**
+
+* `@ ... attack run on target <Value>: timeout=<ms>` – фактически `AttackRun(target)`
+* `@ ... defensive move: type=<Number>, intensity=<Number>, timeout=<ms>, avoid object=<Value>` – уклонение/обход
+* `... fire lasers on target ... using turret <Number>`
+* `... fire missile <Ware> on <Target>`
+* `... launch <Number> fight drones: protect me or attacktarget=<Value>`
+
+**Формации / приказы**
+
+* `escort ship <Ship>` – `Escort(target)`
+* `set formation <Number>` / `add to formation with leader <Ship>`
+* `set destination to <Value>` / `set attack target to <Value>`
+* `set command: <Object Command> target=<...> ...` – «поднять» конкретный скрипт-команду на задачу корабля
+
+То есть на самом низком уровне у них вполне «канонический» набор:
+
+* **MoveToPosition(x,y,z,precision)**
+* **MoveToObject(target, precision/offset)**
+* **Follow(target, distance, timeout)**
+* **AttackRun(target, timeout)**
+* **DefensiveMove(type, intensity, timeout, avoidObject)**
+* **Escort(target)**
+* **SetAttackTarget / SetDestination**
+* **FindNearestEnemy / FindEnemyInRange**
+* **FireWeapon / FireMissile / LaunchDrones**
+
+Это и есть реальные примитивы, просто в их синтаксисе.
+
+---
+
+## 2. Средний уровень: как из примитивов собирают «команды» X3
+
+Высокоуровневые команды типа **Attack all enemies**, **Patrol** и прочее реализованы отдельными скриптами, которые гоняются как задачи корабля и внутри:
+
+1. **Крутят вечный цикл** с `wait` чтобы не грузить движок.
+2. На каждой итерации используют примитивы вроде `find nearest enemy ship`, `attack run on target`, `move to position`, `defensive move`.
+3. Хранят немного локального состояния: текущая точка патруля, режим «преследую»/«возвращаюсь», оригинальная позиция и т.п.
+
+Например, по поведению из форумов:
+
+* `Attack all enemies`
+
+  * атакует только врагов в зоне видимости (радиус сканера);
+  * корабль постепенно может «уплывать» из исходной точки, если постоянно гоняется за целями.
+
+* `Sector Patrol` / «патруль»
+
+  * патрульный скрипт обходит сектора/точки,
+  * на каждой точке ищет врагов в секторе и при необходимости запускает атаку;
+  * логика поиска целей у патруля и `attack all enemies` отличается, что как раз и обсуждают на форуме.
+
+Типичная схема высокого уровня (по сути псевдокод, но это очень близко к тому, как у них реально):
+
+**AttackAllEnemies**
+
+* цикл:
+
+  * `target = find nearest enemy ship (maxDist = scannerRange)`
+  * если `target != null`:
+
+    * `AttackRun(target)` (внутри может быть цикл до уничтожения / потери цели)
+  * иначе:
+
+    * `move around` или `fly to home base` / `move to original position`
+  * `wait N ms`
+
+**PatrolRoute (несколько точек)**
+
+* есть массив точек `[P1, P2, ..., Pn]` и индекс `i`
+* цикл:
+
+  * `MoveToPosition(P[i], precision)`
+  * по прибытию:
+
+    * `target = find nearest enemy ship (весь сектор)`
+    * если есть враг → `AttackRun(target)` (пока не кончатся враги / корабль жив)
+  * `i = (i+1) mod n`
+  * `wait N ms`
+
+Структура ровно такая же, как ты описываешь: **поведение верхнего уровня – это цикл, который в нужный момент вызывает низкоуровневые примитивы**.
+
+---
+
+## 3. X4: aiscripts – уровни «Order / Fight / Move»
+
+В X4 поведение раскладывается чуть формализованнее:
+
+* **aiscript-файлы**: `fight.attack.object.medium`, `fight.attack.object.capital`, `fight.attack.object.station` — разные варианты атакующего поведения для разных размеров/типов целей.
+* **orders**: `order.fight.escort`, `order.move.recon`, `order.fight.harass` и т.д. — логика «приказов», навешиваемых на корабль.
+
+Мы видим, что:
+
+* `order.move.recon` в моде DeadAir — это модификация базового ордера разведки. Кусок диффа показывает вложенные `do_if`, проверки классов и владельцев, рассылку сигналов и т.п. – чистый **слой «логики приказа»**, который использует более низкоуровневые действия вроде установки цели и движения.
+* Мод **Protect Sector** описывает, что ордер «защитить сектор» выбирает ближайшие вражеские цели, имеет опции «атаковать станции/корабли, преследовать бегущих, делиться целью», «только видимые/только враждебные цели» — то есть по факту реализует поведение уровня `Patrol/AttackAllEnemiesInSector` на основе элементарных операций навигации и выбора цели.
+
+Сами примитивы X4 в XML-скриптах выглядят не как отдельные функции `MoveToTarget`, а как вызовы встроенных оповещений/действий: установка `destination`, проверка `distance`, вызов «под-скрипта» атаки, ожидание событий, отправка сигналов. По структуре это тот же трёхслойный пирог:
+
+1. **Primitives / actions** – «поставить destination», «проверить дистанцию», «пустить атаку по цели», «поднять дронов», «дёрнуть defensive-блок».
+2. **Behavior blocks** – `fight.attack.object.medium`, `move.travel`, `move.patrol` и т.п.
+3. **Orders / jobs** – `order.fight.escort`, `order.move.recon`, `order.fight.harass`, `order.protectsector`, которые включают/отключают блоки уровня 2 и комбинируют их.
+
+---
+
+## 4. Что из этого полезно тебе: своя библиотека примитивов
+
+Если цель — **сделать свою систему поведения в духе X-серии**, то по сути тебе нужно:
+
+### 4.1. Базовые примитивы (то, что у них в Fly Commands)
+
+Минимальный набор (названия условные):
+
+1. `MoveToPosition(pos, precision)` – аналог `move to position x,y,z with precision`.
+2. `MoveToObject(target, distance)` – летим к объекту и встаём на нужную дистанцию.
+3. `Follow(target, distance)` – как `follow object with precision`.
+4. `Escort(target)` – как `escort ship`, но с логикой: держать дистанцию + копировать цель хозяина.
+5. `AttackRun(target, mode)` – подлет → стреляем → отходим → повторяем.
+6. `DefensiveMove(threat, intensity)` – шаг уклонения/расхождения.
+7. `FindNearestEnemy(maxDist, filter)` – выбор цели.
+8. `IsEnemyInFiringRange(turret/weapon)` – проверка на возможность стрельбы.
+9. `FireWeapons(target)` / `FireMissile(target)` / `LaunchDrones(role)` – акты атаки.
+10. `Wait(ms)` – всегда надо, иначе будешь жечь CPU как ванильный X.
+
+Это — твой «инструктаж движения и боя», как у Egosoft.
+
+### 4.2. Блоки поведения
+
+На их основе собираются **блоки поведения** (что в X4 назвали `fight.attack.object.*`):
+
+* `Behaviour_AttackSingleTarget(target)`
+
+  * пока цель жива и валидна:
+
+    * если далеко → `MoveToObject(target, optimalDistance)`
+    * если в секторе огня → `FireWeapons(target)`
+    * если под огнём тяжёлого врага → `DefensiveMove(...)`
+* `Behaviour_EscortCommander(commander)`
+
+  * `Escort(commander)`
+  * цель = цель командира → `Behaviour_AttackSingleTarget( commander.attackTarget )`
+
+И т.д.
+
+### 4.3. Приказы / высокоуровневые поведения
+
+А дальше сверху у тебя ровно то, о чём ты спрашиваешь:
+
+* `Order_PatrolRoute(points[])`
+
+  * проход по точкам → на каждой точке запуск блока поиска и атаки целей.
+* `Order_AttackAllEnemies(radius)`
+
+  * цикл: `FindNearestEnemy(radius)` → `Behaviour_AttackSingleTarget`.
+* `Order_ProtectSector(sector)`
+
+  * по описанию модов: «выбрать ближайшую вражескую цель в секторе, атаковать; опции — станции/корабли, только видимые, преследовать бегущих, делиться целью».
+
+---
+
+## 5. Ответ по сути: есть ли там именно такие примитивы?
+
+**Факты:**
+
+* В X3 в командном API действительно есть **чёткие низкоуровневые действия**: `move to position`, `attack run on target`, `defensive move`, `escort ship`, `follow object`, `find nearest enemy ship`, `fire missile`, `launch fight drones` и т.д. – это прямые аналоги твоих `MoveToPosition`, `MoveToTarget` и прочих.
+* Скрипты высокого уровня (`Attack all enemies`, патруль, охрана) реализуются **как циклы**, которые используют эти команды и немного локального состояния (точки патруля, исходная позиция, список секторов и т.п.).
+* В X4 структура стала формальнее: **aiscripts уровня «fight.*»** и **orders уровня «order.*»**, которые комбинируют движение, выбор цели и атаки; моды типа Protect Sector и DeadAir/kuertee AI Tweaks это подтверждают.
+
+**Вывод / то, что тебе нужно утащить к себе:**
+
+* Да, у Egosoft поведение кораблей реально построено по схеме **«примитивы → поведенческие блоки → приказы/роли»**.
+* Примитивы — это то, что у них в `Fly Commands` и аналогах в X4-aiscripts, а **команды типа Patrol/AttackAllEnemies** — просто скрипты, которые циклом вызывают эти примитивы и управляют состоянием.
+
+Если хочешь, на следующем шаге можем:
+
+* Взять твой U01 / Unity-проект
+* И на базе этого разложить **конкретный список примитивов**, максимально близкий к MSCI/X4, но в твоей терминологии, чтобы потом строить на них Patrol/AttackAllEnemies/ProtectSector/TradeRoute.
