@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
@@ -22,6 +23,7 @@ namespace _Project.Scripts.Simulation
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
         private readonly Motivator _motivator;
+        private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64);
 
         private bool _initialShipsSpawned;
 
@@ -91,10 +93,14 @@ namespace _Project.Scripts.Simulation
             _initialShipsSpawned = true;
         }
 
+        public IReadOnlyList<ShotEvent> ShotEvents => _shotEvents;
+
         private void UpdateShips(float dt)
         {
             if (_context?.Systems == null)
                 return;
+
+            _shotEvents.Clear();
 
             for (int systemId = 0; systemId < _context.Systems.Count; systemId++)
             {
@@ -123,7 +129,7 @@ namespace _Project.Scripts.Simulation
                                 ExecuteMove(ref ship, ref motiv, in action, dt);
                                 break;
                             case EAction.AttackTarget:
-                                ExecuteAttack(ref ship, state, ref motiv, in action, dt);
+                                ExecuteAttack(systemId, ref ship, state, ref motiv, in action, dt);
                                 break;
                             case EAction.AcquireTarget:
                                 ExecuteAcquire(ref ship, state, ref motiv, in action);
@@ -151,12 +157,12 @@ namespace _Project.Scripts.Simulation
             }
         }
 
-        private void ExecuteAttack(ref Ship ship, StarSystemState state, ref PilotMotive motive, in PilotAction action, float dt)
+        private void ExecuteAttack(int systemId, ref Ship ship, StarSystemState state, ref PilotMotive motive, in PilotAction action, float dt)
         {
             var attack = action.Parameters.Attack;
             var targetUid = attack.Target;
 
-            if (!IsValidUid(targetUid) || !TryFindShip(state, in targetUid, out var targetShip) || !targetShip.IsActive)
+            if (!IsValidUid(targetUid) || !TryFindShip(state, in targetUid, out var targetShip, out var targetSlot) || !targetShip.IsActive)
             {
                 motive.ClearCurrentTarget();
                 motive.CompleteCurrentAction();
@@ -188,6 +194,7 @@ namespace _Project.Scripts.Simulation
                 MoveTowards(ref ship, targetShip.Position, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange, desiredRange, dt);
                 return;
             }
+            float distance = Mathf.Sqrt(distanceSqr);
 
             if (toTarget.sqrMagnitude > Mathf.Epsilon)
             {
@@ -197,6 +204,16 @@ namespace _Project.Scripts.Simulation
             }
 
             ship.Velocity = Vector3.zero;
+
+            if (TryProcessWeapons(ref ship, ref targetShip, targetSlot, state, distance))
+            {
+                if (!targetShip.IsActive)
+                {
+                    motive.ClearCurrentTarget();
+                    motive.CompleteCurrentAction();
+                    _motivator.OnActionCompleted(ref motive, ship.Position);
+                }
+            }
         }
 
         private void ExecuteAcquire(ref Ship ship, StarSystemState state, ref PilotMotive motive, in PilotAction action)
@@ -235,6 +252,61 @@ namespace _Project.Scripts.Simulation
                 motive.CompleteCurrentAction();
                 _motivator.OnActionCompleted(ref motive, ship.Position);
             }
+        }
+
+        private bool TryProcessWeapons(ref Ship attacker, ref Ship target, int targetSlot, StarSystemState state, float distance)
+        {
+            bool anyShots = false;
+            ref var weapons = ref attacker.Equipment.Weapons;
+            int count = weapons.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                var slot = weapons.GetSlot(i);
+                if (!slot.HasWeapon)
+                    continue;
+
+                var weapon = slot.Weapon;
+                if (weapon.Range > 0f && distance > weapon.Range)
+                {
+                    weapons.SetSlot(i, in slot);
+                    continue;
+                }
+
+                slot.ShotsAccumulator += weapon.Rate;
+                int shots = (int)slot.ShotsAccumulator;
+                if (shots <= 0)
+                {
+                    weapons.SetSlot(i, in slot);
+                    continue;
+                }
+
+                slot.ShotsAccumulator -= shots;
+                float damage = weapon.Damage * shots;
+                ApplyDamage(ref target, damage);
+                anyShots = true;
+
+                _shotEvents.Add(new ShotEvent
+                {
+                    Shooter = attacker.Uid,
+                    Target = target.Uid,
+                    Bullet = weapon.Bullet,
+                    ShotsFired = shots,
+                    DamageDealt = damage,
+                    Origin = attacker.Position,
+                    TargetPosition = target.Position
+                });
+
+                weapons.SetSlot(i, in slot);
+
+                if (!target.IsActive)
+                    break;
+            }
+
+            if (anyShots)
+                state.TryUpdateShip(targetSlot, in target);
+
+            return anyShots;
         }
 
         private static bool MoveTowards(ref Ship ship, Vector3 target, float desiredSpeed, float arriveDistance, float dt)
@@ -320,7 +392,24 @@ namespace _Project.Scripts.Simulation
             return false;
         }
 
-        private static bool TryFindShip(StarSystemState state, in UID targetUid, out Ship ship)
+        private static void ApplyDamage(ref Ship target, float damage)
+        {
+            if (damage <= 0f)
+                return;
+
+            var stats = target.Stats;
+            stats.Hp = Mathf.Max(0, stats.Hp - Mathf.RoundToInt(damage));
+            target.Stats = stats;
+
+            if (target.Stats.Hp <= 0)
+            {
+                target.Stats.Hp = 0;
+                target.IsActive = false;
+                target.Velocity = Vector3.zero;
+            }
+        }
+
+        private static bool TryFindShip(StarSystemState state, in UID targetUid, out Ship ship, out int slot)
         {
             var buffer = state.ShipsBuffer;
             var count = state.ShipCount;
@@ -330,11 +419,13 @@ namespace _Project.Scripts.Simulation
                 if (AreSameShip(candidate.Uid, targetUid))
                 {
                     ship = candidate;
+                    slot = i;
                     return true;
                 }
             }
 
             ship = default;
+            slot = -1;
             return false;
         }
 
