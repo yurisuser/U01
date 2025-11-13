@@ -101,6 +101,12 @@ namespace _Project.Scripts.Simulation
                 case EPilotOrder.Patrol:
                     motive.EnsurePatrolAction(origin);
                     break;
+                case EPilotOrder.AttackTarget:
+                    motive.EnsureAttackTargetAction();
+                    break;
+                case EPilotOrder.AttackAllEnemies:
+                    motive.EnsureAttackAllFlow();
+                    break;
             }
         }
 
@@ -110,6 +116,12 @@ namespace _Project.Scripts.Simulation
             {
                 case EPilotOrder.Patrol:
                     motive.EnsurePatrolAction(origin);
+                    break;
+                case EPilotOrder.AttackTarget:
+                    motive.EnsureAttackTargetAction();
+                    break;
+                case EPilotOrder.AttackAllEnemies:
+                    motive.EnsureAttackAllFlow();
                     break;
             }
         }

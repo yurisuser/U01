@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
@@ -18,6 +19,8 @@ namespace _Project.Scripts.Simulation.PilotMotivation
         public ActionParam OrderParameters => _orderParam;
         public int ActionCount => _actions.Count;
         public bool IsInitialized => _initialized;
+        public UID CurrentTarget => _orderParam.Target;
+        internal bool HasCurrentTarget => IsValidUid(_orderParam.Target);
 
         public void Reset(int actionCapacity = 16)
         {
@@ -114,6 +117,52 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return true;
         }
 
+        internal void SetCurrentTarget(in UID target)
+        {
+            _orderParam.Target = target;
+        }
+
+        internal void ClearCurrentTarget()
+        {
+            _orderParam.Target = default;
+        }
+
+        internal bool EnsureAttackTargetAction()
+        {
+            if (_order != EPilotOrder.AttackTarget && _order != EPilotOrder.AttackAllEnemies)
+                return false;
+
+            if (!HasCurrentTarget)
+                return false;
+
+            var desired = PilotAction.CreateAttackTarget(
+                _orderParam.Target,
+                _orderParam.DesiredRange,
+                _orderParam.AllowFriendlyFire);
+
+            return EnsureOrReplaceAction(in desired);
+        }
+
+        internal bool EnsureAcquireAction()
+        {
+            if (_order != EPilotOrder.AttackAllEnemies)
+                return false;
+
+            var desired = PilotAction.CreateAcquireTarget(
+                _orderParam.Distance,
+                _orderParam.AllowFriendlyFire);
+
+            return EnsureOrReplaceAction(in desired);
+        }
+
+        internal bool EnsureAttackAllFlow()
+        {
+            if (_order != EPilotOrder.AttackAllEnemies)
+                return false;
+
+            return HasCurrentTarget ? EnsureAttackTargetAction() : EnsureAcquireAction();
+        }
+
         private void EnsurePatrolTarget(Vector3 origin)
         {
             var patrol = _patrol;
@@ -184,6 +233,58 @@ namespace _Project.Scripts.Simulation.PilotMotivation
         {
             if (!_initialized)
                 Reset(actionCapacity);
+        }
+
+        private bool EnsureOrReplaceAction(in PilotAction desired)
+        {
+            EnsureInitialized();
+
+            if (_actions.Count == 0)
+            {
+                _actions.Push(in desired);
+                return true;
+            }
+
+            if (_actions.TryPeek(out var current))
+            {
+                if (AreActionsEquivalent(in current, in desired))
+                    return true;
+
+                _actions.ReplaceTop(in desired);
+                return true;
+            }
+
+            _actions.Push(in desired);
+            return true;
+        }
+
+        private static bool AreActionsEquivalent(in PilotAction current, in PilotAction desired)
+        {
+            if (current.Action != desired.Action)
+                return false;
+
+            switch (current.Action)
+            {
+                case EAction.MoveToCoordinates:
+                    return (current.Parameters.Move.Destination - desired.Parameters.Move.Destination).sqrMagnitude <= 0.0001f &&
+                           Math.Abs(current.Parameters.Move.DesiredSpeed - desired.Parameters.Move.DesiredSpeed) <= 0.0001f &&
+                           Math.Abs(current.Parameters.Move.ArriveDistance - desired.Parameters.Move.ArriveDistance) <= 0.0001f;
+                case EAction.AttackTarget:
+                    return current.Parameters.Attack.Target.Id == desired.Parameters.Attack.Target.Id &&
+                           current.Parameters.Attack.Target.Type == desired.Parameters.Attack.Target.Type &&
+                           Math.Abs(current.Parameters.Attack.DesiredRange - desired.Parameters.Attack.DesiredRange) <= 0.0001f &&
+                           current.Parameters.Attack.AllowFriendlyFire == desired.Parameters.Attack.AllowFriendlyFire;
+                case EAction.AcquireTarget:
+                    return Math.Abs(current.Parameters.Acquire.SearchRadius - desired.Parameters.Acquire.SearchRadius) <= 0.0001f &&
+                           current.Parameters.Acquire.AllowFriendlyFire == desired.Parameters.Acquire.AllowFriendlyFire;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsValidUid(in UID uid)
+        {
+            return uid.Id != 0;
         }
 
         private struct PatrolState
