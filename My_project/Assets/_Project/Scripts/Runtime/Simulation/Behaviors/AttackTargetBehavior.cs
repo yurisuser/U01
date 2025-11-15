@@ -38,25 +38,17 @@ namespace _Project.Scripts.Simulation.Behaviors
                 return BehaviorExecutionResult.TargetLostResult;
             }
 
-            float desiredRange = attack.DesiredRange > 0f ? attack.DesiredRange : ComputeVolleyRange(in ship);
-            if (desiredRange <= 0f)
-                desiredRange = 1f;
+            float baseRange = attack.DesiredRange > 0f ? attack.DesiredRange : ComputeVolleyRange(in ship);
+            if (baseRange <= 0f)
+                baseRange = 1f;
+            float orbitRadius = baseRange * 0.9f;
+
+            var desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, orbitRadius);
+            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : baseRange, orbitRadius * 0.1f, dt, stopOnArrival: false);
 
             float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot);
 
-            Vector3 desiredPoint;
-            if (distance > desiredRange + DistanceTolerance)
-            {
-                desiredPoint = PositioningPrimitive.ComputeChasePoint(ship.Position, targetSnapshot, desiredRange);
-            }
-            else
-            {
-                desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, desiredRange);
-            }
-
-            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange, desiredRange * 0.1f, dt);
-
-            if (distance <= desiredRange + DistanceTolerance)
+            if (distance <= baseRange + DistanceTolerance)
             {
                 var buffer = state.ShipsBuffer;
                 var targetShip = buffer[targetSlot];

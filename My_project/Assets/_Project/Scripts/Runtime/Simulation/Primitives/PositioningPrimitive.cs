@@ -24,13 +24,25 @@ namespace _Project.Scripts.Simulation.Primitives
 
         public static Vector3 ComputeOrbitPoint(in UID attackerUid, Vector3 attackerPos, TargetSnapshot target, float radius)
         {
-            var toTarget = target.Position - attackerPos;
-            Vector3 dir = toTarget.sqrMagnitude > Mathf.Epsilon ? toTarget.normalized : Vector3.right;
-            Vector3 tangent = new Vector3(-dir.y, dir.x, 0f);
+            radius = Mathf.Max(0.01f, radius);
+            var center = target.Position;
+            var toAttacker = attackerPos - center;
+            float dist = toAttacker.magnitude;
+            float side = HashPair(attackerUid, target.Uid) < 0.5f ? -1f : 1f;
 
-            float hash = HashPair(attackerUid, target.Uid) * 2f - 1f; // [-1;1]
-            var chasePoint = target.Position - dir * radius;
-            return chasePoint + tangent * radius * OrbitLateralFactor * hash;
+            if (dist > radius + 0.1f)
+            {
+                float baseAngle = Mathf.Atan2(toAttacker.y, toAttacker.x);
+                float offset = Mathf.Acos(Mathf.Clamp(radius / dist, -1f, 1f));
+                float tangentAngle = baseAngle + side * offset;
+                return center + new Vector3(Mathf.Cos(tangentAngle), Mathf.Sin(tangentAngle), 0f) * radius;
+            }
+
+            Vector3 radial = dist > 0.001f ? toAttacker.normalized : Vector3.right;
+            float currentAngle = Mathf.Atan2(radial.y, radial.x);
+            float advance = side * 0.35f; // ~20°
+            float orbitAngle = currentAngle + advance;
+            return center + new Vector3(Mathf.Cos(orbitAngle), Mathf.Sin(orbitAngle), 0f) * radius;
         }
 
         private static float HashPair(in UID attacker, in UID target)
