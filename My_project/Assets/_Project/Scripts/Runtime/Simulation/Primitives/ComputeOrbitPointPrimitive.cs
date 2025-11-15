@@ -3,26 +3,9 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    internal static class PositioningPrimitive
+    internal static class ComputeOrbitPointPrimitive
     {
-        private const float OrbitLateralFactor = 0.35f;
-
-        public static float DistanceToTarget(Vector3 attackerPos, TargetSnapshot target)
-        {
-            return Vector3.Distance(attackerPos, target.Position);
-        }
-
-        public static Vector3 ComputeChasePoint(Vector3 attackerPos, TargetSnapshot target, float desiredDistance)
-        {
-            var toTarget = target.Position - attackerPos;
-            if (toTarget.sqrMagnitude <= Mathf.Epsilon)
-                return target.Position;
-
-            var dir = toTarget.normalized;
-            return target.Position - dir * desiredDistance;
-        }
-
-        public static Vector3 ComputeOrbitPoint(in UID attackerUid, Vector3 attackerPos, TargetSnapshot target, float radius)
+        public static Vector3 Compute(in UID attackerUid, Vector3 attackerPos, TargetSnapshot target, float radius)
         {
             radius = Mathf.Max(0.01f, radius);
             var center = target.Position;
@@ -40,7 +23,7 @@ namespace _Project.Scripts.Simulation.Primitives
 
             Vector3 radial = dist > 0.001f ? toAttacker.normalized : Vector3.right;
             float currentAngle = Mathf.Atan2(radial.y, radial.x);
-            float advance = side * 0.35f; // ~20°
+            float advance = side * 0.35f;
             float orbitAngle = currentAngle + advance;
             return center + new Vector3(Mathf.Cos(orbitAngle), Mathf.Sin(orbitAngle), 0f) * radius;
         }

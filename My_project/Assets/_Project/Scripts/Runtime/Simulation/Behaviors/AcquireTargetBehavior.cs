@@ -15,7 +15,7 @@ namespace _Project.Scripts.Simulation.Behaviors
         {
             var acquire = action.Parameters.Acquire;
 
-            if (!TargetingPrimitive.TryFindNearestHostile(state, in ship, acquire.SearchRadius, acquire.AllowFriendlyFire, out var snapshot, out _))
+            if (!FindNearestHostilePrimitive.TryFind(state, in ship, acquire.SearchRadius, acquire.AllowFriendlyFire, out var snapshot, out _))
                 return BehaviorExecutionResult.None;
 
             motive.SetCurrentTarget(snapshot.Uid);

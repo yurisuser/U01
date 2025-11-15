@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    internal static class MovementPrimitive
+    internal static class MoveToPositionPrimitive
     {
-        public static bool MoveToPosition(ref Ship ship, in Vector3 target, float desiredSpeed, float arriveDistance, float dt, bool stopOnArrival = true)
+        public static bool Execute(ref Ship ship, in Vector3 target, float desiredSpeed, float arriveDistance, float dt, bool stopOnArrival)
         {
             arriveDistance = Mathf.Max(arriveDistance, 0.01f);
             var toTarget = target - ship.Position;
@@ -88,11 +88,6 @@ namespace _Project.Scripts.Simulation.Primitives
 
             ship.Velocity = forward * desiredSpeed;
             return false;
-        }
-
-        public static void Stop(ref Ship ship)
-        {
-            ship.Velocity = Vector3.zero;
         }
     }
 }

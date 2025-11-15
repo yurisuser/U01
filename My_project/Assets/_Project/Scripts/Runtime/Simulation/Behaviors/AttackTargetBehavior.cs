@@ -24,7 +24,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             var attack = action.Parameters.Attack;
             var targetUid = attack.Target;
 
-            if (!TargetingPrimitive.TryResolveTarget(state, in targetUid, out var targetSnapshot, out var targetSlot))
+            if (!ResolveTargetPrimitive.TryResolve(state, in targetUid, out var targetSnapshot, out var targetSlot))
             {
                 motive.ClearCurrentTarget();
                 motive.CompleteCurrentAction();
@@ -43,10 +43,10 @@ namespace _Project.Scripts.Simulation.Behaviors
                 baseRange = 1f;
             float orbitRadius = baseRange * 0.9f;
 
-            var desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, orbitRadius);
-            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : baseRange, orbitRadius * 0.1f, dt, stopOnArrival: false);
+            var desiredPoint = ComputeOrbitPointPrimitive.Compute(ship.Uid, ship.Position, targetSnapshot, orbitRadius);
+            MoveToPositionPrimitive.Execute(ref ship, desiredPoint, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : baseRange, orbitRadius * 0.1f, dt, stopOnArrival: false);
 
-            float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot);
+            float distance = DistanceToTargetPrimitive.Compute(ship.Position, targetSnapshot);
 
             if (distance <= baseRange + DistanceTolerance)
             {
