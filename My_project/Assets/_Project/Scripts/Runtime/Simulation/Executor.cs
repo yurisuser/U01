@@ -168,7 +168,12 @@ namespace _Project.Scripts.Simulation
 #endif
         }
 
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
+        private BehaviorExecutionResult ExecuteAction(
+            ref Ship ship,
+            ref PilotMotive motive,
+            in PilotAction action,
+            StarSystemState state,
+            float dt)
         {
             switch (action.Action)
             {

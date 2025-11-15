@@ -13,7 +13,7 @@ namespace _Project.Scripts.Simulation.Primitives
 
             desiredSpeed = Mathf.Max(desiredSpeed, 0.1f);
             if (ship.Stats.MaxSpeed > 0f)
-                desiredSpeed = Mathf.Min(desiredSpeed, ship.Stats.MaxSpeed);
+                desiredSpeed = ship.Stats.MaxSpeed;
 
             if (distance <= arriveDistance)
             {
