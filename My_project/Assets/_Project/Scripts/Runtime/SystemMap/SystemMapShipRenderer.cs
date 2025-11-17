@@ -92,7 +92,7 @@ namespace _Project.Scripts.SystemMap
                     }
 
                     var pos = InterpolatePosition(startPos, sh.Position, startVel, sh.Velocity, stepDuration, progress);
-                    var rot = Quaternion.Slerp(startRot, sh.Rotation, progress);
+                    var rot = sh.Rotation;
 
                     view.transform.localPosition = pos;
                     view.transform.localRotation = rot;
