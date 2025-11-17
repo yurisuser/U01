@@ -12,6 +12,7 @@ namespace _Project.Scripts.Simulation.Behaviors
     internal static class AttackTargetBehavior
     {
         private const float DistanceTolerance = 1f;
+        private const float FrontConeAngleDeg = 70f;
 
         public static BehaviorExecutionResult Execute(
             ref Ship ship,
@@ -44,17 +45,36 @@ namespace _Project.Scripts.Simulation.Behaviors
 
             float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot);
 
+            // Определяем, входим ли мы в конус переднего обстрела цели
+            var targetForward = targetSnapshot.Velocity;
+            if (targetForward.sqrMagnitude < 0.0001f)
+                targetForward = Vector3.right;
+            else
+                targetForward.Normalize();
+
+            var toSelf = ship.Position - targetSnapshot.Position;
+            bool inEnemyFront = Vector3.Angle(targetForward, toSelf) <= FrontConeAngleDeg;
+
+            // Выбираем точку: если мы в его фронте — выход на бок/хвост; иначе держим хвост
             Vector3 desiredPoint;
-            if (distance > desiredRange + DistanceTolerance)
+            float sideSign = ((ship.Uid.Id ^ targetUid.Id) & 1) == 0 ? 1f : -1f;
+            var sideDir = new Vector3(-targetForward.y, targetForward.x, 0f) * sideSign;
+
+            if (inEnemyFront)
             {
-                desiredPoint = PositioningPrimitive.ComputeChasePoint(ship.Position, targetSnapshot, desiredRange);
+                desiredPoint = targetSnapshot.Position - targetForward * desiredRange + sideDir * (desiredRange * 0.5f);
+            }
+            else if (distance > desiredRange + DistanceTolerance)
+            {
+                desiredPoint = targetSnapshot.Position - targetForward * desiredRange;
             }
             else
             {
                 desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, desiredRange);
             }
 
-            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange, desiredRange * 0.1f, dt);
+            float speed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange;
+            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false);
 
             if (distance <= desiredRange + DistanceTolerance)
             {

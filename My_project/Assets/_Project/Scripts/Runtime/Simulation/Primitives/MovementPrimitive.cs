@@ -5,7 +5,7 @@ namespace _Project.Scripts.Simulation.Primitives
 {
     internal static class MovementPrimitive
     {
-        public static bool MoveToPosition(ref Ship ship, in Vector3 target, float desiredSpeed, float arriveDistance, float dt)
+        public static bool MoveToPosition(ref Ship ship, in Vector3 target, float desiredSpeed, float arriveDistance, float dt, bool stopOnArrival = true)
         {
             arriveDistance = Mathf.Max(arriveDistance, 0.01f);
             var toTarget = target - ship.Position;
@@ -18,7 +18,8 @@ namespace _Project.Scripts.Simulation.Primitives
             if (distance <= arriveDistance)
             {
                 ship.Position = target;
-                ship.Velocity = Vector3.zero;
+                if (stopOnArrival)
+                    ship.Velocity = Vector3.zero;
                 return true;
             }
 
@@ -57,7 +58,7 @@ namespace _Project.Scripts.Simulation.Primitives
 
                 float subDistance = desiredSpeed * subDt;
 
-                if (!float.IsInfinity(turnRadius) && desiredDir.sqrMagnitude > Mathf.Epsilon)
+                if (desiredDir.sqrMagnitude > Mathf.Epsilon)
                 {
                     float distanceAlongForward = Vector3.Dot(toTarget, forward);
                     if (distanceAlongForward <= 0f)
@@ -80,7 +81,8 @@ namespace _Project.Scripts.Simulation.Primitives
             if (reachedTarget || remaining.sqrMagnitude <= arriveDistance * arriveDistance)
             {
                 ship.Position = target;
-                ship.Velocity = Vector3.zero;
+                if (stopOnArrival)
+                    ship.Velocity = Vector3.zero;
                 return true;
             }
 
