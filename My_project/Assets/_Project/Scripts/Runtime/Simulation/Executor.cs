@@ -70,9 +70,20 @@ namespace _Project.Scripts.Simulation
 
                     var pilotUid = UIDService.Create(EntityType.Individ);
                     var ship = ShipCreator.CreateShip(faction, pilotUid);
+                    EquipmentGenerator.InitForShip(ref ship);
+
+                    // Добавляем разброс скоростей +-10% от базовой
+                    var stats = ship.Stats;
+                    if (stats.MaxSpeed > 0f)
+                    {
+                        float jitter = Rng.Range(-0.1f, 0.1f);
+                        float factor = 1f + jitter;
+                        stats.MaxSpeed = Mathf.Max(0.1f, stats.MaxSpeed * factor);
+                        ship.Stats = stats;
+                    }
 
                     float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
-                    float edgeRadius = SpawnRadius * 10f;
+                    float edgeRadius = SpawnRadius * 20f;
                     ship.Position = new Vector3(
                         Mathf.Cos(angle) * edgeRadius,
                         Mathf.Sin(angle) * edgeRadius,
