@@ -1,10 +1,27 @@
+using _Project.Scripts.Core;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
     internal static class MovementPrimitive
     {
+        private static SubstepTraceBuffer _trace;
+        private static UID _traceUid;
+
+        public static void SetTraceWriter(Render.SubstepTraceBuffer trace, in UID uid)
+        {
+            _trace = trace;
+            _traceUid = uid;
+        }
+
+        public static void ClearTraceWriter()
+        {
+            _trace = null;
+            _traceUid = default;
+        }
+
         public static bool MoveToPosition(ref Ship ship, in Vector3 target, float desiredSpeed, float arriveDistance, float dt, bool stopOnArrival = true)
         {
             arriveDistance = Mathf.Max(arriveDistance, 0.01f);
@@ -30,10 +47,11 @@ namespace _Project.Scripts.Simulation.Primitives
 
             float turnRadius = ship.Stats.Agility > 0f ? 1f / ship.Stats.Agility : float.PositiveInfinity;
 
-            const float MaxSubstep = 0.1f;
+            const float MaxSubstep = 0.05f;
             int steps = Mathf.Clamp(Mathf.CeilToInt(dt / MaxSubstep), 1, 60);
             float subDt = dt / steps;
             bool reachedTarget = false;
+            float accumulatedTime = 0f;
 
             for (int i = 0; i < steps; i++)
             {
@@ -69,6 +87,13 @@ namespace _Project.Scripts.Simulation.Primitives
                 }
 
                 ship.Position += forward * subDistance;
+
+                accumulatedTime += subDt;
+                if (_trace != null && ship.Uid.Id != 0)
+                {
+                    float tFrac = Mathf.Clamp01(accumulatedTime / dt);
+                    _trace.AddSample(in _traceUid, tFrac, in ship.Position, ship.Rotation);
+                }
             }
 
             if (forward.sqrMagnitude > Mathf.Epsilon)

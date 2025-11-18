@@ -7,6 +7,7 @@ using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Behaviors;
 using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation.Primitives;
+using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation
@@ -26,6 +27,7 @@ namespace _Project.Scripts.Simulation
         private readonly GameStateService _state;
         private readonly Motivator _motivator;
         private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64);
+        private readonly Render.SubstepTraceBuffer _substeps = new Render.SubstepTraceBuffer();
 
         private bool _initialShipsSpawned;
 
@@ -41,16 +43,19 @@ namespace _Project.Scripts.Simulation
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
         {
             EnsureInitialShips();
+            _substeps.BeginTick();
 
             if (_context != null)
             {
                 _context.Tasks.Tick(dt);
                 _context.Ships.Tick(dt);
-                UpdateShips(dt);
+                UpdateShips(dt, snapshot.SelectedSystemIndex);
             }
 
             DoLogicStep(ref snapshot, dt);
             _state?.MarkDynamicDirty();
+            _substeps.Publish();
+            _state?.SetSubstepTraces(_substeps.Published, snapshot.SelectedSystemIndex);
         }
 
         private void EnsureInitialShips()
@@ -107,7 +112,7 @@ namespace _Project.Scripts.Simulation
 
         public IReadOnlyList<ShotEvent> ShotEvents => _shotEvents;
 
-        private void UpdateShips(float dt)
+        private void UpdateShips(float dt, int activeSystemIndex)
         {
             if (_context?.Systems == null)
                 return;
@@ -133,12 +138,17 @@ namespace _Project.Scripts.Simulation
 
                     _motivator.Update(ref motiv, ship.Position);
 
+                    if (IsActiveSystem(activeSystemIndex, systemId))
+                        MovementPrimitive.SetTraceWriter(_substeps, in ship.Uid);
+
                     if (motiv.TryPeekAction(out var action))
                     {
                         var result = ExecuteAction(ref ship, ref motiv, in action, state, dt);
                         if (result.Completed)
                             _motivator.OnActionCompleted(ref motiv, ship.Position);
                     }
+
+                    MovementPrimitive.ClearTraceWriter();
 
                     _context.Systems.TryUpdateShip(systemId, slot, in ship);
                     _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv);
@@ -166,6 +176,11 @@ namespace _Project.Scripts.Simulation
 #if UNITY_EDITOR
             UnityEngine.Debug.Log($"Logic tick: {snapshot.TickIndex}, dt={dt:0.###}");
 #endif
+        }
+
+        private static bool IsActiveSystem(int activeIndex, int systemId)
+        {
+            return activeIndex >= 0 && activeIndex == systemId;
         }
 
         private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
