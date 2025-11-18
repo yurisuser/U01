@@ -8,21 +8,16 @@ using _Project.Scripts.Simulation.Behaviors;
 using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation.Primitives;
 using _Project.Scripts.Simulation.Render;
+using _Project.Scripts.Simulation;
 using UnityEngine;
 
-namespace _Project.Scripts.Simulation
+namespace _Project.Scripts.Simulation.Execution
 {
     /// <summary>
     /// Исполняет игровой шаг: обновляет задачи, перемещает корабли и синхронизирует снапшот UI.
     /// </summary>
     public sealed class Executor
     {
-        private const int ShipsPerSystem = 5;
-        private const float SpawnRadius = 6f;
-        private const float ArriveDistance = 0.2f; // расстояние, с которого патруль считается достигшим цели и берёт новую точку маршрута
-        private const float DefaultPatrolSpeed = 5f;
-        private static float DefaultPatrolRadius = 200f;
-
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
         private readonly Motivator _motivator;
@@ -31,13 +26,11 @@ namespace _Project.Scripts.Simulation
 
         private bool _initialShipsSpawned;
 
-        public static float DefaultPatrolRadius1 => DefaultPatrolRadius;
-
         public Executor(RuntimeContext context, GameStateService state)
         {
             _context = context;
             _state = state;
-            _motivator = new Motivator(DefaultPatrolRadius1, ArriveDistance, DefaultPatrolSpeed);
+            _motivator = new Motivator(SimulationConsts.DefaultPatrolRadius, SimulationConsts.ArriveDistance, SimulationConsts.DefaultPatrolSpeed);
         }
 
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
@@ -69,7 +62,7 @@ namespace _Project.Scripts.Simulation
 
             for (int systemId = 0; systemId < galaxyCount; systemId++)
             {
-                for (int i = 0; i < ShipsPerSystem; i++)
+                for (int i = 0; i < SimulationConsts.ShipsPerSystem; i++)
                 {
                     var faction = PickFactionForSpawn(systemId, i);
 
@@ -87,8 +80,8 @@ namespace _Project.Scripts.Simulation
                         ship.Stats = stats;
                     }
 
-                    float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
-                    float edgeRadius = SpawnRadius * 20f;
+                    float angle = i / (float)SimulationConsts.ShipsPerSystem * Mathf.PI * 2f;
+                    float edgeRadius = SimulationConsts.SpawnRadius * 20f;
                     ship.Position = new Vector3(
                         Mathf.Cos(angle) * edgeRadius,
                         Mathf.Sin(angle) * edgeRadius,
@@ -100,7 +93,7 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        float searchRadius = Mathf.Max(SpawnRadius * 10f, 250f);
+                        float searchRadius = Mathf.Max(SimulationConsts.SpawnRadius * 10f, 250f);
                         var motiv = _motivator.CreateAttackAll(searchRadius, allowFriendlyFire: false);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
@@ -139,7 +132,7 @@ namespace _Project.Scripts.Simulation
                     _motivator.Update(ref motiv, ship.Position);
 
                     if (IsActiveSystem(activeSystemIndex, systemId))
-                        MovementPrimitive.SetTraceWriter(_substeps, in ship.Uid);
+                        MoveToPosition.SetTraceWriter(_substeps, in ship.Uid);
 
                     if (motiv.TryPeekAction(out var action))
                     {
@@ -148,7 +141,7 @@ namespace _Project.Scripts.Simulation
                             _motivator.OnActionCompleted(ref motiv, ship.Position);
                     }
 
-                    MovementPrimitive.ClearTraceWriter();
+                    MoveToPosition.ClearTraceWriter();
 
                     _context.Systems.TryUpdateShip(systemId, slot, in ship);
                     _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv);

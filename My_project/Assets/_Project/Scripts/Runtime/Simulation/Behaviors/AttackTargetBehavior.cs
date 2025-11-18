@@ -74,7 +74,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             }
 
             float speed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange;
-            MovementPrimitive.MoveToPosition(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false);
+                MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false);
 
             if (distance <= desiredRange + DistanceTolerance)
             {
