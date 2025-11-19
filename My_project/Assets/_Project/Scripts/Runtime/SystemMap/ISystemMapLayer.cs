@@ -1,7 +1,6 @@
 ﻿using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using UnityEngine;
-using _Project.Scripts.Simulation.Render;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -17,8 +16,7 @@ namespace _Project.Scripts.SystemMap
             Ship[] nextShips,
             int nextCount,
             float progress,
-            float stepDuration,
-            System.Collections.Generic.IReadOnlyDictionary<_Project.Scripts.Core.UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps);
+            float stepDuration);
         void Dispose();
     }
 }

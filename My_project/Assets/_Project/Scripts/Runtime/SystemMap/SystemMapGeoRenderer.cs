@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using _Project.Prefabs;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -81,8 +80,7 @@ namespace _Project.Scripts.SystemMap
             Ship[] nextShips,
             int nextCount,
             float progress,
-            float stepDuration,
-            System.Collections.Generic.IReadOnlyDictionary<_Project.Scripts.Core.UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps)
+            float stepDuration)
         {
             if (_layerRoot == null)
                 return;

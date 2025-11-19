@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
@@ -32,12 +31,10 @@ namespace _Project.Scripts.SystemMap
         private GameStateService _state;
         private bool _isExiting;
         private UID _currentSystemUid;
-        private int _mainThreadId;
 
         private void Awake()
         {
             _core = FindFirstObjectByType<GameBootstrap>();
-            _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             if (!layersRoot)
             {
                 var rootGo = new GameObject("SystemMapLayers");
@@ -81,9 +78,6 @@ namespace _Project.Scripts.SystemMap
 
         private void OnRenderChanged(GameStateService.RenderSnapshot snapshot)
         {
-            if (Thread.CurrentThread.ManagedThreadId != _mainThreadId)
-                return;
-
             var system = ResolveActiveSystem(snapshot);
             if (system == null)
             {
@@ -108,9 +102,7 @@ namespace _Project.Scripts.SystemMap
                 snapshot.NextShipCount,
                 snapshot.StepProgress,
                 Mathf.Max(0.0001f, snapshot.LogicStepSeconds),
-                systemChanged,
-                snapshot.Substeps,
-                snapshot.SubstepsVersion);
+                systemChanged);
         }
 
         private void RenderSystem(
@@ -123,9 +115,7 @@ namespace _Project.Scripts.SystemMap
             int nextCount,
             float progress,
             float stepDuration,
-            bool systemChanged,
-            System.Collections.Generic.IReadOnlyDictionary<UID, System.Collections.Generic.List<sim.Render.SubstepSample>> substeps,
-            int substepsVersion)
+            bool systemChanged)
         {
             if (geoLayer != null)
             {
@@ -138,7 +128,7 @@ namespace _Project.Scripts.SystemMap
 
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
-                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration, substeps);
+                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
             }
 
             if (extraLayers == null)
@@ -150,7 +140,7 @@ namespace _Project.Scripts.SystemMap
                 {
                     if (systemChanged)
                         layer.Init(layersRoot);
-                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration, substeps);
+                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
                 }
             }
         }
@@ -183,3 +173,4 @@ namespace _Project.Scripts.SystemMap
         }
     }
 }
+

@@ -6,7 +6,6 @@ using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Galaxy.Generation;
 using _Project.Scripts.Simulation;
-using _Project.Scripts.Simulation.Execution;
 using UnityEngine;
 
 namespace _Project.Scripts.Core
@@ -89,3 +88,4 @@ namespace _Project.Scripts.Core
         }
     }
 }
+
