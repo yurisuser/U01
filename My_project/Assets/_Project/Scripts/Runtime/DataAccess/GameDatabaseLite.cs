@@ -7,7 +7,7 @@ namespace _Project.DataAccess
 {
     public static class GameDatabaseLite
     {
-        private const string RelativePath = "Data/game.ldb";
+        private const string RelativePath = "Data/game.db";
 
         private static string _fullPath;
         private static IReadOnlyList<CatalogWeapon> _weapons;
@@ -98,4 +98,3 @@ namespace _Project.DataAccess
         }
     }
 }
-

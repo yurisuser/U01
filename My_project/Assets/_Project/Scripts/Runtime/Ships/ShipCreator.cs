@@ -1,4 +1,5 @@
-﻿using _Project.Scripts.Core;
+﻿using _Project.DataAccess;
+using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Fraction;
 using UnityEngine;
 
@@ -8,32 +9,24 @@ namespace _Project.Scripts.Ships
     {
         public static Ship CreateShip(Fraction frac, UID pilotUid)
         {
-            var shipType = GetShipType(); // определяем тип корабля
-            var templateId = GetTemplateId(shipType); // выбираем шаблон для типа
-            var config = ShipConfigGenerator.Create(templateId); // получаем конфигурацию корабля
-            var stats = config.Stats; // базовые параметры
+            var catalog = ShipCatalogReader.GetRandomShip();
+            var shipType = ResolveShipType(in catalog);
 
-            var ship = new Ship( // создаём корабль с параметрами из конфигурации
-                UIDService.Create(EntityType.Ship), // UID корабля
-                pilotUid, // UID пилота
-                frac, // фракция изготовителя
-                shipType, // тип корабля
-                GetPosition(), // позиция
-                GetRotation(), // ориентация
-                stats.Hp, // здоровье из конфигурации
-                stats.MaxSpeed, // максимальная скорость
-                stats.Agility, // маневренность
-                GetIsActive() // активность
+            var ship = new Ship(
+                UIDService.Create(EntityType.Ship),
+                pilotUid,
+                frac,
+                shipType,
+                GetPosition(),
+                GetRotation(),
+                catalog.Hp,
+                catalog.MaxSpeed,
+                catalog.Agility,
+                GetIsActive()
             );
 
-            ship.Equipment.Init(config.WeaponSlotsCount); // создаём пустые слоты оружия
-
-            return ship; // возвращаем готовый корабль
-        }
-        
-        private static EShipType GetShipType()        // возвращает тип корабля
-        {
-            return EShipType.Fighter;
+            ship.Equipment.Init(catalog.WeaponSlots);
+            return ship;
         }
 
         private static Vector3 GetPosition()      // возвращает мировую позицию
@@ -51,15 +44,11 @@ namespace _Project.Scripts.Ships
             return true;
         }
 
-        private static ShipConfigGenerator.TemplateId GetTemplateId(EShipType type) // выбор шаблона под тип
+        private static EShipType ResolveShipType(in CatalogShip ship)
         {
-            switch (type)
-            {
-                case EShipType.Transport:
-                    return ShipConfigGenerator.TemplateId.Transport; // транспорт
-                default:
-                    return ShipConfigGenerator.TemplateId.Default; // базовый для остальных
-            }
+            if (ship.WeaponSlots <= 0 || ship.Key.Contains("transport"))
+                return EShipType.Transport;
+            return EShipType.Fighter;
         }
     }
 }
