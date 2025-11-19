@@ -5,21 +5,16 @@ using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.PilotMotivation;
+using _Project.Scripts.Simulation; // SimulationConsts
 using UnityEngine;
 
-namespace _Project.Scripts.Simulation
+namespace _Project.Scripts.Simulation.Execution
 {
     /// <summary>
     /// Исполняет игровой шаг: обновляет задачи, перемещает корабли и синхронизирует снапшот UI.
     /// </summary>
     public sealed class Executor
     {
-        private const int ShipsPerSystem = 5;
-        private const float SpawnRadius = 6f;
-        private const float ArriveDistance = 0.2f; // расстояние, с которого патруль считается достигшим цели и берёт новую точку маршрута
-        private const float DefaultPatrolSpeed = 5f;
-        private static float DefaultPatrolRadius = 200f;
-
         private readonly RuntimeContext _context;
         private readonly GameStateService _state;
         private readonly Motivator _motivator;
@@ -27,13 +22,14 @@ namespace _Project.Scripts.Simulation
 
         private bool _initialShipsSpawned;
 
-        public static float DefaultPatrolRadius1 => DefaultPatrolRadius;
-
         public Executor(RuntimeContext context, GameStateService state)
         {
             _context = context;
             _state = state;
-            _motivator = new Motivator(DefaultPatrolRadius1, ArriveDistance, DefaultPatrolSpeed);
+            _motivator = new Motivator(
+                SimulationConsts.DefaultPatrolRadius,
+                SimulationConsts.ArriveDistance,
+                SimulationConsts.DefaultPatrolSpeed);
         }
 
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
@@ -62,15 +58,15 @@ namespace _Project.Scripts.Simulation
 
             for (int systemId = 0; systemId < galaxyCount; systemId++)
             {
-                for (int i = 0; i < ShipsPerSystem; i++)
+                for (int i = 0; i < SimulationConsts.ShipsPerSystem; i++)
                 {
                     var faction = PickFactionForSpawn(systemId, i);
 
                     var pilotUid = UIDService.Create(EntityType.Individ);
                     var ship = ShipCreator.CreateShip(faction, pilotUid);
 
-                    float angle = i / (float)ShipsPerSystem * Mathf.PI * 2f;
-                    float edgeRadius = SpawnRadius * 10f;
+                    float angle = i / (float)SimulationConsts.ShipsPerSystem * Mathf.PI * 2f;
+                    float edgeRadius = SimulationConsts.SpawnRadius * 10f;
                     ship.Position = new Vector3(
                         Mathf.Cos(angle) * edgeRadius,
                         Mathf.Sin(angle) * edgeRadius,
@@ -82,7 +78,7 @@ namespace _Project.Scripts.Simulation
 
                     if (_context.Pilots != null)
                     {
-                        float searchRadius = Mathf.Max(SpawnRadius * 10f, 250f);
+                        float searchRadius = Mathf.Max(SimulationConsts.SpawnRadius * 10f, 250f);
                         var motiv = _motivator.CreateAttackAll(searchRadius, allowFriendlyFire: false);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
