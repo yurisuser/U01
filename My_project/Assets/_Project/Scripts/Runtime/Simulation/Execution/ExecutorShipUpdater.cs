@@ -13,17 +13,17 @@ using UnityEngine;
 namespace _Project.Scripts.Simulation.Execution
 {
     // Обновляет корабли внутри шага: мотивации, поведение, сабстепы.
-    internal sealed class ShipUpdater
+    internal sealed class ExecutorShipUpdater
     {
-        private readonly RuntimeContext _context; // Глобальный контекст со всеми системами и пилотами.
+        private readonly RuntimeContext _global_context; // Глобальный контекст со всеми системами и пилотами.
         private readonly Motivator _motivator; // Обновлятор текущей мотивации пилотов.
         private readonly List<ShotEvent> _shotEvents; // Временный список выстрелов за кадр.
         private readonly SubstepTraceBuffer _substeps; // Буфер трассировки перемещений.
 
         // Сохраняем исходные зависимости для повторного использования во время апдейтов.
-        public ShipUpdater(RuntimeContext context, Motivator motivator, List<ShotEvent> shotEvents, SubstepTraceBuffer substeps)
+        public ExecutorShipUpdater(RuntimeContext context, Motivator motivator, List<ShotEvent> shotEvents, SubstepTraceBuffer substeps)
         {
-            _context = context;
+            _global_context = context;
             _motivator = motivator;
             _shotEvents = shotEvents;
             _substeps = substeps;
@@ -32,14 +32,14 @@ namespace _Project.Scripts.Simulation.Execution
         // Главный цикл, проходящий по системам и обновляющий каждый корабль.
         public void UpdateShips(float dt, int activeSystemIndex)
         {
-            if (_context?.Systems == null)
+            if (_global_context?.Systems == null)
                 return;
 
             _shotEvents.Clear(); // Сбрасываем выстрелы перед новым циклом.
 
-            for (int systemId = 0; systemId < _context.Systems.Count; systemId++) // Обходим все звёздные системы.
+            for (int systemId = 0; systemId < _global_context.Systems.Count; systemId++) // Обходим все звёздные системы.
             {
-                if (!_context.Systems.TryGetState(systemId, out var state)) // Пропускаем, если нет состояния системы.
+                if (!_global_context.Systems.TryGetState(systemId, out var state)) // Пропускаем, если нет состояния системы.
                     continue;
 
                 var buffer = state.ShipsBuffer; // Актуальные корабли.
@@ -51,7 +51,7 @@ namespace _Project.Scripts.Simulation.Execution
                     if (!ship.IsActive) // Мёртвые корабли пропускаем.
                         continue;
 
-                    if (_context.Pilots == null || !_context.Pilots.TryGetMotiv(ship.PilotUid, out var motiv)) // Проверяем активного пилота.
+                    if (_global_context.Pilots == null || !_global_context.Pilots.TryGetMotiv(ship.PilotUid, out var motiv)) // Проверяем активного пилота.
                         continue;
 
                     _motivator.Update(ref motiv, ship.Position); // Обновляем мотивацию относительно позиции.
@@ -68,8 +68,8 @@ namespace _Project.Scripts.Simulation.Execution
 
                     MoveToPosition.ClearTraceWriter(); // Всегда чистим трассировщик.
 
-                    _context.Systems.TryUpdateShip(systemId, slot, in ship); // Возвращаем изменённый корабль.
-                    _context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv); // И обновлённую мотивацию пилота.
+                    _global_context.Systems.TryUpdateShip(systemId, slot, in ship); // Возвращаем изменённый корабль.
+                    _global_context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv); // И обновлённую мотивацию пилота.
                 }
             }
         }

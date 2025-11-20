@@ -20,22 +20,22 @@ namespace _Project.Scripts.Simulation.Execution
         private readonly RuntimeContext _context; // Контекст мира.
         private readonly GameStateService _state; // Сервис состояния.
         private readonly Motivator _motivator; // Конфигурация мотиваций.
-        private readonly ShipUpdater _shipUpdater; // Сервис обновления кораблей.
+        private readonly ExecutorShipUpdater _shipUpdater; // Сервис обновления кораблей.
         private readonly Spawn.ShipSpawnService _shipSpawner; // Сервис первичного спавна.
         private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64); // Общий буфер событий выстрелов.
         private readonly Render.SubstepTraceBuffer _substeps = new Render.SubstepTraceBuffer(); // Буфер сабстепов.
 
         // Готовим все зависимости исполнения шага.
-        public Executor(RuntimeContext context, GameStateService state)
+        public Executor(RuntimeContext context, GameStateService state) //Конструктор
         {
             _context = context;
             _state = state;
             _motivator = new Motivator(SimulationConsts.DefaultPatrolRadius, SimulationConsts.ArriveDistance, SimulationConsts.DefaultPatrolSpeed);
-            _shipUpdater = new ShipUpdater(_context, _motivator, _shotEvents, _substeps);
+            _shipUpdater = new ExecutorShipUpdater(_context, _motivator, _shotEvents, _substeps);
             _shipSpawner = new Spawn.ShipSpawnService(_context, _motivator);
         }
 
-        // Выполняем один логический тик симуляции.
+        // Выполняем один логический ход симуляции.
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
         {
             _shipSpawner.EnsureInitialShips();

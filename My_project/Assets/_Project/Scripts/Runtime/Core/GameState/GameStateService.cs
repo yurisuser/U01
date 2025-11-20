@@ -100,7 +100,7 @@ namespace _Project.Scripts.Core.GameState
             _runtimeContext = context;
             MarkDynamicDirty();
             _forceRebuildCurrentShips = true;
-            EnsureDynamicSnapshot(_current.SelectedSystemIndex);
+            CheckDynamicSnapshot(_current.SelectedSystemIndex);
             _render = BuildRenderSnapshot(_current);
             RenderChanged?.Invoke(_render);
         }
@@ -290,12 +290,12 @@ namespace _Project.Scripts.Core.GameState
         {
             MarkDynamicDirty();
             _forceRebuildCurrentShips = true;
-            EnsureDynamicSnapshot(_current.SelectedSystemIndex);
+            CheckDynamicSnapshot(_current.SelectedSystemIndex);
             UpdateRenderSnapshot();
         }
 
         // Следим за буферами кораблей и перечитываем их при необходимости.
-        private void EnsureDynamicSnapshot(int systemIndex)
+        private void CheckDynamicSnapshot(int systemIndex)
         {
             if (_runtimeContext?.Systems == null)
             {
@@ -353,7 +353,7 @@ namespace _Project.Scripts.Core.GameState
         // Собираем RenderSnapshot для UI на основе текущего состояния.
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
         {
-            EnsureDynamicSnapshot(snapshot.SelectedSystemIndex);
+            CheckDynamicSnapshot(snapshot.SelectedSystemIndex);
 
             return new RenderSnapshot
             {
