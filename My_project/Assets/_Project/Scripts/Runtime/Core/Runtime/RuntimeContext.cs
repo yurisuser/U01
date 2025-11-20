@@ -2,9 +2,7 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    /// <summary>
-    /// Центральная точка сбора состояний объектов симуляции.
-    /// </summary>
+    /// <summary>Центральная точка сбора состояний объектов симуляции.</summary>
     public sealed class RuntimeContext
     {
         public GalaxyService Galaxy { get; } ///<summary>Статичная информация о системах.</summary>
@@ -25,9 +23,7 @@ namespace _Project.Scripts.Core.Runtime
             Tasks = new TaskScheduler();
         }
 
-        /// <summary>
-        /// Полностью очищаем контекст.
-        /// </summary>
+        /// <summary>Полностью очищаем контекст.</summary>
         public void Reset()
         {
             Tasks.Reset();
@@ -38,9 +34,7 @@ namespace _Project.Scripts.Core.Runtime
             Ownership.Reset();
         }
 
-        /// <summary>
-        /// Инициализируем галактику и системы.
-        /// </summary>
+        /// <summary>Инициализируем галактику и системы.</summary>
         public void Initialize(StarSys[] generatedGalaxy)
         {
             Reset();

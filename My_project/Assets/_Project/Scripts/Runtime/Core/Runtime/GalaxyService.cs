@@ -5,7 +5,7 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    // Хранит статичное описание галактики и индексы для быстрого доступа.
+    /// <summary>Хранит статичное описание галактики и индексы для быстрого доступа.</summary>
     public sealed class GalaxyService
     {
         private StarSys[] _systems = Array.Empty<StarSys>(); // Список систем.

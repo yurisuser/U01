@@ -4,30 +4,30 @@ using _Project.Scripts.Simulation.PilotMotivation;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    // Хранилище состояний пилотов по их UID.
+    /// <summary>Хранилище состояний пилотов по их UID.</summary>
     public sealed class PilotRegistry
     {
         private readonly Dictionary<UID, PilotMotive> _data = new(128); // Быстрый доступ к мотивам.
 
-        // Очищаем все данные.
+        /// <summary>Очищает все сохранённые мотивы.</summary>
         public void Reset()
         {
             _data.Clear();
         }
 
-        // Сохраняем мотив для пилота (вставка или замена).
+        /// <summary>Сохраняет мотив для пилота (вставка или замена).</summary>
         public void SetMotiv(UID pilotUid, in PilotMotive motiv)
         {
             _data[pilotUid] = motiv;
         }
 
-        // Пытаемся получить мотив.
+        /// <summary>Пытается получить мотив пилота.</summary>
         public bool TryGetMotiv(UID pilotUid, out PilotMotive motiv)
         {
             return _data.TryGetValue(pilotUid, out motiv);
         }
 
-        // Обновляем мотив, если пилот зарегистрирован.
+        /// <summary>Обновляет мотив, если пилот уже зарегистрирован.</summary>
         public bool TryUpdateMotiv(UID pilotUid, in PilotMotive motiv)
         {
             if (!_data.ContainsKey(pilotUid))

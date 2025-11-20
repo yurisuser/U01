@@ -3,26 +3,27 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    // Простая база одиночных кораблей: знаем систему и слот каждого корабля.
+    /// <summary>Простая база одиночных кораблей: знаем систему и слот каждого корабля.</summary>
     public sealed class ShipRegistry
     {
         private readonly SystemRegistry _systems; // Работает с буферами кораблей внутри систем.
         private readonly OwnershipMap _ownership; // Соц-словарь UID → (система, слот).
 
-        // Храним зависимости для последующего использования.
+        /// <summary>Хранит ссылки на реестр систем и карту владения.</summary>
         public ShipRegistry(SystemRegistry systems, OwnershipMap ownership)
         {
             _systems = systems;
             _ownership = ownership;
         }
 
-        // SystemRegistry/OwnershipMap чистятся извне, так что здесь ничего делать не нужно.
+        /// <summary>Сбрасывает состояние реестра (зависимые сервисы чистятся извне).</summary>
         public void Reset()
         {
             // Нам не нужно чистить что-то вручную. SystemRegistry и OwnershipMap
             // сбрасываются через свой Reset(), и этого хватает.
         }
 
+        /// <summary>Регистрирует корабль в системе и возвращает занятый слот.</summary>
         public int RegisterShip(int systemId, in Ship ship)
         {
             // Добавляем корабль в нужную систему и запоминаем,
@@ -32,6 +33,7 @@ namespace _Project.Scripts.Core.Runtime
             return slot;
         }
 
+        /// <summary>Пытается получить корабль и его локацию по UID.</summary>
         public bool TryGetShip(UID uid, out Ship ship, out EntityLocation location)
         {
             ship = default;
@@ -46,6 +48,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
+        /// <summary>Перемещает корабль в другую систему.</summary>
         public bool TryMoveShip(UID uid, int targetSystemId)
         {
             if (!_ownership.TryGetLocation(uid, out var location))
@@ -59,6 +62,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
+        /// <summary>Удаляет корабль из реестра.</summary>
         public bool TryRemoveShip(UID uid)
         {
             if (!_ownership.TryGetLocation(uid, out var location))
@@ -71,7 +75,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
-        // Место для обновления кораблей (движение, ИИ) — пока пусто.
+        /// <summary>Место для будущего обновления кораблей (движение, ИИ).</summary>
         public void Tick(float dt)
         {
             // Пока движение кораблей будет реализовано позже, поэтому здесь пусто.

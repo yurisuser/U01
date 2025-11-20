@@ -3,14 +3,15 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    // Хранилище состояния всех звёздных систем в рантайме (включая корабли).
+    /// <summary>Хранилище состояния всех звёздных систем в рантайме (включая корабли).</summary>
     public sealed class SystemRegistry
     {
         private StarSystemState[] _systems = Array.Empty<StarSystemState>(); // Список состояний систем.
 
+        /// <summary>Сколько систем обслуживается.</summary>
         public int Count => _systems.Length; // Сколько систем обслуживается.
 
-        // Готовим массив состояний на основе данных галактики.
+        /// <summary>Готовит массив состояний на основе данных галактики.</summary>
         public void Initialize(GalaxyService galaxy)
         {
             Reset();
@@ -27,7 +28,7 @@ namespace _Project.Scripts.Core.Runtime
                 _systems[i] = new StarSystemState();
         }
 
-        // Полностью очищаем все состояния.
+        /// <summary>Полностью очищает все состояния систем.</summary>
         public void Reset()
         {
             if (_systems == null)
@@ -39,7 +40,7 @@ namespace _Project.Scripts.Core.Runtime
             _systems = Array.Empty<StarSystemState>();
         }
 
-        // Пытаемся получить состояние системы по индексу.
+        /// <summary>Пытается получить состояние системы по индексу.</summary>
         public bool TryGetState(int systemId, out StarSystemState state)
         {
             if ((uint)systemId < _systems.Length)
@@ -52,7 +53,7 @@ namespace _Project.Scripts.Core.Runtime
             return false;
         }
 
-        // Добавляем корабль в конкретную систему.
+        /// <summary>Добавляет корабль в конкретную систему и возвращает слот.</summary>
         public int AddShip(int systemId, in Ship ship)
         {
             if (!TryGetState(systemId, out var state))
@@ -61,27 +62,27 @@ namespace _Project.Scripts.Core.Runtime
             return state.AddShip(in ship);
         }
 
-        // Возвращаем корабль по слоту.
+        /// <summary>Пытается получить корабль по слоту системы.</summary>
         public bool TryGetShip(int systemId, int slot, out Ship ship)
         {
             ship = default;
             return TryGetState(systemId, out var state) && state.TryGetShip(slot, out ship);
         }
 
-        // Обновляем данные корабля в слоте.
+        /// <summary>Обновляет данные корабля в слоте.</summary>
         public bool TryUpdateShip(int systemId, int slot, in Ship ship)
         {
             return TryGetState(systemId, out var state) && state.TryUpdateShip(slot, in ship);
         }
 
-        // Удаляем корабль из системы.
+        /// <summary>Удаляет корабль из системы.</summary>
         public bool TryRemoveShip(int systemId, int slot, out Ship ship)
         {
             ship = default;
             return TryGetState(systemId, out var state) && state.TryRemoveShip(slot, out ship);
         }
 
-        // Копируем корабли системы в пользовательский буфер (для UI).
+        /// <summary>Копирует корабли системы в пользовательский буфер (для UI).</summary>
         public int CopyShipsToBuffer(int systemId, ref Ship[] buffer)
         {
             if (!TryGetState(systemId, out var state))
@@ -91,15 +92,18 @@ namespace _Project.Scripts.Core.Runtime
         }
     }
 
+    /// <summary>Состояние кораблей внутри одной звёздной системы.</summary>
     public sealed class StarSystemState
     {
         private Ship[] _ships = Array.Empty<Ship>(); // Буфер слотов.
         private int _shipCount; // Активные слоты.
 
+        /// <summary>Сколько слотов занято.</summary>
         public int ShipCount => _shipCount; // Сколько слотов занято.
+        /// <summary>Прямой доступ к буферу кораблей (использовать с ShipCount).</summary>
         public Ship[] ShipsBuffer => _ships; // Прямой доступ к буферу (использовать с ShipCount).
 
-        // Добавляем корабль, расширяя буфер по мере необходимости.
+        /// <summary>Добавляет корабль, расширяя буфер по мере необходимости.</summary>
         public int AddShip(in Ship ship)
         {
             EnsureCapacity(_shipCount + 1);
@@ -108,6 +112,7 @@ namespace _Project.Scripts.Core.Runtime
             return _shipCount - 1;
         }
 
+        /// <summary>Пытается получить корабль по слоту.</summary>
         public bool TryGetShip(int slot, out Ship ship)
         {
             if ((uint)slot < _shipCount)
@@ -120,6 +125,7 @@ namespace _Project.Scripts.Core.Runtime
             return false;
         }
 
+        /// <summary>Обновляет корабль по слоту.</summary>
         public bool TryUpdateShip(int slot, in Ship ship)
         {
             if ((uint)slot >= _shipCount)
@@ -129,6 +135,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
+        /// <summary>Удаляет корабль из слота и возвращает его.</summary>
         public bool TryRemoveShip(int slot, out Ship ship)
         {
             if ((uint)slot >= _shipCount)
@@ -147,7 +154,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
-        // Полностью очищаем состояние системы.
+        /// <summary>Полностью очищает состояние системы.</summary>
         public void Reset()
         {
             if (_shipCount > 0)
@@ -156,6 +163,7 @@ namespace _Project.Scripts.Core.Runtime
             _shipCount = 0;
         }
 
+        /// <summary>Копирует активные корабли в внешний буфер и возвращает их количество.</summary>
         public int CopyShips(ref Ship[] buffer)
         {
             if (_shipCount <= 0)
@@ -168,7 +176,7 @@ namespace _Project.Scripts.Core.Runtime
             return _shipCount;
         }
 
-        // Следим, чтобы буфер помещал нужное количество кораблей.
+        /// <summary>Обеспечивает достаточную ёмкость буфера кораблей.</summary>
         private void EnsureCapacity(int needed)
         {
             if (_ships.Length >= needed)

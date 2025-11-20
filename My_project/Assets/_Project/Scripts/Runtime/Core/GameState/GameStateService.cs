@@ -8,10 +8,11 @@ using System.Collections.Generic;
 
 namespace _Project.Scripts.Core.GameState
 {
-    // Хранит логическое состояние игры и снимки для визуализации.
+    /// <summary>Хранит логическое состояние игры и снимки для визуализации.</summary>
     public sealed class GameStateService
     {
         // ----- данные для логики -----
+        /// <summary>Снимок логического состояния симуляции.</summary>
         public struct Snapshot
         {
             public ERunMode       RunMode; // Текущий режим (пауза/игра).
@@ -24,6 +25,7 @@ namespace _Project.Scripts.Core.GameState
         }
 
         // ----- данные для UI -----
+        /// <summary>Снимок данных для UI с тройным буфером кораблей.</summary>
         public struct RenderSnapshot
         {
             public ERunMode       RunMode; // Состояние симуляции.
