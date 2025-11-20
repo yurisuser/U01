@@ -8,6 +8,7 @@ using UnityEngine;
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
     [DisallowMultipleComponent]
+    /// <summary>Отрисовывает объекты галактической карты по данным снапшота.</summary>
     public class GalaxyMapRenderer : MonoBehaviour
     {
         [Header("Prefab catalogue")]
