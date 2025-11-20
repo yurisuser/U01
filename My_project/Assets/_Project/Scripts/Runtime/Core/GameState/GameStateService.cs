@@ -8,67 +8,66 @@ using System.Collections.Generic;
 
 namespace _Project.Scripts.Core.GameState
 {
-    /// <summary>
-    /// Хранит логическое состояние игры и снапшоты для визуализации.
-    /// </summary>
+    // Хранит логическое состояние игры и снимки для визуализации.
     public sealed class GameStateService
     {
         // ----- данные для логики -----
         public struct Snapshot
         {
-            public ERunMode       RunMode;
-            public EPlayStepSpeed PlayStepSpeed;
-            public long           TickIndex;
-            public float          LogicStepSeconds;
-            public bool           RequestStep;
-            public StarSys[]      Galaxy;
-            public int            SelectedSystemIndex;
+            public ERunMode       RunMode; // Текущий режим (пауза/игра).
+            public EPlayStepSpeed PlayStepSpeed; // Скорость воспроизведения.
+            public long           TickIndex; // Номер шага.
+            public float          LogicStepSeconds; // Длительность шага.
+            public bool           RequestStep; // Запрос одиночного шага.
+            public StarSys[]      Galaxy; // Копия данных галактики.
+            public int            SelectedSystemIndex; // Выбранная система.
         }
 
         // ----- данные для UI -----
         public struct RenderSnapshot
         {
-            public ERunMode       RunMode;
-            public EPlayStepSpeed PlayStepSpeed;
-            public long           TickIndex;
-            public float          LogicStepSeconds;
-            public StarSys[]      Galaxy;
-            public int            SelectedSystemIndex;
-            public Ship[]         PreviousShips;
-            public int            PreviousShipCount;
-            public Ship[]         CurrentShips;
-            public int            CurrentShipCount;
-            public Ship[]         NextShips;
-            public int            NextShipCount;
-            public int            ShipsVersion;
-            public float          StepProgress;
-            public IReadOnlyDictionary<UID, List<SubstepSample>> Substeps;
-            public int            SubstepsVersion;
-            public int            SubstepsSystemIndex;
+            public ERunMode       RunMode; // Состояние симуляции.
+            public EPlayStepSpeed PlayStepSpeed; // Выбранная скорость.
+            public long           TickIndex; // Текущий тик.
+            public float          LogicStepSeconds; // Длительность шага.
+            public StarSys[]      Galaxy; // Ссылка на исходные данные галактики.
+            public int            SelectedSystemIndex; // Активная система.
+            public Ship[]         PreviousShips; // Корабли на прошлый шаг.
+            public int            PreviousShipCount; // Сколько кораблей в previous.
+            public Ship[]         CurrentShips; // Корабли текущего снапшота.
+            public int            CurrentShipCount; // Их количество.
+            public Ship[]         NextShips; // Буфер следующего шага.
+            public int            NextShipCount; // Количество в next.
+            public int            ShipsVersion; // Версия, чтобы UI понимал обновления.
+            public float          StepProgress; // Прогресс между снапшотами.
+            public IReadOnlyDictionary<UID, List<SubstepSample>> Substeps; // Трейсы сабстепов.
+            public int            SubstepsVersion; // Версия сабстепов.
+            public int            SubstepsSystemIndex; // Для какой системы трейсы.
         }
 
-        private Snapshot _current;
-        private RenderSnapshot _render;
-        private RuntimeContext _runtimeContext;
+        private Snapshot _current; // Текущее логическое состояние.
+        private RenderSnapshot _render; // Последний снимок для UI.
+        private RuntimeContext _runtimeContext; // Контекст симуляции.
 
-        private Ship[] _shipsPrev = Array.Empty<Ship>();
-        private Ship[] _shipsCurr = Array.Empty<Ship>();
-        private Ship[] _shipsNext = Array.Empty<Ship>();
+        private Ship[] _shipsPrev = Array.Empty<Ship>(); // Буфер кораблей T-1.
+        private Ship[] _shipsCurr = Array.Empty<Ship>(); // Буфер кораблей T0.
+        private Ship[] _shipsNext = Array.Empty<Ship>(); // Буфер кораблей T1.
         private int _shipsPrevCount;
         private int _shipsCurrCount;
         private int _shipsNextCount;
-        private int _shipsVersion;
-        private int _lastDynamicSystemIndex = -1;
-        private float _stepProgress;
-        private volatile bool _dynamicDirty;
-        private bool _forceRebuildCurrentShips;
-        private IReadOnlyDictionary<UID, List<SubstepSample>> _substeps;
-        private int _substepsVersion;
-        private int _substepsSystemIndex = -1;
+        private int _shipsVersion; // Индикатор обновлений кораблей.
+        private int _lastDynamicSystemIndex = -1; // Последняя система для снапшота.
+        private float _stepProgress; // Прогресс интерполяции.
+        private volatile bool _dynamicDirty; // Требуется ли пересборка динамики.
+        private bool _forceRebuildCurrentShips; // Форсируем rebuild текущего буфера.
+        private IReadOnlyDictionary<UID, List<SubstepSample>> _substeps; // Последние сабстепы.
+        private int _substepsVersion; // Версия сабстепов.
+        private int _substepsSystemIndex = -1; // Для какой системы они актуальны.
 
-        public event Action<Snapshot> SnapshotChanged;
-        public event Action<RenderSnapshot> RenderChanged;
+        public event Action<Snapshot> SnapshotChanged; // UI/логика подписываются на изменения логики.
+        public event Action<RenderSnapshot> RenderChanged; // UI подписывается на визуальные изменения.
 
+        // Инициализируем сервис и создаём начальные снапшоты.
         public GameStateService(float logicStepSeconds)
         {
             _current = new Snapshot
@@ -85,16 +84,17 @@ namespace _Project.Scripts.Core.GameState
             _render = BuildRenderSnapshot(_current);
         }
 
-        public Snapshot Current => _current;
-        public RenderSnapshot Render => _render;
+        public Snapshot Current => _current; // Текущий снимок для логики.
+        public RenderSnapshot Render => _render; // Последний снимок для UI.
 
-        public StarSys[] GetGalaxy() => _current.Galaxy;
+        public StarSys[] GetGalaxy() => _current.Galaxy; // Получить текущую галактику.
 
         public StarSys? GetSelectedSystem()
         {
             return TryGetSystem(_current.SelectedSystemIndex, _current.Galaxy);
         }
 
+        // Подключаем контекст симуляции, чтобы читать данные о кораблях.
         public void AttachRuntimeContext(RuntimeContext context)
         {
             _runtimeContext = context;
@@ -107,14 +107,14 @@ namespace _Project.Scripts.Core.GameState
 
         // ----- управление из UI -----
 
-        public void SetRunMode(ERunMode mode)
+        public void SetRunMode(ERunMode mode) // Меняем режим (пауза/игра).
         {
             var snapshot = _current;
             snapshot.RunMode = mode;
             Commit(snapshot);
         }
 
-        public void SetGalaxy(StarSys[] galaxy)
+        public void SetGalaxy(StarSys[] galaxy) // Загружаем галактику и корректируем выбор.
         {
             var snapshot = _current;
             snapshot.Galaxy = galaxy ?? Array.Empty<StarSys>();
@@ -127,14 +127,14 @@ namespace _Project.Scripts.Core.GameState
             Commit(snapshot);
         }
 
-        public void SetPlayStepSpeed(EPlayStepSpeed speed)
+        public void SetPlayStepSpeed(EPlayStepSpeed speed) // Меняем скорость воспроизведения.
         {
             var snapshot = _current;
             snapshot.PlayStepSpeed = speed;
             Commit(snapshot);
         }
 
-        public void SetLogicStepSeconds(float seconds)
+        public void SetLogicStepSeconds(float seconds) // Устанавливаем длительность шага.
         {
             if (seconds <= 0f)
                 return;
@@ -144,14 +144,14 @@ namespace _Project.Scripts.Core.GameState
             Commit(snapshot);
         }
 
-        public void RequestStep()
+        public void RequestStep() // Запрос одиночного шага (для пошагового режима).
         {
             var snapshot = _current;
             snapshot.RequestStep = true;
             Commit(snapshot);
         }
 
-        public void ClearStepRequest()
+        public void ClearStepRequest() // Сбрасываем запрос шага.
         {
             if (!_current.RequestStep)
                 return;
@@ -161,13 +161,14 @@ namespace _Project.Scripts.Core.GameState
             Commit(snapshot);
         }
 
-        public void AdvanceTick()
+        public void AdvanceTick() // Инкрементируем счётчик тиков.
         {
             var snapshot = _current;
             snapshot.TickIndex++;
             Commit(snapshot);
         }
 
+        // Обновляем сабстепы для активной системы.
         public void SetSubstepTraces(IReadOnlyDictionary<UID, List<SubstepSample>> traces, int systemIndex)
         {
             _substeps = traces;
@@ -176,6 +177,7 @@ namespace _Project.Scripts.Core.GameState
             UpdateRenderSnapshot();
         }
 
+        // Выбираем систему по индексу и обновляем снапшоты.
         public bool SelectSystemByIndex(int index)
         {
             var snapshot = _current;
@@ -199,6 +201,7 @@ namespace _Project.Scripts.Core.GameState
             return true;
         }
 
+        // Выбираем систему по UID.
         public bool SelectSystemByUid(UID uid)
         {
             var galaxy = _current.Galaxy;
@@ -215,6 +218,7 @@ namespace _Project.Scripts.Core.GameState
             return false;
         }
 
+        // Снимаем выбор системы.
         public void ClearSelectedSystem()
         {
             if (_current.SelectedSystemIndex == -1)
@@ -227,6 +231,7 @@ namespace _Project.Scripts.Core.GameState
 
         // ----- обновление состояния -----
 
+        // Применяем обновлённый снапшот и уведомляем слушателей.
         public void Commit(in Snapshot snapshot)
         {
             _current = snapshot;
@@ -238,11 +243,12 @@ namespace _Project.Scripts.Core.GameState
         /// Отмечаем, что динамический снимок (корабли) устарел и его надо перечитать.
         /// Вызывает Executor после расчёта шага.
         /// </summary>
-        internal void MarkDynamicDirty()
+        internal void MarkDynamicDirty() // Помечаем, что динамический буфер устарел.
         {
             _dynamicDirty = true;
         }
 
+        // Продвигаем буферы T-1 <- T0 <- T+1, если есть данные нового шага.
         internal bool TryPromoteNextShips()
         {
             if (_shipsNextCount <= 0)
@@ -266,7 +272,7 @@ namespace _Project.Scripts.Core.GameState
         /// <summary>
         /// Обновляет прогресс логического шага (0..1) и уведомляет UI при изменении.
         /// </summary>
-        internal void SetStepProgress(float progress)
+        internal void SetStepProgress(float progress) // Обновляем прогресс шага.
         {
             progress = Clamp01(progress);
             if (Math.Abs(_stepProgress - progress) < 0.0001f)
@@ -280,7 +286,7 @@ namespace _Project.Scripts.Core.GameState
         /// <summary>
         /// Полностью перечитать динамический снимок (например, при смене выбора в UI).
         /// </summary>
-        public void RefreshDynamicSnapshot()
+        public void RefreshDynamicSnapshot() // Полностью перечитываем текущие корабли.
         {
             MarkDynamicDirty();
             _forceRebuildCurrentShips = true;
@@ -288,6 +294,7 @@ namespace _Project.Scripts.Core.GameState
             UpdateRenderSnapshot();
         }
 
+        // Следим за буферами кораблей и перечитываем их при необходимости.
         private void EnsureDynamicSnapshot(int systemIndex)
         {
             if (_runtimeContext?.Systems == null)
@@ -343,6 +350,7 @@ namespace _Project.Scripts.Core.GameState
             _dynamicDirty = false;
         }
 
+        // Собираем RenderSnapshot для UI на основе текущего состояния.
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
         {
             EnsureDynamicSnapshot(snapshot.SelectedSystemIndex);
@@ -369,6 +377,7 @@ namespace _Project.Scripts.Core.GameState
             };
         }
 
+        // Проверяем, изменилось ли что-то для UI, чтобы не слать лишние события.
         private static bool IsRenderDirty(in RenderSnapshot previous, in RenderSnapshot next)
         {
             return
@@ -386,6 +395,7 @@ namespace _Project.Scripts.Core.GameState
                 !ReferenceEquals(previous.NextShips, next.NextShips);
         }
 
+        // Строим новый RenderSnapshot и уведомляем UI при изменении.
         private void UpdateRenderSnapshot()
         {
             var previousRender = _render;
@@ -395,6 +405,7 @@ namespace _Project.Scripts.Core.GameState
                 RenderChanged?.Invoke(_render);
         }
 
+        // Гарантируем, что буфер кораблей вмещает запрошенное количество.
         private static void EnsureBufferCapacity(ref Ship[] buffer, int needed)
         {
             if (needed <= 0)
@@ -408,6 +419,7 @@ namespace _Project.Scripts.Core.GameState
                 Array.Resize(ref buffer, needed);
         }
 
+        // Безопасно возвращаем систему по индексу.
         private static StarSys? TryGetSystem(int index, StarSys[] galaxy)
         {
             if (galaxy == null || galaxy.Length == 0)
@@ -419,6 +431,7 @@ namespace _Project.Scripts.Core.GameState
             return galaxy[index];
         }
 
+        // Клэмп [0;1] без использования Mathf (для работы вне Unity).
         private static float Clamp01(float value)
         {
             if (value < 0f) return 0f;
