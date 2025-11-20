@@ -1,5 +1,6 @@
 ﻿namespace _Project.Scripts.Simulation.Spawn
 {
+    /// <summary>Контракт планировщика намерений спауна.</summary>
     public interface ISpawnPlanner
     {
         void Tick(int tickIndex, float dt);                   // пересчитать потребности

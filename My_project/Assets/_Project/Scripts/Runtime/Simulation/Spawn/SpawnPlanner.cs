@@ -2,7 +2,7 @@
 
 namespace _Project.Scripts.Simulation.Spawn
 {
-    // Минимальный плановик: держит очередь намерений, сам ничего не генерирует (пока)
+    /// <summary>Минимальный плановик: держит очередь намерений, сам пока не генерирует.</summary>
     public sealed class SpawnPlanner : ISpawnPlanner
     {
         private readonly Queue<SpawnIntent> _queue = new Queue<SpawnIntent>(); // Очередь намерений спавна.

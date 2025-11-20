@@ -1,6 +1,6 @@
 ﻿namespace _Project.Scripts.Simulation.Spawn
 {
-    // Минимальный исполнитель: заглушка, вернёт true/false в зависимости от готовности
+    /// <summary>Минимальный исполнитель намерений спауна (пока заглушка).</summary>
     public sealed class Spawner : ISpawner
     {
         public bool TryExecute(in SpawnIntent intent)

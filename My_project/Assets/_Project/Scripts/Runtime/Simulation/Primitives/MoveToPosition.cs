@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
+    /// <summary>Примитив перемещения корабля к точке с сабстепами и трассировкой.</summary>
     internal static class MoveToPosition
     {
         private static SubstepTraceBuffer _trace; // буфер для записи сабстепов
