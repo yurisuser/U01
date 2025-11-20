@@ -4,7 +4,7 @@ using _Project.Scripts.Simulation.Primitives;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
-    // Поведение прямого перемещения к точке.
+    /// <summary>Поведение прямого перемещения к точке.</summary>
     internal static class MoveToCoordinatesBehavior
     {
         // Двигаем корабль и завершаем действие по достижению.

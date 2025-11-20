@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    // Примитив боевого взаимодействия между кораблями.
+    /// <summary>Примитив боевого взаимодействия между кораблями.</summary>
     internal static class CombatPrimitive
     {
         // Обрабатываем оружие атакующего и наносим урон цели.
@@ -85,7 +85,7 @@ namespace _Project.Scripts.Simulation.Primitives
         }
     }
 
-    // Результат обработки оружия.
+    /// <summary>Результат обработки оружия.</summary>
     internal readonly struct CombatResult
     {
         public readonly bool HasFired; // Хоть одно оружие выстрелило.

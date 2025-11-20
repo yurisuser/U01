@@ -1,6 +1,6 @@
 namespace _Project.Scripts.Simulation.Behaviors
 {
-    // Результат выполнения поведения пилота.
+    /// <summary>Результат выполнения поведения пилота.</summary>
     internal readonly struct BehaviorExecutionResult
     {
         public readonly bool Completed; // Действие завершено.

@@ -4,6 +4,7 @@ using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Core
 {
+    /// <summary>Управляет шагами симуляции: планирование, прогресс, синхронизация с UI.</summary>
     public sealed class StepManager
     {
         private readonly GameStateService _state;
@@ -13,6 +14,7 @@ namespace _Project.Scripts.Core
         private float _visualTime;
         private bool _stepInFlight;
 
+        /// <summary>Создаёт менеджер шагов с сервисом состояния и потоком симуляции.</summary>
         public StepManager(GameStateService state, SimulationThread simulationThread)
         {
             _state            = state ?? throw new ArgumentNullException(nameof(state));
@@ -22,6 +24,7 @@ namespace _Project.Scripts.Core
             _stepInFlight     = false;
         }
 
+        /// <summary>Обновляет прогресс шага, планирует и принимает выполнение тикoв.</summary>
         public void Update(float dt)
         {
             if (dt < 0f)

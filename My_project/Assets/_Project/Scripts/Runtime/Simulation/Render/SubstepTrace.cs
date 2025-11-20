@@ -5,15 +5,15 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Simulation.Render
 {
-    // Описывает один сабстеп движения корабля внутри тика.
+    /// <summary>Описывает один сабстеп движения корабля внутри тика.</summary>
     public struct SubstepSample
     {
         public float TimeFrac;   // 0..1 внутри тика
         public Vector3 Position;
         public Quaternion Rotation;
-    }
+        }
 
-    // Буфер для записи и публикации сабстепов движения.
+    /// <summary>Буфер для записи и публикации сабстепов движения.</summary>
     internal sealed class SubstepTraceBuffer
     {
         private readonly Dictionary<UID, List<SubstepSample>> _current = new();

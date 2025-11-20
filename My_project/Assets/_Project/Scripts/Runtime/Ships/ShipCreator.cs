@@ -5,8 +5,10 @@ using UnityEngine;
 
 namespace _Project.Scripts.Ships
 {
+    /// <summary>Фабрика создания кораблей из каталога.</summary>
     public static class ShipCreator
     {
+        /// <summary>Создаёт корабль указанной фракции и пилота, подбирая шаблон из каталога.</summary>
         public static Ship CreateShip(Fraction frac, UID pilotUid)
         {
             var catalog = ShipCatalogReader.GetRandomShip();

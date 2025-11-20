@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution
 {
-    // Обновляет корабли внутри шага: мотивации, поведение, сабстепы.
+    /// <summary>Обновляет корабли внутри шага: мотивации, поведение, сабстепы.</summary>
     internal sealed class ExecutorShipUpdater
     {
         private readonly RuntimeContext _global_context; // Глобальный контекст со всеми системами и пилотами.

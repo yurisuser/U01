@@ -6,7 +6,7 @@ using _Project.Scripts.Simulation.PilotMotivation;
 
 namespace _Project.Scripts.Simulation
 {
-    // Высокоуровневый API для назначения мотивов пилотам и развёртывания приказов в действия.
+    /// <summary>Высокоуровневый API для назначения мотивов пилотам и развёртывания приказов в действия.</summary>
     public sealed class Motivator
     {
         private static int _seedCounter = Environment.TickCount; // Счётчик для генерации случайных патрулей.

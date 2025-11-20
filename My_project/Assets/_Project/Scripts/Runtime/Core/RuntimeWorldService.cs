@@ -3,13 +3,12 @@ using _Project.Scripts.Core.Runtime;
 
 namespace _Project.Scripts.Core
 {
-    /// <summary>
-    /// Singleton that owns the runtime context and survives scene changes.
-    /// </summary>
+    /// <summary>Singleton, владеющий RuntimeContext и живущий между сценами.</summary>
     public sealed class RuntimeWorldService : MonoBehaviour
     {
         private static RuntimeWorldService _instance;
 
+        /// <summary>Единственный экземпляр сервиса.</summary>
         public static RuntimeWorldService Instance
         {
             get
@@ -24,6 +23,7 @@ namespace _Project.Scripts.Core
             }
         }
 
+        /// <summary>Текущий RuntimeContext.</summary>
         public RuntimeContext Context { get; private set; }
 
         private void Awake()
@@ -40,11 +40,13 @@ namespace _Project.Scripts.Core
             Context ??= new RuntimeContext();
         }
 
+        /// <summary>Гарантированно возвращает контекст, создавая при отсутствии.</summary>
         public static RuntimeContext RequireContext()
         {
             return Instance.Context ??= new RuntimeContext();
         }
 
+        /// <summary>Полностью сбрасывает/создает новый контекст.</summary>
         public void ResetContext()
         {
             Context ??= new RuntimeContext();

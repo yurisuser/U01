@@ -4,6 +4,7 @@ using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
 {
+    /// <summary>Снэпшот данных корабля в мире.</summary>
     public struct Ship
     {
         public readonly Core.UID Uid;     // уникальный ID корабля
@@ -17,6 +18,7 @@ namespace _Project.Scripts.Ships
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
 
+        /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
             Core.UID uid,                 // уникальный ID
             Core.UID pilotUid,            // ID пилота

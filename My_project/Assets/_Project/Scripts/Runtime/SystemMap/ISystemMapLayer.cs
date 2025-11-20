@@ -5,10 +5,11 @@ using _Project.Scripts.Simulation.Render;
 
 namespace _Project.Scripts.SystemMap
 {
+    /// <summary>Контракт слоя отрисовки системной карты.</summary>
     public interface ISystemMapLayer
     {
-        int Order { get; }
-        void Init(Transform parentRoot);
+        int Order { get; } ///<summary>Порядок отрисовки слоя.</summary>
+        void Init(Transform parentRoot); ///<summary>Инициализация слоя.</summary>
         void Render(in StarSys sys,
             Ship[] prevShips,
             int prevCount,
@@ -18,7 +19,7 @@ namespace _Project.Scripts.SystemMap
             int nextCount,
             float progress,
             float stepDuration,
-            System.Collections.Generic.IReadOnlyDictionary<_Project.Scripts.Core.UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps);
-        void Dispose();
+            System.Collections.Generic.IReadOnlyDictionary<_Project.Scripts.Core.UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps); ///<summary>Отрисовка слоя с данными кораблей.</summary>
+        void Dispose(); ///<summary>Освобождение ресурсов слоя.</summary>
     }
 }

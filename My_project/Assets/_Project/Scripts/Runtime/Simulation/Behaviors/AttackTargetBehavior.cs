@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
-    // Поведение атаки конкретной цели.
+    /// <summary>Поведение атаки конкретной цели.</summary>
     internal static class AttackTargetBehavior
     {
         private const float DistanceTolerance = 1f; // Допуск по дистанции.

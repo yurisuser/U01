@@ -1,5 +1,6 @@
 ﻿namespace _Project.Scripts.Core
 {
+    /// <summary>Тип сущности в игре.</summary>
     public enum EntityType
     {
         None = 0,     // отсутствует или не определён

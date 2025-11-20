@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    // Утилиты позиционирования относительно цели.
+    /// <summary>Утилиты позиционирования относительно цели.</summary>
     internal static class PositioningPrimitive
     {
         private const float OrbitLateralFactor = 0.35f; // Насколько далеко смещаемся по касательной.

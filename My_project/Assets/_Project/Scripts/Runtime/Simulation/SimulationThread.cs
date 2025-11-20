@@ -5,7 +5,7 @@ using _Project.Scripts.Simulation.Execution;
 
 namespace _Project.Scripts.Simulation
 {
-    // Запускает Executor в отдельном потоке, чтобы не блокировать основной цикл.
+    /// <summary>Запускает Executor в отдельном потоке, чтобы не блокировать основной цикл.</summary>
     public sealed class SimulationThread : IDisposable
     {
         private readonly Executor _executor; // Исполнитель шага симуляции.
@@ -23,7 +23,7 @@ namespace _Project.Scripts.Simulation
         private GameStateService.Snapshot _resultSnapshot; // Результат последнего шага.
         private float _taskDt; // Дельта-время для задачи.
 
-        // Создаём поток симуляции и сразу его запускаем.
+        /// <summary>Создаёт поток симуляции и сразу его запускает.</summary>
         public SimulationThread(Executor executor)
         {
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
@@ -36,7 +36,7 @@ namespace _Project.Scripts.Simulation
             _thread.Start();
         }
 
-        // Ставим шаг симуляции в очередь, если поток готов.
+        /// <summary>Ставит шаг симуляции в очередь, если поток готов.</summary>
         public bool TryScheduleStep(in GameStateService.Snapshot snapshot, float dt)
         {
             if (dt < 0f)
@@ -56,7 +56,7 @@ namespace _Project.Scripts.Simulation
             return true;
         }
 
-        // Забираем готовый снимок шага, если он есть.
+        /// <summary>Забирает готовый снимок шага, если он есть.</summary>
         public bool TryGetCompletedStep(out GameStateService.Snapshot snapshot)
         {
             lock (_sync)
@@ -73,7 +73,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
-        // Основной цикл фонового потока.
+        /// <summary>Основной цикл фонового потока.</summary>
         private void ThreadLoop()
         {
             while (true)
@@ -111,7 +111,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
-        // Останавливаем приём задач и дожидаемся завершения.
+        /// <summary>Останавливает приём задач и дожидается завершения.</summary>
         public void Stop()
         {
             lock (_sync)

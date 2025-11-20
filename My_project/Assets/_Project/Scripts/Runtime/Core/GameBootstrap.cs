@@ -11,10 +11,12 @@ using UnityEngine;
 
 namespace _Project.Scripts.Core
 {
+    /// <summary>Точка входа игры: создаёт контекст, стейт и запускает симуляцию.</summary>
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static GameStateService _gameState;
 
+        /// <summary>Глобальный сервис состояния игры.</summary>
         public static GameStateService GameState
         {
             get
@@ -26,9 +28,12 @@ namespace _Project.Scripts.Core
             }
         }
 
+        /// <summary>Синглтон экземпляра GameBootstrap.</summary>
         public static GameBootstrap Instance { get; private set; }
 
+        /// <summary>Менеджер сцен.</summary>
         public SceneController Scenes { get; } = new SceneController();
+        /// <summary>Контроллер ввода.</summary>
         public InputController Input { get; } = new InputController();
 
         [SerializeField] private float stepDurationSeconds = 2f;

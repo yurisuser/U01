@@ -3,7 +3,7 @@ using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
-    // Набор параметров для действия пилота; используется как объединение.
+    /// <summary>Набор параметров для действия пилота; используется как объединение.</summary>
     public struct PilotActionParam
     {
         public MoveParameters Move; // Параметры перемещения.

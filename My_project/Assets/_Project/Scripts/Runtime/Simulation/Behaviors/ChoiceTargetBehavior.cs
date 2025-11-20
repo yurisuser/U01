@@ -5,7 +5,7 @@ using _Project.Scripts.Simulation.Primitives;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
-    // Поведение выбора цели для пилота.
+    /// <summary>Поведение выбора цели для пилота.</summary>
     internal static class ChoiceTargetBehavior
     {
         // Ищем ближайшую подходящую цель и назначаем её текущей.

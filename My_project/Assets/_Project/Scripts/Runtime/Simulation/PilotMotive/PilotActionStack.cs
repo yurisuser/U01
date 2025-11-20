@@ -2,7 +2,7 @@ using System;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
-    // Стек действий пилота без зависимостей от Stack<T>, чтобы хранить в значимых типах.
+    /// <summary>Стек действий пилота без зависимостей от Stack&lt;T&gt;.</summary>
     public struct PilotActionStack
     {
         private PilotAction[] _buffer; // Внутренний буфер.
@@ -10,8 +10,10 @@ namespace _Project.Scripts.Simulation.PilotMotivation
 
         private const int DefaultCapacity = 16;
 
-        public int Count => _count; // Количество действий.
-        public bool IsCreated => _buffer != null; // Проверка инициализации буфера.
+        /// <summary>Количество действий в стеке.</summary>
+        public int Count => _count;
+        /// <summary>Создан ли внутренний буфер.</summary>
+        public bool IsCreated => _buffer != null;
 
         // Готовим буфер к работе или сбрасываем существующий.
         public void Initialize(int initialCapacity = DefaultCapacity)
