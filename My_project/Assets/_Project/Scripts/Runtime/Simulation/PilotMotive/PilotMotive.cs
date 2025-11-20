@@ -4,24 +4,23 @@ using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
-    /// <summary>
-    /// Value-type state that describes the current pilot order and expands it to executable actions.
-    /// </summary>
+    // Описывает состояние мотивации пилота и раскладывает приказы на действия.
     public struct PilotMotive
     {
-        private EPilotOrder _order;
-        private ActionParam _orderParam;
-        private PilotActionStack _actions;
-        private PatrolState _patrol;
-        private bool _initialized;
+        private EPilotOrder _order; // Текущий приказ для пилота.
+        private ActionParam _orderParam; // Параметры текущего приказа.
+        private PilotActionStack _actions; // Очередь действий, которую нужно выполнить.
+        private PatrolState _patrol; // Состояние патрулирования.
+        private bool _initialized; // Флаг инициализации внутренних структур.
 
-        public EPilotOrder Order => _order;
-        public ActionParam OrderParameters => _orderParam;
-        public int ActionCount => _actions.Count;
-        public bool IsInitialized => _initialized;
-        public UID CurrentTarget => _orderParam.Target;
-        internal bool HasCurrentTarget => IsValidUid(_orderParam.Target);
+        public EPilotOrder Order => _order; // Активный приказ.
+        public ActionParam OrderParameters => _orderParam; // Доступные параметры приказа.
+        public int ActionCount => _actions.Count; // Сколько действий готово к выполнению.
+        public bool IsInitialized => _initialized; // Проверка первичной настройки.
+        public UID CurrentTarget => _orderParam.Target; // UID текущей цели.
+        internal bool HasCurrentTarget => IsValidUid(_orderParam.Target); // Есть ли назначенная цель.
 
+        // Сбрасываем состояние и готовим стек действий.
         public void Reset(int actionCapacity = 16)
         {
             _actions.Initialize(actionCapacity);
@@ -31,27 +30,31 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             _initialized = true;
         }
 
+        // Назначаем новый приказ и очищаем текущие действия.
         public void SetOrder(EPilotOrder order, in ActionParam param, int actionCapacity = 16)
         {
-            EnsureInitialized(actionCapacity);
+            CheckInitialized(actionCapacity);
             _order = order;
             _orderParam = param;
             _actions.Clear();
             _patrol = default;
         }
 
+        // Подсматриваем действие без удаления.
         public bool TryPeekAction(out PilotAction action)
         {
-            EnsureInitialized();
+            CheckInitialized();
             return _actions.TryPeek(out action);
         }
 
+        // Достаём верхнее действие.
         public bool TryPopAction(out PilotAction action)
         {
-            EnsureInitialized();
+            CheckInitialized();
             return _actions.TryPop(out action);
         }
 
+        // Завершаем текущее действие и обновляем состояние, если нужно.
         public void CompleteCurrentAction()
         {
             if (!TryPopAction(out _))
@@ -65,9 +68,10 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             }
         }
 
+        // Настраиваем параметры патруля.
         internal void ConfigurePatrol(Vector3 center, float radius, float desiredSpeed, float arriveDistance, uint randomState)
         {
-            EnsureInitialized();
+            CheckInitialized();
 
             var patrolRadius = Math.Max(radius, arriveDistance * 2f);
             _patrol = new PatrolState
@@ -82,6 +86,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             };
         }
 
+        // Гарантируем, что в стеке есть цель патруля и движение к ней.
         internal bool EnsurePatrolAction(Vector3 origin)
         {
             if (_order != EPilotOrder.Patrol)
@@ -117,16 +122,19 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return true;
         }
 
+        // Сохраняем текущую цель в приказе.
         internal void SetCurrentTarget(in UID target)
         {
             _orderParam.Target = target;
         }
 
+        // Сбрасываем текущую цель.
         internal void ClearCurrentTarget()
         {
             _orderParam.Target = default;
         }
 
+        // Убеждаемся, что атака конкретной цели присутствует в действиях.
         internal bool EnsureAttackTargetAction()
         {
             if (_order != EPilotOrder.AttackTarget && _order != EPilotOrder.AttackAllEnemies)
@@ -143,6 +151,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return EnsureOrReplaceAction(in desired);
         }
 
+        // Добавляем поиск цели, если приказ атаковать всех.
         internal bool EnsureAcquireAction()
         {
             if (_order != EPilotOrder.AttackAllEnemies)
@@ -155,6 +164,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return EnsureOrReplaceAction(in desired);
         }
 
+        // Общий поток для приказа атаки всех: либо атакуем текущую, либо ищем новую.
         internal bool EnsureAttackAllFlow()
         {
             if (_order != EPilotOrder.AttackAllEnemies)
@@ -163,6 +173,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return HasCurrentTarget ? EnsureAttackTargetAction() : EnsureAcquireAction();
         }
 
+        // Подбираем новую точку патруля, если достигли текущей.
         private void EnsurePatrolTarget(Vector3 origin)
         {
             var patrol = _patrol;
@@ -181,6 +192,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             }
         }
 
+        // Выбираем следующую точку патруля в пределах радиуса.
         private static void AssignNextPatrolTarget(ref PatrolState patrol, Vector3 origin)
         {
             var center = patrol.Center;
@@ -199,12 +211,14 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             patrol.HasTarget = true;
         }
 
+        // Сэмплируем точку на диске радиуса патруля.
         private static Vector3 PickPointWithinRadius(ref uint state, Vector3 center, float radius)
         {
             var offset = SamplePointOnDisk(ref state, radius);
             return new Vector3(center.x + offset.x, center.y + offset.y, center.z);
         }
 
+        // Генерируем смещение внутри круга с равномерным распределением.
         private static Vector2 SamplePointOnDisk(ref uint state, float radius)
         {
             float angle = NextFloat(ref state) * Mathf.PI * 2f;
@@ -212,12 +226,14 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
         }
 
+        // Псевдослучайное число в [0,1).
         private static float NextFloat(ref uint state)
         {
             state = NextState(state);
             return (state & 0x00FFFFFFu) / 16777216f;
         }
 
+        // Обновляем состояние генератора случайных чисел.
         private static uint NextState(uint state)
         {
             if (state == 0u)
@@ -229,15 +245,17 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return state;
         }
 
-        private void EnsureInitialized(int actionCapacity = 16)
+        // Убеждаемся, что структура инициализирована перед использованием.
+        private void CheckInitialized(int actionCapacity = 16)
         {
             if (!_initialized)
                 Reset(actionCapacity);
         }
 
+        // Добавляем действие, заменяя верхнее при необходимости.
         private bool EnsureOrReplaceAction(in PilotAction desired)
         {
-            EnsureInitialized();
+            CheckInitialized();
 
             if (_actions.Count == 0)
             {
@@ -258,6 +276,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return true;
         }
 
+        // Сравниваем два действия по их параметрам.
         private static bool AreActionsEquivalent(in PilotAction current, in PilotAction desired)
         {
             if (current.Action != desired.Action)
@@ -282,6 +301,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             }
         }
 
+        // Проверяем, что UID не пустой.
         private static bool IsValidUid(in UID uid)
         {
             return uid.Id != 0;
@@ -289,13 +309,13 @@ namespace _Project.Scripts.Simulation.PilotMotivation
 
         private struct PatrolState
         {
-            public Vector3 Center;
-            public Vector3 CurrentTarget;
-            public float Radius;
-            public float DesiredSpeed;
-            public float ArriveDistance;
-            public uint RandomState;
-            public bool HasTarget;
+            public Vector3 Center; // Центр патрулирования.
+            public Vector3 CurrentTarget; // Сюда движемся сейчас.
+            public float Radius; // Радиус патруля.
+            public float DesiredSpeed; // Желаемая скорость на маршруте.
+            public float ArriveDistance; // Радиус прибытия.
+            public uint RandomState; // Состояние генератора случайных точек.
+            public bool HasTarget; // Флаг наличия активной точки.
         }
     }
 }

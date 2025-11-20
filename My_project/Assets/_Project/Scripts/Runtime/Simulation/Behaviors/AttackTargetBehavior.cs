@@ -9,11 +9,13 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
+    // Поведение атаки конкретной цели.
     internal static class AttackTargetBehavior
     {
-        private const float DistanceTolerance = 1f;
-        private const float FrontConeAngleDeg = 70f;
+        private const float DistanceTolerance = 1f; // Допуск по дистанции.
+        private const float FrontConeAngleDeg = 70f; // Угол, определяющий фронт цели.
 
+        // Маневрируем к выгодной точке и обрабатываем оружие.
         public static BehaviorExecutionResult Execute(
             ref Ship ship,
             ref PilotMotive motive,
@@ -43,9 +45,9 @@ namespace _Project.Scripts.Simulation.Behaviors
             if (desiredRange <= 0f)
                 desiredRange = 1f;
 
-            float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot);
+            float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot); // Расстояние до цели.
 
-            // Определяем, входим ли мы в конус переднего обстрела цели
+            // Определяем, входим ли мы в конус переднего обстрела цели.
             var targetForward = targetSnapshot.Velocity;
             if (targetForward.sqrMagnitude < 0.0001f)
                 targetForward = Vector3.right;
@@ -55,7 +57,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             var toSelf = ship.Position - targetSnapshot.Position;
             bool inEnemyFront = Vector3.Angle(targetForward, toSelf) <= FrontConeAngleDeg;
 
-            // Выбираем точку: если мы в его фронте — выход на бок/хвост; иначе держим хвост
+            // Выбираем точку: если мы в его фронте — выход на бок/хвост; иначе держим хвост.
             Vector3 desiredPoint;
             float sideSign = ((ship.Uid.Id ^ targetUid.Id) & 1) == 0 ? 1f : -1f;
             var sideDir = new Vector3(-targetForward.y, targetForward.x, 0f) * sideSign;
@@ -74,7 +76,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             }
 
             float speed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange;
-                MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false);
+            MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false); // Летим к выбранной точке.
 
             if (distance <= desiredRange + DistanceTolerance)
             {
@@ -96,6 +98,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             return BehaviorExecutionResult.None;
         }
 
+        // Подбираем эффективную дистанцию залпа по самому короткому оружию.
         private static float ComputeVolleyRange(in Ship ship)
         {
             var weapons = ship.Equipment.Weapons;

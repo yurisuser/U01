@@ -4,8 +4,10 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
+    // Примитив боевого взаимодействия между кораблями.
     internal static class CombatPrimitive
     {
+        // Обрабатываем оружие атакующего и наносим урон цели.
         public static CombatResult ProcessWeapons(ref Ship attacker, ref Ship target, float distance, List<ShotEvent> shotEvents)
         {
             bool hasFired = false;
@@ -63,6 +65,7 @@ namespace _Project.Scripts.Simulation.Primitives
             return new CombatResult(hasFired, targetDestroyed);
         }
 
+        // Уменьшаем очки здоровья цели и выключаем её при смерти.
         private static void ApplyDamage(ref Ship target, float damage)
         {
             if (damage <= 0f)
@@ -82,10 +85,11 @@ namespace _Project.Scripts.Simulation.Primitives
         }
     }
 
+    // Результат обработки оружия.
     internal readonly struct CombatResult
     {
-        public readonly bool HasFired;
-        public readonly bool TargetDestroyed;
+        public readonly bool HasFired; // Хоть одно оружие выстрелило.
+        public readonly bool TargetDestroyed; // Цель уничтожена.
 
         public CombatResult(bool hasFired, bool targetDestroyed)
         {

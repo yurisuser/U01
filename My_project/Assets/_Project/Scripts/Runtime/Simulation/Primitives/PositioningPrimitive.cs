@@ -3,15 +3,18 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
+    // Утилиты позиционирования относительно цели.
     internal static class PositioningPrimitive
     {
-        private const float OrbitLateralFactor = 0.35f;
+        private const float OrbitLateralFactor = 0.35f; // Насколько далеко смещаемся по касательной.
 
+        // Расстояние между атакующим и целью.
         public static float DistanceToTarget(Vector3 attackerPos, TargetSnapshot target)
         {
             return Vector3.Distance(attackerPos, target.Position);
         }
 
+        // Точка погони прямо позади цели.
         public static Vector3 ComputeChasePoint(Vector3 attackerPos, TargetSnapshot target, float desiredDistance)
         {
             var toTarget = target.Position - attackerPos;
@@ -22,6 +25,7 @@ namespace _Project.Scripts.Simulation.Primitives
             return target.Position - dir * desiredDistance;
         }
 
+        // Точка орбиты с боковым смещением для разных кораблей.
         public static Vector3 ComputeOrbitPoint(in UID attackerUid, Vector3 attackerPos, TargetSnapshot target, float radius)
         {
             var toTarget = target.Position - attackerPos;
@@ -33,6 +37,7 @@ namespace _Project.Scripts.Simulation.Primitives
             return chasePoint + tangent * radius * OrbitLateralFactor * hash;
         }
 
+        // Хеш-комбинация UID для детерминированного, но уникального отступа.
         private static float HashPair(in UID attacker, in UID target)
         {
             unchecked

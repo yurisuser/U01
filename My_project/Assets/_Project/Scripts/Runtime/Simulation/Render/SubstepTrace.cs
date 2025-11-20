@@ -5,6 +5,7 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Simulation.Render
 {
+    // Описывает один сабстеп движения корабля внутри тика.
     public struct SubstepSample
     {
         public float TimeFrac;   // 0..1 внутри тика
@@ -12,24 +13,28 @@ namespace _Project.Scripts.Simulation.Render
         public Quaternion Rotation;
     }
 
+    // Буфер для записи и публикации сабстепов движения.
     internal sealed class SubstepTraceBuffer
     {
         private readonly Dictionary<UID, List<SubstepSample>> _current = new();
         private readonly Dictionary<UID, List<SubstepSample>> _published = new();
 
-        public IReadOnlyDictionary<UID, List<SubstepSample>> Published => _published;
+        public IReadOnlyDictionary<UID, List<SubstepSample>> Published => _published; // Последний опубликованный набор.
 
+        // Полностью очищаем трейс.
         public void Clear()
         {
             _current.Clear();
             _published.Clear();
         }
 
+        // Начинаем новый тик и чистим рабочие данные.
         public void BeginTick()
         {
             _current.Clear();
         }
 
+        // Добавляем точку движения для конкретного корабля.
         public void AddSample(in UID uid, float timeFrac, in Vector3 pos, in Quaternion rot)
         {
             if (!_current.TryGetValue(uid, out var list))
@@ -46,6 +51,7 @@ namespace _Project.Scripts.Simulation.Render
             });
         }
 
+        // Публикуем накопленные данные, создавая копии списков.
         public void Publish()
         {
             _published.Clear();

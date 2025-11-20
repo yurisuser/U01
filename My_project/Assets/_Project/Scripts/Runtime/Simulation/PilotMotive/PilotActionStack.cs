@@ -2,19 +2,18 @@ using System;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
-    /// <summary>
-    /// Value-type stack wrapper for pilot actions that avoids direct dependency on Stack{T}.
-    /// </summary>
+    // Стек действий пилота без зависимостей от Stack<T>, чтобы хранить в значимых типах.
     public struct PilotActionStack
     {
-        private PilotAction[] _buffer;
-        private int _count;
+        private PilotAction[] _buffer; // Внутренний буфер.
+        private int _count; // Текущее количество элементов.
 
         private const int DefaultCapacity = 16;
 
-        public int Count => _count;
-        public bool IsCreated => _buffer != null;
+        public int Count => _count; // Количество действий.
+        public bool IsCreated => _buffer != null; // Проверка инициализации буфера.
 
+        // Готовим буфер к работе или сбрасываем существующий.
         public void Initialize(int initialCapacity = DefaultCapacity)
         {
             if (initialCapacity < 0)
@@ -30,6 +29,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             _count = 0;
         }
 
+        // Создаём стек с заданной ёмкостью.
         public PilotActionStack(int initialCapacity)
         {
             if (initialCapacity < 0)
@@ -40,12 +40,14 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             _count = 0;
         }
 
+        // Кладём действие на вершину.
         public void Push(in PilotAction action)
         {
             EnsureCapacity(_count + 1);
             _buffer[_count++] = action;
         }
 
+        // Заменяем верхнее действие.
         public void ReplaceTop(in PilotAction action)
         {
             if (_count == 0)
@@ -54,6 +56,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             _buffer[_count - 1] = action;
         }
 
+        // Снимаем верхнее действие с проверками.
         public PilotAction Pop()
         {
             if (_count == 0)
@@ -65,6 +68,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return action;
         }
 
+        // Пытаемся снять верхнее действие.
         public bool TryPop(out PilotAction action)
         {
             if (_count == 0)
@@ -79,6 +83,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return true;
         }
 
+        // Подсматриваем верх без снятия.
         public ref readonly PilotAction Peek()
         {
             if (_count == 0)
@@ -87,6 +92,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return ref _buffer[_count - 1];
         }
 
+        // Безопасное подсматривание.
         public bool TryPeek(out PilotAction action)
         {
             if (_count == 0)
@@ -99,6 +105,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             return true;
         }
 
+        // Полностью чистим стек.
         public void Clear()
         {
             if (_count == 0)
@@ -110,11 +117,13 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             _count = 0;
         }
 
+        // Получаем только для чтения представление буфера.
         public ReadOnlySpan<PilotAction> AsReadOnlySpan()
         {
             return new ReadOnlySpan<PilotAction>(_buffer, 0, _count);
         }
 
+        // Увеличиваем буфер при необходимости.
         private void EnsureCapacity(int size)
         {
             if (_buffer == null || _buffer.Length == 0)

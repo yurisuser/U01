@@ -6,8 +6,10 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
+    // Утилиты поиска и разрешения целей.
     internal static class TargetingPrimitive
     {
+        // Пытаемся найти конкретную цель по UID в состоянии системы.
         public static bool TryResolveTarget(StarSystemState state, in UID targetUid, out TargetSnapshot snapshot, out int slot)
         {
             if (!IsValidUid(targetUid))
@@ -35,6 +37,7 @@ namespace _Project.Scripts.Simulation.Primitives
             return false;
         }
 
+        // Ищем ближайшую вражескую цель в пределах радиуса.
         public static bool TryFindNearestHostile(StarSystemState state, in Ship source, float radius, bool allowFriendlyFire, out TargetSnapshot snapshot, out int slot)
         {
             var buffer = state.ShipsBuffer;
@@ -66,24 +69,27 @@ namespace _Project.Scripts.Simulation.Primitives
             return slot >= 0;
         }
 
+        // Сравниваем UID кораблей.
         private static bool AreSameShip(in UID a, in UID b)
         {
             return a.Id == b.Id && a.Type == b.Type;
         }
 
+        // Проверяем валидность UID.
         private static bool IsValidUid(in UID uid)
         {
             return uid.Id != 0;
         }
     }
 
+    // Снимок состояния цели для безопасного использования вне буфера.
     internal readonly struct TargetSnapshot
     {
-        public readonly UID Uid;
-        public readonly Vector3 Position;
-        public readonly Vector3 Velocity;
-        public readonly bool IsActive;
-        public readonly EFraction Fraction;
+        public readonly UID Uid; // UID корабля.
+        public readonly Vector3 Position; // Текущая позиция.
+        public readonly Vector3 Velocity; // Скорость.
+        public readonly bool IsActive; // Активен ли корабль.
+        public readonly EFraction Fraction; // Фракция корабля.
 
         public TargetSnapshot(in Ship ship)
         {

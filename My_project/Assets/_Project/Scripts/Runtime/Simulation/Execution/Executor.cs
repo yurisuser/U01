@@ -12,19 +12,18 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution
 {
-    /// <summary>
-    /// Исполняет игровой шаг: обновляет задачи, перемещает корабли и синхронизирует снапшот UI.
-    /// </summary>
+    // Исполняет игровой шаг: обновляет задачи, двигает корабли и синхронизирует UI.
     public sealed class Executor
     {
-        private readonly RuntimeContext _context;                     // контекст мира
-        private readonly GameStateService _state;                     // сервис состояния
-        private readonly Motivator _motivator;                        // конфигурация мотиваций
-        private readonly ShipUpdater _shipUpdater;                    // сервис обновления кораблей
-        private readonly Spawn.ShipSpawnService _shipSpawner;         // сервис первичного спавна
-        private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64); // общий буфер событий выстрелов
-        private readonly Render.SubstepTraceBuffer _substeps = new Render.SubstepTraceBuffer(); // буфер сабстепов
+        private readonly RuntimeContext _context; // Контекст мира.
+        private readonly GameStateService _state; // Сервис состояния.
+        private readonly Motivator _motivator; // Конфигурация мотиваций.
+        private readonly ShipUpdater _shipUpdater; // Сервис обновления кораблей.
+        private readonly Spawn.ShipSpawnService _shipSpawner; // Сервис первичного спавна.
+        private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64); // Общий буфер событий выстрелов.
+        private readonly Render.SubstepTraceBuffer _substeps = new Render.SubstepTraceBuffer(); // Буфер сабстепов.
 
+        // Готовим все зависимости исполнения шага.
         public Executor(RuntimeContext context, GameStateService state)
         {
             _context = context;
@@ -34,6 +33,7 @@ namespace _Project.Scripts.Simulation.Execution
             _shipSpawner = new Spawn.ShipSpawnService(_context, _motivator);
         }
 
+        // Выполняем один логический тик симуляции.
         public void Execute(ref GameStateService.Snapshot snapshot, float dt)
         {
             _shipSpawner.EnsureInitialShips();
@@ -52,8 +52,10 @@ namespace _Project.Scripts.Simulation.Execution
             _state?.SetSubstepTraces(_substeps.Published, snapshot.SelectedSystemIndex);
         }
 
+        // Позволяет читать буфер событий выстрелов.
         public IReadOnlyList<ShotEvent> ShotEvents => _shotEvents;
 
+        // Отдельный шаг логики (для отладки в редакторе).
         private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)
         {
 #if UNITY_EDITOR
@@ -61,11 +63,13 @@ namespace _Project.Scripts.Simulation.Execution
 #endif
         }
 
+        // Проверяем, активна ли система.
         private static bool IsActiveSystem(int activeIndex, int systemId)
         {
             return activeIndex >= 0 && activeIndex == systemId;
         }
 
+        // Выполняем конкретное действие пилота по его типу.
         private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
         {
             switch (action.Action)
@@ -75,7 +79,7 @@ namespace _Project.Scripts.Simulation.Execution
                 case EAction.AttackTarget:
                     return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
                 case EAction.AcquireTarget:
-                    return AcquireTargetBehavior.Execute(ref ship, ref motive, in action, state);
+                    return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
                 default:
                     return BehaviorExecutionResult.None;
             }

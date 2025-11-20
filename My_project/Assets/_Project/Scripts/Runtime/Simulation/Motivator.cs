@@ -6,17 +6,16 @@ using _Project.Scripts.Simulation.PilotMotivation;
 
 namespace _Project.Scripts.Simulation
 {
-    /// <summary>
-    /// High-level API for assigning pilot motives and expanding orders into executable actions.
-    /// </summary>
+    // Высокоуровневый API для назначения мотивов пилотам и развёртывания приказов в действия.
     public sealed class Motivator
     {
-        private static int _seedCounter = Environment.TickCount;
+        private static int _seedCounter = Environment.TickCount; // Счётчик для генерации случайных патрулей.
 
-        private readonly float _defaultPatrolRadius;
-        private readonly float _defaultPatrolSpeed;
-        private readonly float _arriveDistance;
+        private readonly float _defaultPatrolRadius; // Радиус патруля по умолчанию.
+        private readonly float _defaultPatrolSpeed; // Скорость патруля по умолчанию.
+        private readonly float _arriveDistance; // Радиус прибытия.
 
+        // Настраиваем параметры, которые будут использоваться при создании мотивов.
         public Motivator(float defaultPatrolRadius, float arriveDistance, float defaultPatrolSpeed)
         {
             _defaultPatrolRadius = Mathf.Max(arriveDistance, defaultPatrolRadius);
@@ -24,6 +23,7 @@ namespace _Project.Scripts.Simulation
             _arriveDistance = Mathf.Max(0.01f, arriveDistance);
         }
 
+        // Создаём патруль вокруг точки с дефолтными параметрами.
         public PilotMotive CreateDefaultPatrol(Vector3 origin, float desiredSpeedOverride = float.NaN)
         {
             var speed = float.IsNaN(desiredSpeedOverride)
@@ -33,6 +33,7 @@ namespace _Project.Scripts.Simulation
             return CreatePatrol(origin, _defaultPatrolRadius, speed, origin);
         }
 
+        // Создаём патруль с указанными параметрами.
         public PilotMotive CreatePatrol(Vector3 center, float radius, float desiredSpeed, Vector3 origin)
         {
             var motive = new PilotMotive();
@@ -41,6 +42,7 @@ namespace _Project.Scripts.Simulation
             return motive;
         }
 
+        // Создаём мотив атаки конкретной цели.
         public PilotMotive CreateAttackTarget(UID target, float desiredRange, bool allowFriendlyFire = false)
         {
             var motive = new PilotMotive();
@@ -48,6 +50,7 @@ namespace _Project.Scripts.Simulation
             return motive;
         }
 
+        // Создаём мотив атаки любого врага.
         public PilotMotive CreateAttackAll(float searchRadius, bool allowFriendlyFire = false)
         {
             var motive = new PilotMotive();
@@ -55,6 +58,7 @@ namespace _Project.Scripts.Simulation
             return motive;
         }
 
+        // Конфигурируем режим патруля для существующего мотива.
         public void ConfigurePatrol(ref PilotMotive motive, Vector3 center, float radius, float desiredSpeed)
         {
             var clampedRadius = Mathf.Max(radius, _arriveDistance * 2f);
@@ -69,6 +73,7 @@ namespace _Project.Scripts.Simulation
             motive.ConfigurePatrol(center, clampedRadius, clampedSpeed, _arriveDistance, CreateSeed());
         }
 
+        // Конфигурируем атаку конкретной цели.
         public void ConfigureAttackTarget(ref PilotMotive motive, UID target, float desiredRange, bool allowFriendlyFire = false)
         {
             var clampedRange = Mathf.Max(0.1f, desiredRange);
@@ -82,6 +87,7 @@ namespace _Project.Scripts.Simulation
             motive.SetOrder(EPilotOrder.AttackTarget, in param);
         }
 
+        // Конфигурируем атаку всех врагов.
         public void ConfigureAttackAll(ref PilotMotive motive, float searchRadius, bool allowFriendlyFire = false)
         {
             var clampedRadius = Mathf.Max(0.1f, searchRadius);
@@ -94,6 +100,7 @@ namespace _Project.Scripts.Simulation
             motive.SetOrder(EPilotOrder.AttackAllEnemies, in param);
         }
 
+        // Обновляем стек действий в зависимости от приказа.
         public void Update(ref PilotMotive motive, Vector3 origin)
         {
             switch (motive.Order)
@@ -110,6 +117,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
+        // Сообщаем мотиватору, что действие завершено.
         public void OnActionCompleted(ref PilotMotive motive, Vector3 origin)
         {
             switch (motive.Order)
@@ -126,6 +134,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
+        // Генерируем семя для патруля.
         private static uint CreateSeed()
         {
             var value = unchecked((uint)Interlocked.Increment(ref _seedCounter));

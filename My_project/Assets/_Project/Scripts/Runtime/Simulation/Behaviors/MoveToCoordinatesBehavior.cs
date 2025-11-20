@@ -4,8 +4,10 @@ using _Project.Scripts.Simulation.Primitives;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
+    // Поведение прямого перемещения к точке.
     internal static class MoveToCoordinatesBehavior
     {
+        // Двигаем корабль и завершаем действие по достижению.
         public static BehaviorExecutionResult Execute(ref Ship ship, ref PilotMotive motive, in PilotAction action, float dt)
         {
             var move = action.Parameters.Move;

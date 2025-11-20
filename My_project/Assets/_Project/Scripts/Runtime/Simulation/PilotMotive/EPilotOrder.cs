@@ -1,5 +1,6 @@
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
+    // Типы высокоуровневых приказов пилота.
     public enum EPilotOrder
     {
         Idle = 0,

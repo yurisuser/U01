@@ -5,26 +5,25 @@ using _Project.Scripts.Simulation.Execution;
 
 namespace _Project.Scripts.Simulation
 {
-    /// <summary>
-    /// Runs Executor on a dedicated background thread so simulation work no longer blocks the main loop.
-    /// </summary>
+    // Запускает Executor в отдельном потоке, чтобы не блокировать основной цикл.
     public sealed class SimulationThread : IDisposable
     {
-        private readonly Executor _executor;
-        private readonly Thread _thread;
-        private readonly AutoResetEvent _wakeUp = new AutoResetEvent(false);
-        private readonly object _sync = new object();
+        private readonly Executor _executor; // Исполнитель шага симуляции.
+        private readonly Thread _thread; // Поток-воркер.
+        private readonly AutoResetEvent _wakeUp = new AutoResetEvent(false); // Событие для пробуждения потока.
+        private readonly object _sync = new object(); // Лок для синхронизации.
 
-        private bool _acceptTasks = true;
-        private bool _running     = true;
-        private bool _hasTask;
-        private bool _hasResult;
-        private bool _isProcessing;
+        private bool _acceptTasks = true; // Можно ли ставить новые задачи.
+        private bool _running     = true; // Поток ещё работает.
+        private bool _hasTask; // Есть ли задача в очереди.
+        private bool _hasResult; // Есть ли готовый результат.
+        private bool _isProcessing; // Сейчас выполняется шаг.
 
-        private GameStateService.Snapshot _taskSnapshot;
-        private GameStateService.Snapshot _resultSnapshot;
-        private float _taskDt;
+        private GameStateService.Snapshot _taskSnapshot; // Снимок для работы.
+        private GameStateService.Snapshot _resultSnapshot; // Результат последнего шага.
+        private float _taskDt; // Дельта-время для задачи.
 
+        // Создаём поток симуляции и сразу его запускаем.
         public SimulationThread(Executor executor)
         {
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
@@ -37,6 +36,7 @@ namespace _Project.Scripts.Simulation
             _thread.Start();
         }
 
+        // Ставим шаг симуляции в очередь, если поток готов.
         public bool TryScheduleStep(in GameStateService.Snapshot snapshot, float dt)
         {
             if (dt < 0f)
@@ -56,6 +56,7 @@ namespace _Project.Scripts.Simulation
             return true;
         }
 
+        // Забираем готовый снимок шага, если он есть.
         public bool TryGetCompletedStep(out GameStateService.Snapshot snapshot)
         {
             lock (_sync)
@@ -72,6 +73,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
+        // Основной цикл фонового потока.
         private void ThreadLoop()
         {
             while (true)
@@ -109,6 +111,7 @@ namespace _Project.Scripts.Simulation
             }
         }
 
+        // Останавливаем приём задач и дожидаемся завершения.
         public void Stop()
         {
             lock (_sync)
@@ -124,6 +127,7 @@ namespace _Project.Scripts.Simulation
             _thread.Join();
         }
 
+        // Освобождаем ресурсы воркера.
         public void Dispose()
         {
             Stop();

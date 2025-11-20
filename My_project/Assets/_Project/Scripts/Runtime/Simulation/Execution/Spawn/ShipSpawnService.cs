@@ -6,21 +6,21 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution.Spawn
 {
-    /// <summary>
-    /// Отвечает за первичный спавн кораблей в системах.
-    /// </summary>
+    // Отвечает за первичный спавн кораблей в системах.
     public sealed class ShipSpawnService
     {
-        private readonly RuntimeContext _context;
-        private readonly Motivator _motivator;
-        private bool _initialShipsSpawned;
+        private readonly RuntimeContext _context; // Общий контекст симуляции.
+        private readonly Motivator _motivator; // Мотиватор для назначения приказов пилотам.
+        private bool _initialShipsSpawned; // Флаг, чтобы не спавнить корабли повторно.
 
+        // Запоминаем зависимости генератора.
         public ShipSpawnService(RuntimeContext context, Motivator motivator)
         {
             _context = context;
             _motivator = motivator;
         }
 
+        // Создаём стартовые корабли во всех системах.
         public void EnsureInitialShips()
         {
             if (_initialShipsSpawned || _context == null)
@@ -73,6 +73,7 @@ namespace _Project.Scripts.Simulation.Execution.Spawn
             _initialShipsSpawned = true;
         }
 
+        // Определяем фракцию корабля по детерминированному псевдослучайному правилу.
         private static Fraction PickFactionForSpawn(int systemId, int shipIndex)
         {
             var fractions = Fractions.All;

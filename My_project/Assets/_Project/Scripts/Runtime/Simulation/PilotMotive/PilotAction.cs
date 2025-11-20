@@ -3,11 +3,13 @@ using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
+    // Представляет действие пилота и параметры его выполнения.
     public struct PilotAction
     {
-        public EAction Action;
-        public PilotActionParam Parameters;
+        public EAction Action; // Тип действия (движение, атака, поиск).
+        public PilotActionParam Parameters; // Пакет параметров для выбранного поведения.
 
+        // Создаёт действие перемещения к точке с указанными параметрами.
         public static PilotAction CreateMoveTo(in Vector3 destination, float desiredSpeed, float arriveDistance)
         {
             return new PilotAction
@@ -25,6 +27,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             };
         }
 
+        // Создаёт действие атаки конкретной цели.
         public static PilotAction CreateAttackTarget(in UID target, float desiredRange, bool allowFriendlyFire)
         {
             return new PilotAction
@@ -42,6 +45,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
             };
         }
 
+        // Создаёт действие поиска ближайшей цели.
         public static PilotAction CreateAcquireTarget(float searchRadius, bool allowFriendlyFire)
         {
             return new PilotAction
@@ -49,7 +53,7 @@ namespace _Project.Scripts.Simulation.PilotMotivation
                 Action = EAction.AcquireTarget,
                 Parameters = new PilotActionParam
                 {
-                    Acquire = new PilotActionParam.AcquireParameters
+                    Acquire = new PilotActionParam.CheckParameters
                     {
                         SearchRadius = Mathf.Max(0f, searchRadius),
                         AllowFriendlyFire = allowFriendlyFire

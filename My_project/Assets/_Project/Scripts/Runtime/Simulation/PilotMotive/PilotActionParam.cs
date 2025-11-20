@@ -3,33 +3,31 @@ using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Simulation.PilotMotivation
 {
-    /// <summary>
-    /// Payload for a pilot action. Acts as a tagged union via the owning PilotAction.Action value.
-    /// </summary>
+    // Набор параметров для действия пилота; используется как объединение.
     public struct PilotActionParam
     {
-        public MoveParameters Move;
-        public AttackParameters Attack;
-        public AcquireParameters Acquire;
+        public MoveParameters Move; // Параметры перемещения.
+        public AttackParameters Attack; // Параметры атаки.
+        public CheckParameters Acquire; // Параметры поиска цели.
 
         public struct MoveParameters
         {
-            public Vector3 Destination;
-            public float DesiredSpeed;
-            public float ArriveDistance;
+            public Vector3 Destination; // Цель маршрута.
+            public float DesiredSpeed; // Желаемая скорость.
+            public float ArriveDistance; // Радиус прибытия.
         }
 
         public struct AttackParameters
         {
-            public UID Target;
-            public float DesiredRange;
-            public bool AllowFriendlyFire;
+            public UID Target; // Цель атаки.
+            public float DesiredRange; // Дистанция боя.
+            public bool AllowFriendlyFire; // Можно ли бить своих.
         }
 
-        public struct AcquireParameters
+        public struct CheckParameters
         {
-            public float SearchRadius;
-            public bool AllowFriendlyFire;
+            public float SearchRadius; // Радиус поиска.
+            public bool AllowFriendlyFire; // Игнорируем ли союзность.
         }
     }
 }

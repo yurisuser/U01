@@ -5,8 +5,10 @@ using _Project.Scripts.Simulation.Primitives;
 
 namespace _Project.Scripts.Simulation.Behaviors
 {
-    internal static class AcquireTargetBehavior
+    // Поведение выбора цели для пилота.
+    internal static class ChoiceTargetBehavior
     {
+        // Ищем ближайшую подходящую цель и назначаем её текущей.
         public static BehaviorExecutionResult Execute(
             ref Ship ship,
             ref PilotMotive motive,
@@ -18,8 +20,8 @@ namespace _Project.Scripts.Simulation.Behaviors
             if (!TargetingPrimitive.TryFindNearestHostile(state, in ship, acquire.SearchRadius, acquire.AllowFriendlyFire, out var snapshot, out _))
                 return BehaviorExecutionResult.None;
 
-            motive.SetCurrentTarget(snapshot.Uid);
-            motive.CompleteCurrentAction();
+            motive.SetCurrentTarget(snapshot.Uid); // Сохраняем выбранную цель в мотиве.
+            motive.CompleteCurrentAction(); // Отмечаем действие выполненным.
             return BehaviorExecutionResult.CompletedResult;
         }
     }
