@@ -2,18 +2,17 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    /// <summary>
-    /// Центральная точка сбора состояний обьектов
-    /// </summary>
+    // Центральная точка сбора состояний объектов симуляции.
     public sealed class RuntimeContext
     {
-        public GalaxyService Galaxy { get; }
-        public SystemRegistry Systems { get; }
-        public ShipRegistry Ships { get; }
-        public PilotRegistry Pilots { get; }
-        public TaskScheduler Tasks { get; }
-        public OwnershipMap Ownership { get; }
+        public GalaxyService Galaxy { get; } // Статичная информация о системах.
+        public SystemRegistry Systems { get; } // Состояния систем и кораблей по системам.
+        public ShipRegistry Ships { get; } // Реестр всех кораблей.
+        public PilotRegistry Pilots { get; } // Состояния пилотов.
+        public TaskScheduler Tasks { get; } // Очередь задач/приказов.
+        public OwnershipMap Ownership { get; } // Привязка UID к системам и слотам.
 
+        // Собираем все сервисы контекста.
         public RuntimeContext()
         {
             Ownership = new OwnershipMap();
@@ -24,6 +23,7 @@ namespace _Project.Scripts.Core.Runtime
             Tasks = new TaskScheduler();
         }
 
+        // Полностью очищаем контекст.
         public void Reset()
         {
             Tasks.Reset();
@@ -34,6 +34,7 @@ namespace _Project.Scripts.Core.Runtime
             Ownership.Reset();
         }
 
+        // Инициализируем галактику и системы.
         public void Initialize(StarSys[] generatedGalaxy)
         {
             Reset();

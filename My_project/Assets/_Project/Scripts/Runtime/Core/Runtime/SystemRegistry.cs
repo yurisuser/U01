@@ -3,15 +3,14 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    /// <summary>
-    /// Хранилище состояния всех звёздных систем в рантайме (включая корабли).
-    /// </summary>
+    // Хранилище состояния всех звёздных систем в рантайме (включая корабли).
     public sealed class SystemRegistry
     {
-        private StarSystemState[] _systems = Array.Empty<StarSystemState>();
+        private StarSystemState[] _systems = Array.Empty<StarSystemState>(); // Список состояний систем.
 
-        public int Count => _systems.Length;
+        public int Count => _systems.Length; // Сколько систем обслуживается.
 
+        // Готовим массив состояний на основе данных галактики.
         public void Initialize(GalaxyService galaxy)
         {
             Reset();
@@ -28,6 +27,7 @@ namespace _Project.Scripts.Core.Runtime
                 _systems[i] = new StarSystemState();
         }
 
+        // Полностью очищаем все состояния.
         public void Reset()
         {
             if (_systems == null)
@@ -39,6 +39,7 @@ namespace _Project.Scripts.Core.Runtime
             _systems = Array.Empty<StarSystemState>();
         }
 
+        // Пытаемся получить состояние системы по индексу.
         public bool TryGetState(int systemId, out StarSystemState state)
         {
             if ((uint)systemId < _systems.Length)
@@ -51,6 +52,7 @@ namespace _Project.Scripts.Core.Runtime
             return false;
         }
 
+        // Добавляем корабль в конкретную систему.
         public int AddShip(int systemId, in Ship ship)
         {
             if (!TryGetState(systemId, out var state))
@@ -59,27 +61,27 @@ namespace _Project.Scripts.Core.Runtime
             return state.AddShip(in ship);
         }
 
+        // Возвращаем корабль по слоту.
         public bool TryGetShip(int systemId, int slot, out Ship ship)
         {
             ship = default;
             return TryGetState(systemId, out var state) && state.TryGetShip(slot, out ship);
         }
 
+        // Обновляем данные корабля в слоте.
         public bool TryUpdateShip(int systemId, int slot, in Ship ship)
         {
             return TryGetState(systemId, out var state) && state.TryUpdateShip(slot, in ship);
         }
 
+        // Удаляем корабль из системы.
         public bool TryRemoveShip(int systemId, int slot, out Ship ship)
         {
             ship = default;
             return TryGetState(systemId, out var state) && state.TryRemoveShip(slot, out ship);
         }
 
-        /// <summary>
-        /// Копирует корабли системы в пользовательский буфер, чтобы отдать их UI без лишних аллокаций.
-        /// Возвращает количество скопированных кораблей.
-        /// </summary>
+        // Копируем корабли системы в пользовательский буфер (для UI).
         public int CopyShipsToBuffer(int systemId, ref Ship[] buffer)
         {
             if (!TryGetState(systemId, out var state))
@@ -91,12 +93,13 @@ namespace _Project.Scripts.Core.Runtime
 
     public sealed class StarSystemState
     {
-        private Ship[] _ships = Array.Empty<Ship>();
-        private int _shipCount;
+        private Ship[] _ships = Array.Empty<Ship>(); // Буфер слотов.
+        private int _shipCount; // Активные слоты.
 
-        public int ShipCount => _shipCount;
-        public Ship[] ShipsBuffer => _ships;
+        public int ShipCount => _shipCount; // Сколько слотов занято.
+        public Ship[] ShipsBuffer => _ships; // Прямой доступ к буферу (использовать с ShipCount).
 
+        // Добавляем корабль, расширяя буфер по мере необходимости.
         public int AddShip(in Ship ship)
         {
             EnsureCapacity(_shipCount + 1);
@@ -144,6 +147,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
+        // Полностью очищаем состояние системы.
         public void Reset()
         {
             if (_shipCount > 0)
@@ -164,6 +168,7 @@ namespace _Project.Scripts.Core.Runtime
             return _shipCount;
         }
 
+        // Следим, чтобы буфер помещал нужное количество кораблей.
         private void EnsureCapacity(int needed)
         {
             if (_ships.Length >= needed)

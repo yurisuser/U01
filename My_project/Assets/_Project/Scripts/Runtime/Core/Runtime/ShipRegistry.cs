@@ -3,22 +3,20 @@ using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    /// <summary>
-    /// Простая база одиночных кораблей. Здесь мы знаем, в какой системе стоит каждый корабль,
-    /// и по UID можно быстро получить его позицию или переставить в другую систему.
-    /// Отдельных "флотов" пока нет, поэтому класс так и называется — ShipRegistry.
-    /// </summary>
+    // Простая база одиночных кораблей: знаем систему и слот каждого корабля.
     public sealed class ShipRegistry
     {
-        private readonly SystemRegistry _systems;
-        private readonly OwnershipMap _ownership;
+        private readonly SystemRegistry _systems; // Работает с буферами кораблей внутри систем.
+        private readonly OwnershipMap _ownership; // Соц-словарь UID → (система, слот).
 
+        // Храним зависимости для последующего использования.
         public ShipRegistry(SystemRegistry systems, OwnershipMap ownership)
         {
             _systems = systems;
             _ownership = ownership;
         }
 
+        // SystemRegistry/OwnershipMap чистятся извне, так что здесь ничего делать не нужно.
         public void Reset()
         {
             // Нам не нужно чистить что-то вручную. SystemRegistry и OwnershipMap
@@ -73,6 +71,7 @@ namespace _Project.Scripts.Core.Runtime
             return true;
         }
 
+        // Место для обновления кораблей (движение, ИИ) — пока пусто.
         public void Tick(float dt)
         {
             // Пока движение кораблей будет реализовано позже, поэтому здесь пусто.

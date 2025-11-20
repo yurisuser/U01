@@ -5,16 +5,15 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    /// <summary>
-    /// Хранит статичное описание галактики и индексы для быстрого доступа.
-    /// </summary>
+    // Хранит статичное описание галактики и индексы для быстрого доступа.
     public sealed class GalaxyService
     {
-        private StarSys[] _systems = Array.Empty<StarSys>();
-        private readonly Dictionary<UID, int> _indexByUid = new Dictionary<UID, int>(128);
+        private StarSys[] _systems = Array.Empty<StarSys>(); // Список систем.
+        private readonly Dictionary<UID, int> _indexByUid = new Dictionary<UID, int>(128); // Быстрый поиск по UID.
 
-        public int Count => _systems.Length;
+        public int Count => _systems.Length; // Количество систем.
 
+        // Инициализируем сервис сгенерированным массивом.
         public void Initialize(StarSys[] generated)
         {
             if (generated == null)
@@ -31,19 +30,22 @@ namespace _Project.Scripts.Core.Runtime
             }
         }
 
+        // Полностью очищаем сервис.
         public void Reset()
         {
             _systems = Array.Empty<StarSys>();
             _indexByUid.Clear();
         }
 
-        public StarSys[] GetAll() => _systems;
+        public StarSys[] GetAll() => _systems; // Возвращаем все системы.
 
+        // Пытаемся найти индекс системы по UID.
         public bool TryGetIndex(UID uid, out int index)
         {
             return _indexByUid.TryGetValue(uid, out index);
         }
 
+        // Получаем систему по индексу.
         public ref readonly StarSys GetByIndex(int index)
         {
             return ref _systems[index];

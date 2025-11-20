@@ -12,7 +12,9 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution
 {
-    // Исполняет игровой шаг: обновляет задачи, двигает корабли и синхронизирует UI.
+    /// <summary>
+    /// Исполняет игровой шаг: обновляет задачи, двигает корабли и синхронизирует UI.
+    /// </summary>
     public sealed class Executor
     {
         private readonly RuntimeContext _context; // Контекст мира.
