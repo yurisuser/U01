@@ -2,15 +2,17 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.Core.Runtime
 {
-    // Центральная точка сбора состояний объектов симуляции.
+    /// <summary>
+    /// Центральная точка сбора состояний объектов симуляции.
+    /// </summary>
     public sealed class RuntimeContext
     {
-        public GalaxyService Galaxy { get; } // Статичная информация о системах.
-        public SystemRegistry Systems { get; } // Состояния систем и кораблей по системам.
-        public ShipRegistry Ships { get; } // Реестр всех кораблей.
-        public PilotRegistry Pilots { get; } // Состояния пилотов.
-        public TaskScheduler Tasks { get; } // Очередь задач/приказов.
-        public OwnershipMap Ownership { get; } // Привязка UID к системам и слотам.
+        public GalaxyService Galaxy { get; } ///<summary>Статичная информация о системах.</summary>
+        public SystemRegistry Systems { get; } ///<summary>Состояния систем и кораблей по системам.</summary>
+        public ShipRegistry Ships { get; } ///<summary>Реестр всех кораблей.</summary>
+        public PilotRegistry Pilots { get; } ///<summary>Состояния пилотов.</summary>
+        public TaskScheduler Tasks { get; } ///<summary>Очередь задач/приказов.</summary>
+        public OwnershipMap Ownership { get; } ///<summary>Привязка UID к системам и слотам.</summary>
 
         // Собираем все сервисы контекста.
         public RuntimeContext()
@@ -23,7 +25,9 @@ namespace _Project.Scripts.Core.Runtime
             Tasks = new TaskScheduler();
         }
 
-        // Полностью очищаем контекст.
+        /// <summary>
+        /// Полностью очищаем контекст.
+        /// </summary>
         public void Reset()
         {
             Tasks.Reset();
@@ -34,7 +38,9 @@ namespace _Project.Scripts.Core.Runtime
             Ownership.Reset();
         }
 
-        // Инициализируем галактику и системы.
+        /// <summary>
+        /// Инициализируем галактику и системы.
+        /// </summary>
         public void Initialize(StarSys[] generatedGalaxy)
         {
             Reset();
