@@ -7,10 +7,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
 {
-    /// <summary>
-    /// Renders static geometry of the system map: star, planets, moons and their orbits.
-    /// Works as a layer consumed by <see cref="SystemMapRenderer"/>.
-    /// </summary>
+    /// <summary>Отрисовывает статическую геометрию карты системы: звезда, планеты, луны и орбиты.</summary>
     public sealed class SystemMapGeoRenderer : MonoBehaviour, ISystemMapLayer
     {
         [Header("Render order")]

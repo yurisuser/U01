@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution.Spawn
 {
-    // Отвечает за первичный спавн кораблей в системах.
+    /// <summary>Отвечает за первичный спавн кораблей в системах.</summary>
     public sealed class ShipSpawnService
     {
         private readonly RuntimeContext _context; // Общий контекст симуляции.

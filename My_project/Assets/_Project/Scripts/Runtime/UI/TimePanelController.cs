@@ -6,6 +6,7 @@ using UnityEngine.UIElements;                 // UI Toolkit: UIDocument, Toggle,
 
 namespace _Project.Scripts.UI
 {
+    /// <summary>Контролирует панель времени: play/pause для симуляции.</summary>
     public class TimePanelController : MonoBehaviour
     {
         private static TimePanelController _instance;

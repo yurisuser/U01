@@ -11,6 +11,7 @@ using UnityEngine;
 namespace _Project.Scripts.SystemMap
 {
     [DisallowMultipleComponent]
+    /// <summary>Отрисовывает корабли на системной карте и их траектории.</summary>
     public sealed class SystemMapShipRenderer : MonoBehaviour, ISystemMapLayer
     {
         [Header("Порядок слоя")]

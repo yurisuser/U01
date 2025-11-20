@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    // Утилиты поиска и разрешения целей.
+    /// <summary>Утилиты поиска и разрешения целей.</summary>
     internal static class TargetingPrimitive
     {
         // Пытаемся найти конкретную цель по UID в состоянии системы.
@@ -82,7 +82,7 @@ namespace _Project.Scripts.Simulation.Primitives
         }
     }
 
-    // Снимок состояния цели для безопасного использования вне буфера.
+    /// <summary>Снимок состояния цели для безопасного использования вне буфера.</summary>
     internal readonly struct TargetSnapshot
     {
         public readonly UID Uid; // UID корабля.

@@ -10,9 +10,7 @@ using sim = _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.SystemMap
 {
-    /// <summary>
-    /// Управляет слоями рендера карты системы, подсовывает им актуальные данные.
-    /// </summary>
+    /// <summary>Управляет слоями рендера карты системы и обновляет их актуальными данными.</summary>
     [DisallowMultipleComponent]
     public sealed class SystemMapRenderer : MonoBehaviour
     {

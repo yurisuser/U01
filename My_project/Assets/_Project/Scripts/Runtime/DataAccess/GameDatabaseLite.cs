@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace _Project.DataAccess
 {
+    /// <summary>Обёртка над LiteDB для чтения каталогов оружия и кораблей.</summary>
     public static class GameDatabaseLite
     {
         private const string RelativePath = "Data/game.db";
@@ -13,6 +14,7 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogWeapon> _weapons;
         private static IReadOnlyList<CatalogShip> _ships;
 
+        /// <summary>Возвращает список оружия из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogWeapon> GetWeapons(bool forceReload = false)
         {
             if (!forceReload && _weapons != null) return _weapons;
@@ -25,6 +27,7 @@ namespace _Project.DataAccess
             return list;
         }
 
+        /// <summary>Возвращает список кораблей из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogShip> GetShips(bool forceReload = false)
         {
             if (!forceReload && _ships != null) return _ships;
