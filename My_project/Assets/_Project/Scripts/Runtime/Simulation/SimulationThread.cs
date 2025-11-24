@@ -19,8 +19,8 @@ namespace _Project.Scripts.Simulation
         private bool _hasResult; // Есть ли готовый результат.
         private bool _isProcessing; // Сейчас выполняется шаг.
 
-        private GameStateService.Snapshot _taskSnapshot; // Снимок для работы.
-        private GameStateService.Snapshot _resultSnapshot; // Результат последнего шага.
+        private Snapshot _taskSnapshot; // Снимок для работы.
+        private Snapshot _resultSnapshot; // Результат последнего шага.
         private float _taskDt; // Дельта-время для задачи.
 
         /// <summary>Создаёт поток симуляции и сразу его запускает.</summary>
@@ -37,7 +37,7 @@ namespace _Project.Scripts.Simulation
         }
 
         /// <summary>Ставит шаг симуляции в очередь, если поток готов.</summary>
-        public bool TryScheduleStep(in GameStateService.Snapshot snapshot, float dt)
+        public bool TryScheduleStep(in Snapshot snapshot, float dt)
         {
             if (dt < 0f)
                 dt = 0f;
@@ -57,7 +57,7 @@ namespace _Project.Scripts.Simulation
         }
 
         /// <summary>Забирает готовый снимок шага, если он есть.</summary>
-        public bool TryGetCompletedStep(out GameStateService.Snapshot snapshot)
+        public bool TryGetCompletedStep(out Snapshot snapshot)
         {
             lock (_sync)
             {
@@ -80,7 +80,7 @@ namespace _Project.Scripts.Simulation
             {
                 _wakeUp.WaitOne();
 
-                GameStateService.Snapshot snapshot;
+                Snapshot snapshot;
                 float dt;
 
                 lock (_sync)

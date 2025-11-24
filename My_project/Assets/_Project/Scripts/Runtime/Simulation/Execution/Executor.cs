@@ -34,7 +34,7 @@ namespace _Project.Scripts.Simulation.Execution
         }
 
         // Выполняем один логический ход симуляции.
-        public void Execute(ref GameStateService.Snapshot snapshot, float dt)
+        public void Execute(ref Snapshot snapshot, float dt)
         {
             _shipSpawner.EnsureInitialShips();
             _substeps.BeginTick();
@@ -56,7 +56,7 @@ namespace _Project.Scripts.Simulation.Execution
         public IReadOnlyList<ShotEvent> ShotEvents => _shotEvents;
 
         // Отдельный шаг логики (для отладки в редакторе).
-        private static void DoLogicStep(ref GameStateService.Snapshot snapshot, float dt)
+        private static void DoLogicStep(ref Snapshot snapshot, float dt)
         {
 #if UNITY_EDITOR
             UnityEngine.Debug.Log($"Logic tick: {snapshot.TickIndex}, dt={dt:0.###}");

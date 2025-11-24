@@ -59,7 +59,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             _state = null;
         }
 
-        private void OnRenderChanged(GameStateService.RenderSnapshot snapshot)
+        private void OnRenderChanged(RenderSnapshot snapshot)
         {
             Render(snapshot.Galaxy, clearBefore: true);
         }

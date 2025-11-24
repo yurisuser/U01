@@ -77,7 +77,7 @@ namespace _Project.Scripts.SystemMap
             await SceneController.LoadAsync(SceneId.GalaxyMap);
         }
 
-        private void OnRenderChanged(GameStateService.RenderSnapshot snapshot)
+        private void OnRenderChanged(RenderSnapshot snapshot)
         {
             if (Thread.CurrentThread.ManagedThreadId != _mainThreadId)
                 return;
@@ -167,7 +167,7 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        private static StarSys? ResolveActiveSystem(GameStateService.RenderSnapshot snapshot)
+        private static StarSys? ResolveActiveSystem(RenderSnapshot snapshot)
         {
             var galaxy = snapshot.Galaxy;
             if (galaxy == null || galaxy.Length == 0)

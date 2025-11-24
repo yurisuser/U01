@@ -126,7 +126,7 @@ namespace _Project.Scripts.Core
             }
         }
 
-        private bool TryScheduleStep(in GameStateService.Snapshot snapshot, float dt)
+        private bool TryScheduleStep(in Snapshot snapshot, float dt)
         {
             if (_simulationThread == null)
                 return false;
@@ -141,7 +141,7 @@ namespace _Project.Scripts.Core
             return true;
         }
 
-        private static float GetStepDuration(in GameStateService.Snapshot snapshot)
+        private static float GetStepDuration(in Snapshot snapshot)
         {
             var baseSeconds = snapshot.LogicStepSeconds > 0f ? snapshot.LogicStepSeconds : 0.0001f;
             var speedMul    = Math.Max(1, (int)snapshot.PlayStepSpeed);
