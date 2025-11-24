@@ -40,15 +40,10 @@ namespace _Project.Scripts.Simulation.Primitives
             }
 
             ship.Position += forward * moveDistance; // перемещаем корабль в сторону цели
-
             FinalizeOrientation(ref ship, forward); // обновляем Rotation по новому forward
 
-            if (IsReached(ship.Position, target, SimulationConsts.ArriveDistance)) // проверяем достижение цели
-            {
-                return true; // цель достигнута
-            }
-
-            return false; // сообщаем, что остались на пути
+            if (IsReached(ship.Position, target, SimulationConsts.ArriveDistance)) return true; // Если цель будет достигнута
+            return false; // Если не будет достигнута
         }
         //-----------------------------------------------------------------------------------------------------
         // --- helpers ---
