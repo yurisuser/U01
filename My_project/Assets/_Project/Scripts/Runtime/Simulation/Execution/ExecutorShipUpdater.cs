@@ -7,7 +7,6 @@ using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Behaviors;
 using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation.Primitives;
-using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution
@@ -18,15 +17,13 @@ namespace _Project.Scripts.Simulation.Execution
         private readonly RuntimeContext _global_context; // Глобальный контекст со всеми системами и пилотами.
         private readonly Motivator _motivator; // Обновлятор текущей мотивации пилотов.
         private readonly List<ShotEvent> _shotEvents; // Временный список выстрелов за кадр.
-        private readonly SubstepTraceBuffer _substeps; // Буфер трассировки перемещений.
 
         // Сохраняем исходные зависимости для повторного использования во время апдейтов.
-        public ExecutorShipUpdater(RuntimeContext context, Motivator motivator, List<ShotEvent> shotEvents, SubstepTraceBuffer substeps)
+        public ExecutorShipUpdater(RuntimeContext context, Motivator motivator, List<ShotEvent> shotEvents)
         {
             _global_context = context;
             _motivator = motivator;
             _shotEvents = shotEvents;
-            _substeps = substeps;
         }
 
         // Главный цикл, проходящий по системам и обновляющий каждый корабль.
@@ -44,7 +41,6 @@ namespace _Project.Scripts.Simulation.Execution
 
                 var buffer = state.ShipsBuffer; // Актуальные корабли.
                 var count = state.ShipCount; // Количество активных слотов.
-                ITraceSink traceSink = IsActiveSystem(activeSystemIndex, systemId) ? _substeps : null; // Трейс только для активной системы.
 
                 for (int slot = 0; slot < count; slot++)
                 {
@@ -59,7 +55,7 @@ namespace _Project.Scripts.Simulation.Execution
 
                     if (motiv.TryPeekAction(out var action)) // Берём текущую задачу пилота.
                     {
-                        var result = ExecuteAction(ref ship, ref motiv, in action, state, traceSink, dt); // Выполняем поведение.
+                        var result = ExecuteAction(ref ship, ref motiv, in action, state, dt); // Выполняем поведение.
                         if (result.Completed) // Сообщаем мотиватору об успешном завершении.
                             _motivator.OnActionCompleted(ref motiv, ship.Position);
                     }
@@ -70,21 +66,15 @@ namespace _Project.Scripts.Simulation.Execution
             }
         }
 
-        // Проверяем, является ли система активной для детального трейсинга.
-        private static bool IsActiveSystem(int activeIndex, int systemId)
-        {
-            return activeIndex >= 0 && activeIndex == systemId;
-        }
-
         // Подбираем и запускаем поведение в зависимости от текущего действия пилота.
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, ITraceSink traceSink, float dt)
+        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
         {
             switch (action.Action)
             {
                 case EAction.MoveToCoordinates:
-                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt, traceSink);
+                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt);
                 case EAction.AttackTarget:
-                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents, traceSink);
+                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
                 case EAction.AcquireTarget:
                     return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
                 default:

@@ -87,7 +87,7 @@ namespace _Project.Scripts.Simulation.Primitives
     {
         public readonly UID Uid; // UID корабля.
         public readonly Vector3 Position; // Текущая позиция.
-        public readonly Vector3 Velocity; // Скорость.
+        public readonly Quaternion Rotation; // Ориентация.
         public readonly bool IsActive; // Активен ли корабль.
         public readonly EFraction Fraction; // Фракция корабля.
 
@@ -95,7 +95,7 @@ namespace _Project.Scripts.Simulation.Primitives
         {
             Uid = ship.Uid;
             Position = ship.Position;
-            Velocity = ship.Velocity;
+            Rotation = ship.Rotation;
             IsActive = ship.IsActive;
             Fraction = ship.MakerFraction.Id;
         }

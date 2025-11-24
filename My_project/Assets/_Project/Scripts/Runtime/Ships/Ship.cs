@@ -14,7 +14,6 @@ namespace _Project.Scripts.Ships
         public Vector3 Position;          // мировая позиция центра масс
         public Quaternion Rotation;       // мировая ориентация корабля
         public ShipStats Stats;           // базовые характеристики корабля (Hp, скорость, маневренность)
-        public Vector3 Velocity;          // текущая линейная скорость (м/с в плоскости)
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
 
@@ -28,7 +27,7 @@ namespace _Project.Scripts.Ships
             Quaternion rotation,          // ориентация
             int hp,                       // здоровье
             float maxSpeed,               // максимальная скорость
-            float agility,                // маневренность
+            float agility,                // маневренность (сколько радиан за ход может повернуть корабль)
             bool isActive                 // активность
         )
         {
@@ -41,10 +40,9 @@ namespace _Project.Scripts.Ships
             Stats = new ShipStats         // сохраняем характеристики в отдельную структуру
             {
                 Hp = hp,                  // здоровье
-                MaxSpeed = 8,      // максимальная скорость
-                Agility = agility         // маневренность
+                MaxSpeed = 20,            // максимальная скорость
+                Agility = 12              // маневренность
             };
-            Velocity = Vector3.zero;
             IsActive = isActive;          // сохраняем активность
             Equipment = default;          // инициализируется позже (в ShipCreator)
         }

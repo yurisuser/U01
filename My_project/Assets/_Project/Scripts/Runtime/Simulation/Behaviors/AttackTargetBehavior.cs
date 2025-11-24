@@ -5,7 +5,6 @@ using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation.Primitives;
-using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Behaviors
@@ -23,8 +22,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             in PilotAction action,
             StarSystemState state,
             float dt,
-            List<ShotEvent> shotEvents,
-            ITraceSink traceSink)
+            List<ShotEvent> shotEvents)
         {
             _ = dt; // dt не влияет на движение в текущей реализации
             var attack = action.Parameters.Attack;
@@ -51,11 +49,9 @@ namespace _Project.Scripts.Simulation.Behaviors
             float distance = PositioningPrimitive.DistanceToTarget(ship.Position, targetSnapshot); // Расстояние до цели.
 
             // Определяем, входим ли мы в конус переднего обстрела цели.
-            var targetForward = targetSnapshot.Velocity;
+            var targetForward = targetSnapshot.Rotation * Vector3.right;
             if (targetForward.sqrMagnitude < 0.0001f)
                 targetForward = Vector3.right;
-            else
-                targetForward.Normalize();
 
             var toSelf = ship.Position - targetSnapshot.Position;
             bool inEnemyFront = Vector3.Angle(targetForward, toSelf) <= FrontConeAngleDeg;
@@ -78,7 +74,7 @@ namespace _Project.Scripts.Simulation.Behaviors
                 desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, desiredRange);
             }
 
-            MoveToPosition.Execute(ref ship, desiredPoint, traceSink: traceSink, traceUid: ship.Uid); // Летим к выбранной точке.
+            MoveToPosition.Execute(ref ship, desiredPoint); // Летим к выбранной точке.
 
             if (distance <= desiredRange + DistanceTolerance)
             {

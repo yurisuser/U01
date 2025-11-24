@@ -93,14 +93,12 @@ namespace _Project.Scripts.SystemMap
                     if (!TrySampleSubstep(sh.Uid, progress, substeps, out pos, out rot))
                     {
                         Vector3 startPos = sh.Position;
-                        Vector3 startVel = sh.Velocity;
                         if (_prevShips.TryGetValue(sh.Uid, out var prev))
                         {
                             startPos = prev.Position;
-                            startVel = prev.Velocity;
                         }
 
-                        pos = InterpolatePosition(startPos, sh.Position, startVel, sh.Velocity, stepDuration, progress);
+                        pos = InterpolatePosition(startPos, sh.Position, progress);
                         rot = sh.Rotation;
                     }
 
@@ -194,46 +192,9 @@ namespace _Project.Scripts.SystemMap
 
         private static readonly List<UID> ScratchKeys = new();
 
-        private static Vector3 InterpolatePosition(Vector3 p0, Vector3 p1, Vector3 v0, Vector3 v1, float duration, float t)
+        private static Vector3 InterpolatePosition(Vector3 p0, Vector3 p1, float t)
         {
-            t = Mathf.Clamp01(t);
-            if (duration <= 0f)
-                return Vector3.Lerp(p0, p1, t);
-
-            var delta = p1 - p0;
-            float deltaSqr = delta.sqrMagnitude;
-            if (deltaSqr < 1e-8f)
-                return p0;
-
-            var dir = delta / Mathf.Sqrt(deltaSqr);
-
-            float v0Along = Vector3.Dot(v0, dir);
-            if (v0Along < 0f)
-                v0 -= dir * v0Along;
-
-            float v1Along = Vector3.Dot(v1, dir);
-            if (v1Along < 0f)
-                v1 -= dir * v1Along;
-
-            var m0 = v0 * duration;
-            var m1 = v1 * duration;
-
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            float h00 = 2f * t3 - 3f * t2 + 1f;
-            float h10 = t3 - 2f * t2 + t;
-            float h01 = -2f * t3 + 3f * t2;
-            float h11 = t3 - t2;
-
-            var result = h00 * p0 + h10 * m0 + h01 * p1 + h11 * m1;
-
-            // fallback guard in case Hermite overshoots massively (e.g. zero previous state)
-            if (float.IsNaN(result.x) || float.IsNaN(result.y) || float.IsNaN(result.z) ||
-                float.IsInfinity(result.x) || float.IsInfinity(result.y) || float.IsInfinity(result.z))
-                return Vector3.Lerp(p0, p1, t);
-
-            return result;
+            return Vector3.Lerp(p0, p1, Mathf.Clamp01(t));
         }
 
         private static bool TryGetDestination(PilotRegistry pilots, UID pilotUid, out Vector3 destination)

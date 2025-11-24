@@ -80,7 +80,6 @@ namespace _Project.Scripts.Simulation.Primitives
                 stats.Hp = 0;
                 target.Stats = stats;
                 target.IsActive = false;
-                target.Velocity = Vector3.zero;
             }
         }
     }

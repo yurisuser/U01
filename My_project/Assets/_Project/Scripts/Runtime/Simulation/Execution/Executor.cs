@@ -29,7 +29,7 @@ namespace _Project.Scripts.Simulation.Execution
             _context = context;
             _state = state;
             _motivator = new Motivator(SimulationConsts.DefaultPatrolRadius, SimulationConsts.ArriveDistance, SimulationConsts.DefaultPatrolSpeed);
-            _shipUpdater = new ExecutorShipUpdater(_context, _motivator, _shotEvents, _substeps);
+            _shipUpdater = new ExecutorShipUpdater(_context, _motivator, _shotEvents);
             _shipSpawner = new Spawn.ShipSpawnService(_context, _motivator);
         }
 
@@ -63,21 +63,15 @@ namespace _Project.Scripts.Simulation.Execution
 #endif
         }
 
-        // Проверяем, активна ли система.
-        private static bool IsActiveSystem(int activeIndex, int systemId)
-        {
-            return activeIndex >= 0 && activeIndex == systemId;
-        }
-
         // Выполняем конкретное действие пилота по его типу.
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt, Render.ITraceSink traceSink)
+        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
         {
             switch (action.Action)
             {
                 case EAction.MoveToCoordinates:
-                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt, traceSink);
+                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt);
                 case EAction.AttackTarget:
-                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents, traceSink);
+                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
                 case EAction.AcquireTarget:
                     return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
                 default:
