@@ -14,35 +14,54 @@ namespace _Project.Scripts.Simulation.Primitives
         //-----------------------------------------------------------------------------------------------------
         public static bool Execute(ref Ship ship, in Vector3 target) 
         {
+            ResetPath(ref ship);
+            AppendSample(ref ship, ship.Position, ship.Rotation, 0f);
+
             if (TrySnapToTarget(ref ship, target)) // если уже в радиусе прибытия — телепортируем и выходим
+            {
+                AppendSample(ref ship, ship.Position, ship.Rotation, 1f);
                 return true; // цель достигнута мгновенно
+            }
 
             var forward = NormalizeDirectionShip(ship); // нормализованное направление корабля
-            float maxTurnPerStep = GetMaxTurnPerStep(ship); // макс угол поворота за шаг в радианах
+            float maxTurnPerStep = GetMaxTurnPerStep(ship); // макс угол поворота за весь шаг в радианах (ограничен)
 
             var toTarget = target - ship.Position; // вектор до цели
             var distance = toTarget.magnitude;     // расстояние до цели
             var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero; // нормализованное направление к цели
 
-            if (desiredDir.sqrMagnitude > Mathf.Epsilon && maxTurnPerStep > 0f) // есть куда поворачивать и ограничение не нулевое
+            float moveDistance = Mathf.Max(0f, Mathf.Min(ship.Stats.MaxSpeed, distance)); // сколько пройти за шаг по скорости, не перелетая
+            int capacityLeft = ship.PathSamples != null ? ship.PathSamples.Length - ship.PathSampleCount : Ship.PathSampleCapacity;
+            int steps = Mathf.Clamp(capacityLeft, 1, Ship.PathSampleCapacity);
+            float perSubTurn = steps > 0 ? maxTurnPerStep / steps : 0f; // угол на подшаг, чтобы за весь шаг не превысить agility
+
+            float subDistance = steps > 0 ? moveDistance / steps : moveDistance;
+            bool reached = false;
+
+            for (int i = 0; i < steps; i++)
             {
-                forward = Vector3.RotateTowards(forward, desiredDir, maxTurnPerStep, 0f).normalized; // плавно поворачиваем нос к цели
+                if (desiredDir.sqrMagnitude > Mathf.Epsilon && perSubTurn > 0f)
+                    forward = Vector3.RotateTowards(forward, desiredDir, perSubTurn, 0f).normalized;
+
+                ship.Position += forward * subDistance;
+                FinalizeOrientation(ref ship, forward);
+
+                float t = (i + 1) / (float)steps;
+                AppendSample(ref ship, ship.Position, ship.Rotation, t);
+
+                if (IsReached(ship.Position, target, SimulationConsts.ArriveDistance))
+                {
+                    reached = true;
+                    break;
+                }
             }
 
-            float moveDistance = Mathf.Max(0f, ship.Stats.MaxSpeed); // сколько пройти за шаг по скорости
-            if (desiredDir.sqrMagnitude > Mathf.Epsilon)
-            {
-                float distanceAlongForward = Vector3.Dot(toTarget, forward); // проекция цели на текущий курс
-                if (distanceAlongForward <= 0f)
-                    moveDistance = 0f;
-                else if (moveDistance > distanceAlongForward)
-                    moveDistance = distanceAlongForward; // не перелетаем цель
-            }
+            if (!reached && IsReached(ship.Position, target, SimulationConsts.ArriveDistance))
+                reached = true;
 
-            ship.Position += forward * moveDistance; // перемещаем корабль в сторону цели
-            FinalizeOrientation(ref ship, forward); // обновляем Rotation по новому forward
+            if (reached)
+                return true; // цель достигнута
 
-            if (IsReached(ship.Position, target, SimulationConsts.ArriveDistance)) return true; // Если цель будет достигнута
             return false; // Если не будет достигнута
         }
         //-----------------------------------------------------------------------------------------------------
@@ -72,7 +91,9 @@ namespace _Project.Scripts.Simulation.Primitives
         /// <summary>Возвращает максимально доступный угол поворота за шаг из манёвренности (радианы).</summary>
         private static float GetMaxTurnPerStep(in Ship ship)
         {
-            return Mathf.Max(0f, ship.Stats.Agility);
+            // Ограничиваем максимальный угол за весь шаг, чтобы не было "супер-резких" разворотов.
+            const float MaxAngleRad = Mathf.PI / 2f; // не больше 90 град/шаг
+            return Mathf.Clamp(ship.Stats.Agility, 0f, MaxAngleRad);
         }
         //-----------------------------------------------------------------------------------------------------
         /// <summary>Обновляет ориентацию корабля по текущему «носу».</summary>
@@ -87,6 +108,25 @@ namespace _Project.Scripts.Simulation.Primitives
         {
             var remaining = target - pos;
             return remaining.sqrMagnitude <= arriveDistance * arriveDistance;
+        }
+
+        private static void ResetPath(ref Ship ship)
+        {
+            ship.PathSampleCount = 0;
+            if (ship.PathSamples == null || ship.PathSamples.Length == 0)
+                ship.PathSamples = new ShipPathSample[Ship.PathSampleCapacity];
+        }
+
+        private static void AppendSample(ref Ship ship, in Vector3 pos, in Quaternion rot, float t)
+        {
+            int idx = ship.PathSampleCount;
+            if (idx >= ship.PathSamples.Length)
+                return;
+
+            ship.PathSamples[idx].Position = pos;
+            ship.PathSamples[idx].Rotation = rot;
+            ship.PathSamples[idx].T = Mathf.Clamp01(t);
+            ship.PathSampleCount = idx + 1;
         }
     }
 }

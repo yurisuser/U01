@@ -88,9 +88,10 @@ namespace _Project.Scripts.SystemMap
                     Vector3 pos;
                     Quaternion rot;
 
-                    // если есть сабстепы — используем их для плавного движения по кривой,
-                    // иначе fallback на интерполяцию между снимками
-                    if (!TrySampleSubstep(sh.Uid, progress, substeps, out pos, out rot))
+                    // Пытаемся использовать заранее подготовленные точки пути,
+                    // потом сабстепы, иначе интерполируем между снимками
+                    if (!TrySamplePath(sh, progress, out pos, out rot) &&
+                        !TrySampleSubstep(sh.Uid, progress, substeps, out pos, out rot))
                     {
                         Vector3 startPos = sh.Position;
                         if (_prevShips.TryGetValue(sh.Uid, out var prev))
@@ -195,6 +196,52 @@ namespace _Project.Scripts.SystemMap
         private static Vector3 InterpolatePosition(Vector3 p0, Vector3 p1, float t)
         {
             return Vector3.Lerp(p0, p1, Mathf.Clamp01(t));
+        }
+
+        private static bool TrySamplePath(in Ship ship, float progress, out Vector3 position, out Quaternion rotation)
+        {
+            position = ship.Position;
+            rotation = ship.Rotation;
+
+            var samples = ship.PathSamples;
+            int count = ship.PathSampleCount;
+            if (samples == null || count <= 0)
+                return false;
+
+            progress = Mathf.Clamp01(progress);
+
+            var first = samples[0];
+            var last = samples[count - 1];
+
+            if (progress <= first.T)
+            {
+                position = first.Position;
+                rotation = first.Rotation;
+                return true;
+            }
+
+            if (progress >= last.T)
+            {
+                position = last.Position;
+                rotation = last.Rotation;
+                return true;
+            }
+
+            for (int i = 1; i < count; i++)
+            {
+                var prev = samples[i - 1];
+                var next = samples[i];
+                if (progress > next.T)
+                    continue;
+
+                float span = next.T - prev.T;
+                float t = span > 0f ? Mathf.InverseLerp(prev.T, next.T, progress) : 0f;
+                position = Vector3.Lerp(prev.Position, next.Position, t);
+                rotation = Quaternion.Slerp(prev.Rotation, next.Rotation, t);
+                return true;
+            }
+
+            return false;
         }
 
         private static bool TryGetDestination(PilotRegistry pilots, UID pilotUid, out Vector3 destination)

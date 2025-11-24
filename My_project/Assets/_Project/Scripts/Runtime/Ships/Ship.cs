@@ -1,12 +1,23 @@
 ﻿
+using System;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
 using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
 {
+    /// <summary>Опорная точка пути корабля внутри шага.</summary>
+    public struct ShipPathSample
+    {
+        public Vector3 Position;   // позиция в нормализованном времени шага
+        public Quaternion Rotation; // ориентация в нормализованном времени шага
+        public float T;            // доля шага [0..1]
+    }
+
     /// <summary>Снэпшот данных корабля в мире.</summary>
     public struct Ship
     {
+        public const int PathSampleCapacity = 8; // сколько опорных точек пути храним на шаг
+
         public readonly Core.UID Uid;     // уникальный ID корабля
         public Core.UID PilotUid;         // ID пилота-NPC или пустой UID, если корабль брошенный
         public readonly Fraction MakerFraction; // фракция завода кораблей
@@ -16,6 +27,8 @@ namespace _Project.Scripts.Ships
         public ShipStats Stats;           // базовые характеристики корабля (Hp, скорость, маневренность)
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
+        public ShipPathSample[] PathSamples; // опорные точки пути на текущий шаг
+        public int PathSampleCount;          // сколько опорных точек заполнено
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
@@ -45,6 +58,8 @@ namespace _Project.Scripts.Ships
             };
             IsActive = isActive;          // сохраняем активность
             Equipment = default;          // инициализируется позже (в ShipCreator)
+            PathSamples = new ShipPathSample[PathSampleCapacity];
+            PathSampleCount = 0;
         }
     }
 }
