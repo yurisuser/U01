@@ -1,60 +1,58 @@
 using _Project.Scripts.Core;
+using _Project.Scripts.Simulation;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
 {
-    /// <summary>Примитив перемещения корабля к точке с сабстепами и трассировкой.</summary>
+    /// <summary>Примитив перемещения корабля к точке с трассировкой.</summary>
     internal static class MoveToPosition
     {
-        // движет корабль к цели; возвращает true, если цель достигнута в течение dt
-        public static bool Execute(ref Ship ship,
-                                    in Vector3 target,
-                                    float desiredSpeed,
-                                    float arriveDistance,
-                                    float dt,
-                                    bool stopOnArrival = true,
-                                    Render.ITraceSink traceSink = null,
-                                    UID traceUid = default)
+        /// <summary>
+        /// Двигает корабль к целевой точке за один логический шаг, фиксируя трейсы и возвращая true,
+        /// если за шаг достигли цели (или были в радиусе прибытия).
+        /// </summary>
+        public static bool Execute(ref Ship ship, // корабль, у которого обновляем позицию/скорость/ориентацию
+                                    in Vector3 target, // целевая точка в мире
+                                    Render.ITraceSink traceSink = null, // приёмник трейса движения (может быть null)
+                                    UID traceUid = default) // идентификатор для записи трейса
         {
-            PrepareInputs(ref ship, ref desiredSpeed, ref arriveDistance);
-
-            if (TrySnapToTarget(ref ship, target, arriveDistance, stopOnArrival))
-                return true;
+            if (TrySnapToTarget(ref ship, target)) // если уже в радиусе прибытия — телепортируем и выходим
+                return true; // цель достигнута мгновенно
 
             var forward = ResolveForward(ship);         // нормализованный «нос» корабля
             float turnRadius = ResolveTurnRadius(ship); // радиус разворота по манёвренности
 
-            int steps = ComputeSubstepCount(dt); // сколько сабшагов выполнить за dt
-            float subDt = dt / steps;            // длительность одного сабшага
-            bool reachedTarget = false;          // флаг, что на одном из сабшагов дошли
-            float accumulatedTime = 0f;          // сколько времени уже симулировано
+            var toTarget = target - ship.Position; // вектор до цели
+            var distance = toTarget.magnitude;     // расстояние до цели
+            var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero; // нормализованное направление к цели
 
-            for (int i = 0; i < steps; i++)
+            if (desiredDir.sqrMagnitude > Mathf.Epsilon && !float.IsInfinity(turnRadius)) // есть куда поворачивать и радиус конечный
             {
-                if (StepSubframe(ref ship, ref forward, target, desiredSpeed, arriveDistance, subDt, dt, ref accumulatedTime, turnRadius, traceSink, traceUid))
-                {
-                    reachedTarget = true;
-                    break;
-                }
+                float maxTurnRate = 1f / Mathf.Max(turnRadius, 0.0001f); // рад/шаг доступного поворота
+                float maxTurn = maxTurnRate;                             // макс радиан за шаг
+                forward = Vector3.RotateTowards(forward, desiredDir, maxTurn, 0f).normalized; // плавно поворачиваем нос к цели
             }
 
-            FinalizeOrientation(ref ship, forward);
+            ship.Position = target; // перемещаем корабль напрямую в точку цели
 
-            if (IsArrived(ship.Position, target, arriveDistance) || reachedTarget)
+            if (traceSink != null && ship.Uid.Id != 0) // если нужен трейс и UID валиден
+                traceSink.AddSample(in traceUid, 1f, in ship.Position, ship.Rotation); // пишем финальный сэмпл движения
+
+            FinalizeOrientation(ref ship, forward); // обновляем Rotation по новому forward
+
+            if (IsArrived(ship.Position, target, SimulationConsts.ArriveDistance)) // проверяем достижение цели
             {
-                ship.Position = target;
-                if (stopOnArrival)
-                    ship.Velocity = Vector3.zero;
-                return true;
+                ship.Velocity = Vector3.zero; // гасим скорость на финише
+                return true; // цель достигнута
             }
 
-            ship.Velocity = forward * desiredSpeed;
-            return false;
+            ship.Velocity = Vector3.zero; // цель не достигнута, но тормозим
+            return false; // сообщаем, что остались на пути
         }
 
-        // мгновенно останавливает корабль
+        /// <summary>Мгновенно обнуляет скорость корабля.</summary>
         public static void Stop(ref Ship ship)
         {
             ship.Velocity = Vector3.zero;
@@ -62,31 +60,20 @@ namespace _Project.Scripts.Simulation.Primitives
 
         // --- helpers ---
 
-        // нормализует входные данные: arriveDistance и желаемую скорость
-        private static void PrepareInputs(ref Ship ship, ref float desiredSpeed, ref float arriveDistance)
-        {
-            arriveDistance = Mathf.Max(arriveDistance, 0.01f);
-
-            desiredSpeed = Mathf.Max(desiredSpeed, 0.1f);
-            if (ship.Stats.MaxSpeed > 0f)
-                desiredSpeed = Mathf.Min(desiredSpeed, ship.Stats.MaxSpeed);
-        }
-
-        // если уже почти у цели — телепортируем и завершаем
-        private static bool TrySnapToTarget(ref Ship ship, in Vector3 target, float arriveDistance, bool stopOnArrival)
+        /// <summary>Если уже почти у цели — телепортируемся и завершаем.</summary>
+        private static bool TrySnapToTarget(ref Ship ship, in Vector3 target)
         {
             var toTarget = target - ship.Position; // вектор до цели
             var distance = toTarget.magnitude;     // расстояние до цели
-            if (distance > arriveDistance)
+            if (distance > SimulationConsts.ArriveDistance)
                 return false;
 
             ship.Position = target;
-            if (stopOnArrival)
-                ship.Velocity = Vector3.zero;
+            ship.Velocity = Vector3.zero;
             return true;
         }
 
-        // вычисляет текущий «нос» корабля и нормализует его
+        /// <summary>Возвращает нормализованный «нос» корабля по его вращению.</summary>
         private static Vector3 ResolveForward(in Ship ship)
         {
             var forward = ship.Rotation * Vector3.right; // локальный right в мировых координатах
@@ -95,75 +82,13 @@ namespace _Project.Scripts.Simulation.Primitives
             return forward.normalized;
         }
 
-        // возвращает радиус разворота из манёвренности
+        /// <summary>Считает радиус разворота из манёвренности (Agility).</summary>
         private static float ResolveTurnRadius(in Ship ship)
         {
             return ship.Stats.Agility > 0f ? 1f / ship.Stats.Agility : float.PositiveInfinity;
         }
 
-        // считает количество сабшагов для заданного dt
-        private static int ComputeSubstepCount(float dt)
-        {
-            const float MaxSubstep = 0.05f;
-            return Mathf.Clamp(Mathf.CeilToInt(dt / MaxSubstep), 1, 60);
-        }
-
-        // выполняет один сабшаг движения; true, если цель достигнута
-        private static bool StepSubframe(ref Ship ship,
-                                         ref Vector3 forward,
-                                         in Vector3 target,
-                                         float desiredSpeed,
-                                         float arriveDistance,
-                                         float subDt,
-                                         float totalDt,
-                                         ref float accumulatedTime,
-                                         float turnRadius,
-                                         Render.ITraceSink traceSink,
-                                         in UID traceUid)
-        {
-            var toTarget = target - ship.Position; // вектор до цели
-            var distance = toTarget.magnitude;     // расстояние до цели
-
-            if (distance <= arriveDistance)
-            {
-                ship.Position = target;
-                return true;
-            }
-
-            var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero; // нормализованное направление к цели
-
-            if (desiredDir.sqrMagnitude > Mathf.Epsilon && !float.IsInfinity(turnRadius))
-            {
-                float maxTurnRate = desiredSpeed / Mathf.Max(turnRadius, 0.0001f); // рад/с доступного поворота
-                float maxTurn = maxTurnRate * subDt;                               // макс радиан за сабшаг
-                forward = Vector3.RotateTowards(forward, desiredDir, maxTurn, 0f).normalized;
-            }
-
-            float subDistance = desiredSpeed * subDt; // сколько пройдём за сабшаг
-
-            if (desiredDir.sqrMagnitude > Mathf.Epsilon)
-            {
-                float distanceAlongForward = Vector3.Dot(toTarget, forward); // проекция до цели на курс
-                if (distanceAlongForward <= 0f)
-                    return false;
-
-                if (subDistance > distanceAlongForward)
-                    subDistance = distanceAlongForward;
-            }
-
-            ship.Position += forward * subDistance;
-
-            accumulatedTime += subDt;
-            if (traceSink != null && ship.Uid.Id != 0)
-            {
-                float tFrac = Mathf.Clamp01(accumulatedTime / totalDt); // нормированное время внутри dt
-                traceSink.AddSample(in traceUid, tFrac, in ship.Position, ship.Rotation);
-            }
-
-            return false;
-        }
-
-        // обновляет ориентацию корабля по текущему «носу»
+        /// <summary>Обновляет ориентацию корабля по текущему «носу».</summary>
         private static void FinalizeOrientation(ref Ship ship, in Vector3 forward)
         {
             if (forward.sqrMagnitude <= Mathf.Epsilon)
@@ -173,7 +98,7 @@ namespace _Project.Scripts.Simulation.Primitives
             ship.Rotation = Quaternion.Euler(0f, 0f, angleDeg);
         }
 
-        // проверяет, что точка pos достаточно близко к target
+        /// <summary>Проверяет, что pos достаточно близко к target по arriveDistance.</summary>
         private static bool IsArrived(in Vector3 pos, in Vector3 target, float arriveDistance)
         {
             var remaining = target - pos;

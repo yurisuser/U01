@@ -41,7 +41,7 @@ namespace _Project.Scripts.Ships
             Stats = new ShipStats         // сохраняем характеристики в отдельную структуру
             {
                 Hp = hp,                  // здоровье
-                MaxSpeed = maxSpeed,      // максимальная скорость
+                MaxSpeed = 8,      // максимальная скорость
                 Agility = agility         // маневренность
             };
             Velocity = Vector3.zero;

@@ -63,8 +63,7 @@ namespace _Project.Scripts.Simulation.Execution.Spawn
 
                     if (_context.Pilots != null)
                     {
-                        float searchRadius = Mathf.Max(SimulationConsts.SpawnRadius * 10f, 250f);
-                        var motiv = _motivator.CreateAttackAll(searchRadius, allowFriendlyFire: false);
+                        var motiv = _motivator.CreateDefaultPatrol(ship.Position);
                         _context.Pilots.SetMotiv(pilotUid, in motiv);
                     }
                 }

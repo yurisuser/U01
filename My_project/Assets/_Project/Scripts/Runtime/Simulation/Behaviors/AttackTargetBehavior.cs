@@ -26,6 +26,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             List<ShotEvent> shotEvents,
             ITraceSink traceSink)
         {
+            _ = dt; // dt не влияет на движение в текущей реализации
             var attack = action.Parameters.Attack;
             var targetUid = attack.Target;
 
@@ -77,8 +78,7 @@ namespace _Project.Scripts.Simulation.Behaviors
                 desiredPoint = PositioningPrimitive.ComputeOrbitPoint(ship.Uid, ship.Position, targetSnapshot, desiredRange);
             }
 
-            float speed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange;
-            MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false, traceSink: traceSink, traceUid: ship.Uid); // Летим к выбранной точке.
+            MoveToPosition.Execute(ref ship, desiredPoint, traceSink: traceSink, traceUid: ship.Uid); // Летим к выбранной точке.
 
             if (distance <= desiredRange + DistanceTolerance)
             {
