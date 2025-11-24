@@ -70,14 +70,14 @@ namespace _Project.Scripts.Simulation.Execution
         }
 
         // Выполняем конкретное действие пилота по его типу.
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
+        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt, Render.ITraceSink traceSink)
         {
             switch (action.Action)
             {
                 case EAction.MoveToCoordinates:
-                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt);
+                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt, traceSink);
                 case EAction.AttackTarget:
-                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
+                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents, traceSink);
                 case EAction.AcquireTarget:
                     return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
                 default:

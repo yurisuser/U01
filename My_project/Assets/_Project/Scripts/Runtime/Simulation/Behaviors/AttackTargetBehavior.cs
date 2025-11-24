@@ -5,6 +5,7 @@ using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation.Primitives;
+using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Behaviors
@@ -22,7 +23,8 @@ namespace _Project.Scripts.Simulation.Behaviors
             in PilotAction action,
             StarSystemState state,
             float dt,
-            List<ShotEvent> shotEvents)
+            List<ShotEvent> shotEvents,
+            ITraceSink traceSink)
         {
             var attack = action.Parameters.Attack;
             var targetUid = attack.Target;
@@ -76,7 +78,7 @@ namespace _Project.Scripts.Simulation.Behaviors
             }
 
             float speed = ship.Stats.MaxSpeed > 0f ? ship.Stats.MaxSpeed : desiredRange;
-            MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false); // Летим к выбранной точке.
+            MoveToPosition.Execute(ref ship, desiredPoint, speed, desiredRange * 0.1f, dt, stopOnArrival: false, traceSink: traceSink, traceUid: ship.Uid); // Летим к выбранной точке.
 
             if (distance <= desiredRange + DistanceTolerance)
             {

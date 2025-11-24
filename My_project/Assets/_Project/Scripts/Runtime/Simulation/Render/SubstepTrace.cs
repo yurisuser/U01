@@ -14,7 +14,7 @@ namespace _Project.Scripts.Simulation.Render
         }
 
     /// <summary>Буфер для записи и публикации сабстепов движения.</summary>
-    internal sealed class SubstepTraceBuffer
+    internal sealed class SubstepTraceBuffer : ITraceSink
     {
         private readonly Dictionary<UID, List<SubstepSample>> _current = new();
         private readonly Dictionary<UID, List<SubstepSample>> _published = new();

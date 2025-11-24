@@ -8,30 +8,15 @@ namespace _Project.Scripts.Simulation.Primitives
     /// <summary>Примитив перемещения корабля к точке с сабстепами и трассировкой.</summary>
     internal static class MoveToPosition
     {
-        private static SubstepTraceBuffer _trace; // буфер для записи сабстепов
-        private static UID _traceUid;             // UID корабля, чей трейс пишем
-
-        // назначает буфер записи сабстепов для текущего корабля
-        public static void SetTraceWriter(Render.SubstepTraceBuffer trace, in UID uid)
-        {
-            _trace = trace;
-            _traceUid = uid;
-        }
-
-        // сбрасывает буфер записи сабстепов
-        public static void ClearTraceWriter()
-        {
-            _trace = null;
-            _traceUid = default;
-        }
-
         // движет корабль к цели; возвращает true, если цель достигнута в течение dt
-        public static bool Execute(ref Ship ship, 
-                                    in Vector3 target, 
-                                    float desiredSpeed, 
-                                    float arriveDistance, 
-                                    float dt, 
-                                    bool stopOnArrival = true)
+        public static bool Execute(ref Ship ship,
+                                    in Vector3 target,
+                                    float desiredSpeed,
+                                    float arriveDistance,
+                                    float dt,
+                                    bool stopOnArrival = true,
+                                    Render.ITraceSink traceSink = null,
+                                    UID traceUid = default)
         {
             PrepareInputs(ref ship, ref desiredSpeed, ref arriveDistance);
 
@@ -48,7 +33,7 @@ namespace _Project.Scripts.Simulation.Primitives
 
             for (int i = 0; i < steps; i++)
             {
-                if (StepSubframe(ref ship, ref forward, target, desiredSpeed, arriveDistance, subDt, dt, ref accumulatedTime, turnRadius))
+                if (StepSubframe(ref ship, ref forward, target, desiredSpeed, arriveDistance, subDt, dt, ref accumulatedTime, turnRadius, traceSink, traceUid))
                 {
                     reachedTarget = true;
                     break;
@@ -132,7 +117,9 @@ namespace _Project.Scripts.Simulation.Primitives
                                          float subDt,
                                          float totalDt,
                                          ref float accumulatedTime,
-                                         float turnRadius)
+                                         float turnRadius,
+                                         Render.ITraceSink traceSink,
+                                         in UID traceUid)
         {
             var toTarget = target - ship.Position; // вектор до цели
             var distance = toTarget.magnitude;     // расстояние до цели
@@ -167,10 +154,10 @@ namespace _Project.Scripts.Simulation.Primitives
             ship.Position += forward * subDistance;
 
             accumulatedTime += subDt;
-            if (_trace != null && ship.Uid.Id != 0)
+            if (traceSink != null && ship.Uid.Id != 0)
             {
                 float tFrac = Mathf.Clamp01(accumulatedTime / totalDt); // нормированное время внутри dt
-                _trace.AddSample(in _traceUid, tFrac, in ship.Position, ship.Rotation);
+                traceSink.AddSample(in traceUid, tFrac, in ship.Position, ship.Rotation);
             }
 
             return false;

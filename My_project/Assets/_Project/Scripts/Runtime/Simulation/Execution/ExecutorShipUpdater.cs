@@ -44,6 +44,7 @@ namespace _Project.Scripts.Simulation.Execution
 
                 var buffer = state.ShipsBuffer; // Актуальные корабли.
                 var count = state.ShipCount; // Количество активных слотов.
+                ITraceSink traceSink = IsActiveSystem(activeSystemIndex, systemId) ? _substeps : null; // Трейс только для активной системы.
 
                 for (int slot = 0; slot < count; slot++)
                 {
@@ -56,17 +57,12 @@ namespace _Project.Scripts.Simulation.Execution
 
                     _motivator.Update(ref motiv, ship.Position); // Обновляем мотивацию относительно позиции.
 
-                    if (IsActiveSystem(activeSystemIndex, systemId)) // В активной системе пишем трассы для визуализации.
-                        MoveToPosition.SetTraceWriter(_substeps, in ship.Uid);
-
                     if (motiv.TryPeekAction(out var action)) // Берём текущую задачу пилота.
                     {
-                        var result = ExecuteAction(ref ship, ref motiv, in action, state, dt); // Выполняем поведение.
+                        var result = ExecuteAction(ref ship, ref motiv, in action, state, traceSink, dt); // Выполняем поведение.
                         if (result.Completed) // Сообщаем мотиватору об успешном завершении.
                             _motivator.OnActionCompleted(ref motiv, ship.Position);
                     }
-
-                    MoveToPosition.ClearTraceWriter(); // Всегда чистим трассировщик.
 
                     _global_context.Systems.TryUpdateShip(systemId, slot, in ship); // Возвращаем изменённый корабль.
                     _global_context.Pilots.TryUpdateMotiv(ship.PilotUid, in motiv); // И обновлённую мотивацию пилота.
@@ -81,14 +77,14 @@ namespace _Project.Scripts.Simulation.Execution
         }
 
         // Подбираем и запускаем поведение в зависимости от текущего действия пилота.
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
+        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, ITraceSink traceSink, float dt)
         {
             switch (action.Action)
             {
                 case EAction.MoveToCoordinates:
-                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt);
+                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt, traceSink);
                 case EAction.AttackTarget:
-                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
+                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents, traceSink);
                 case EAction.AcquireTarget:
                     return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
                 default:
