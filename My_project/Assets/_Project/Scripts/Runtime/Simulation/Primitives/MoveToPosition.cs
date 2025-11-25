@@ -94,9 +94,7 @@ namespace _Project.Scripts.Simulation.Primitives
         /// <summary>Возвращает максимально доступный угол поворота за шаг из манёвренности (радианы).</summary>
         private static float GetMaxTurnPerStep(in Ship ship)
         {
-            // Ограничиваем максимальный угол за весь шаг, чтобы не было "супер-резких" разворотов.
-            const float MaxAngleRad = Mathf.PI / 2f; // не больше 90 град/шаг
-            return Mathf.Clamp(ship.Stats.Agility, 0f, MaxAngleRad);
+            return Mathf.Max(0f, ship.Stats.Agility); // без верхнего предела, берём из каталога
         }
         //-----------------------------------------------------------------------------------------------------
         /// <summary>Обновляет ориентацию корабля по текущему «носу».</summary>

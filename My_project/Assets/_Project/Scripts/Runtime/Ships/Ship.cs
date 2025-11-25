@@ -119,8 +119,8 @@ namespace _Project.Scripts.Ships
             Stats = new ShipStats         // сохраняем характеристики в отдельную структуру
             {
                 Hp = hp,                  // здоровье
-                MaxSpeed = 50,            // максимальная скорость
-                Agility = 30              // маневренность
+                MaxSpeed = maxSpeed,      // максимальная скорость берём из каталога
+                Agility = agility         // маневренность берём из каталога
             };
             IsActive = isActive;          // сохраняем активность
             Equipment = default;          // инициализируется позже (в ShipCreator)

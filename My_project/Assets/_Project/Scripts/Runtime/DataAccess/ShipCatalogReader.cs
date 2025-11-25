@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace _Project.DataAccess
 {
     /// <summary>
-    /// Centralized access to ship catalog entries from LiteDB.
+    /// Centralized access to ship catalog entries from SQLite.
     /// Caches entries in memory and provides helper methods.
     /// </summary>
     public static class ShipCatalogReader
