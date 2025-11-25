@@ -198,19 +198,11 @@ namespace _Project.Scripts.SystemMap
         private static bool TrySamplePath(in Ship prev, in Ship next, float progress, out Vector3 position, out Quaternion rotation)
         {
             // стартовые значения — из prev, если есть; иначе из next
-            if (prev.Path.Count > 0)
-            {
-                position = prev.Position;
-                rotation = prev.Rotation;
-            }
-            else
-            {
-                position = next.Position;
-                rotation = next.Rotation;
-            }
+            position = prev.Path.Count > 0 ? prev.Position : next.Position;
+            rotation = prev.Path.Count > 0 ? prev.Rotation : next.Rotation;
 
-            // приоритет: использовать путь из prev (стартовый), если он есть, иначе из next
-            var samples = prev.Path.Count > 0 ? prev.Path : next.Path;
+            // путь: используем next (текущий шаг) если есть, иначе fallback на prev
+            var samples = next.Path.Count > 0 ? next.Path : prev.Path;
             int count = samples.Count;
             if (count <= 0)
                 return false;

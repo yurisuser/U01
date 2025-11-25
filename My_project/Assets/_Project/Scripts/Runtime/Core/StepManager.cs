@@ -78,9 +78,9 @@ namespace _Project.Scripts.Core
                 {
                     if (_state.TryPromoteNextShips())
                     {
-                        _visualTime -= stepDuration;
-                        if (_visualTime < 0f)
-                            _visualTime = 0f;
+                        // фиксируем новую пару prev/curr с прогрессом с нуля, чтобы рендер не прыгал
+                        _visualTime = 0f;
+                        _accum = 0f;
 
                         if (!_stepInFlight && _accum >= stepDuration)
                         {

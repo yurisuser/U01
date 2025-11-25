@@ -320,6 +320,7 @@ namespace _Project.Scripts.Core.GameState
         private RenderSnapshot BuildRenderSnapshot(in Snapshot snapshot)
         {
             CheckDynamicSnapshot(snapshot.SelectedSystemIndex);
+            EnsurePrevInitialized();
 
             return new RenderSnapshot
             {
@@ -403,6 +404,17 @@ namespace _Project.Scripts.Core.GameState
             if (value < 0f) return 0f;
             if (value > 1f) return 1f;
             return value;
+        }
+
+        // Обеспечиваем, что prev заполнен стартовыми данными, чтобы первый шаг не дёргался.
+        private void EnsurePrevInitialized()
+        {
+            if (_shipsPrevCount > 0 || _shipsCurrCount <= 0)
+                return;
+
+            EnsureBufferCapacity(ref _shipsPrev, _shipsCurrCount);
+            Array.Copy(_shipsCurr, 0, _shipsPrev, 0, _shipsCurrCount);
+            _shipsPrevCount = _shipsCurrCount;
         }
     }
 }
