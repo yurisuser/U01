@@ -6,7 +6,6 @@ using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Ships;
-using sim = _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -106,9 +105,7 @@ namespace _Project.Scripts.SystemMap
                 snapshot.NextShipCount,
                 snapshot.StepProgress,
                 Mathf.Max(0.0001f, snapshot.LogicStepSeconds),
-                systemChanged,
-                snapshot.Substeps,
-                snapshot.SubstepsVersion);
+                systemChanged);
         }
 
         private void RenderSystem(
@@ -121,9 +118,7 @@ namespace _Project.Scripts.SystemMap
             int nextCount,
             float progress,
             float stepDuration,
-            bool systemChanged,
-            System.Collections.Generic.IReadOnlyDictionary<UID, System.Collections.Generic.List<sim.Render.SubstepSample>> substeps,
-            int substepsVersion)
+            bool systemChanged)
         {
             if (geoLayer != null)
             {
@@ -136,7 +131,7 @@ namespace _Project.Scripts.SystemMap
 
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
-                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration, substeps);
+                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
             }
 
             if (extraLayers == null)
@@ -148,7 +143,7 @@ namespace _Project.Scripts.SystemMap
                 {
                     if (systemChanged)
                         layer.Init(layersRoot);
-                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration, substeps);
+                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
                 }
             }
         }

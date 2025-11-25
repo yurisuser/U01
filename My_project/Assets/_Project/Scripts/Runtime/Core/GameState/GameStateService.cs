@@ -3,8 +3,6 @@ using _Project.Scripts.Core;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Simulation.Render;
-using System.Collections.Generic;
 
 namespace _Project.Scripts.Core.GameState
 {
@@ -26,9 +24,6 @@ namespace _Project.Scripts.Core.GameState
         private float _stepProgress; // Прогресс интерполяции.
         private volatile bool _dynamicDirty; // Требуется ли пересборка динамики.
         private bool _forceRebuildCurrentShips; // Форсируем rebuild текущего буфера.
-        private IReadOnlyDictionary<UID, List<SubstepSample>> _substeps; // Последние сабстепы.
-        private int _substepsVersion; // Версия сабстепов.
-        private int _substepsSystemIndex = -1; // Для какой системы они актуальны.
 
         public event Action<Snapshot> SnapshotChanged; // UI/логика подписываются на изменения логики.
         public event Action<RenderSnapshot> RenderChanged; // UI подписывается на визуальные изменения.
@@ -135,14 +130,6 @@ namespace _Project.Scripts.Core.GameState
         }
 
         // Обновляем сабстепы для активной системы.
-        public void SetSubstepTraces(IReadOnlyDictionary<UID, List<SubstepSample>> traces, int systemIndex)
-        {
-            _substeps = traces;
-            _substepsSystemIndex = systemIndex;
-            _substepsVersion++;
-            UpdateRenderSnapshot();
-        }
-
         // Выбираем систему по индексу и обновляем снапшоты.
         public bool SelectSystemByIndex(int index)
         {
@@ -337,10 +324,7 @@ namespace _Project.Scripts.Core.GameState
                 NextShips           = _shipsNext,
                 NextShipCount       = _shipsNextCount,
                 ShipsVersion        = _shipsVersion,
-                StepProgress        = _stepProgress,
-                Substeps            = snapshot.SelectedSystemIndex == _substepsSystemIndex ? _substeps : null,
-                SubstepsVersion     = _substepsVersion,
-                SubstepsSystemIndex = _substepsSystemIndex
+                StepProgress        = _stepProgress
             };
         }
 
@@ -355,7 +339,6 @@ namespace _Project.Scripts.Core.GameState
                 previous.TickIndex           != next.TickIndex ||
                 previous.ShipsVersion        != next.ShipsVersion ||
                 previous.StepProgress        != next.StepProgress ||
-                previous.SubstepsVersion     != next.SubstepsVersion ||
                 !ReferenceEquals(previous.Galaxy, next.Galaxy) ||
                 !ReferenceEquals(previous.CurrentShips, next.CurrentShips) ||
                 !ReferenceEquals(previous.PreviousShips, next.PreviousShips) ||

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Simulation.Render;
 
 namespace _Project.Scripts.Core.GameState
 {
@@ -23,8 +21,5 @@ namespace _Project.Scripts.Core.GameState
         public int            NextShipCount; // Количество в next.
         public int            ShipsVersion; // Версия, чтобы UI понимал обновления.
         public float          StepProgress; // Прогресс между снапшотами.
-        public IReadOnlyDictionary<UID, List<SubstepSample>> Substeps; // Трейсы сабстепов.
-        public int            SubstepsVersion; // Версия сабстепов.
-        public int            SubstepsSystemIndex; // Для какой системы трейсы.
     }
 }

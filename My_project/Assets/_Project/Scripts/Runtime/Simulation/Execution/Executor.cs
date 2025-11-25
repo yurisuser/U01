@@ -6,7 +6,6 @@ using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Behaviors;
 using _Project.Scripts.Simulation.PilotMotivation;
-using _Project.Scripts.Simulation.Render;
 using _Project.Scripts.Simulation;
 using UnityEngine;
 
@@ -21,7 +20,6 @@ namespace _Project.Scripts.Simulation.Execution
         private readonly ExecutorShipUpdater _shipUpdater; // Сервис обновления кораблей.
         private readonly Spawn.ShipSpawnService _shipSpawner; // Сервис первичного спавна.
         private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64); // Общий буфер событий выстрелов.
-        private readonly Render.SubstepTraceBuffer _substeps = new Render.SubstepTraceBuffer(); // Буфер сабстепов.
 
         // Готовим все зависимости исполнения шага.
         public Executor(RuntimeContext context, GameStateService state) //Конструктор
@@ -37,7 +35,6 @@ namespace _Project.Scripts.Simulation.Execution
         public void Execute(ref Snapshot snapshot, float dt)
         {
             _shipSpawner.EnsureInitialShips();
-            _substeps.BeginTick();
 
             if (_context != null)
             {
@@ -48,8 +45,6 @@ namespace _Project.Scripts.Simulation.Execution
 
             DoLogicStep(ref snapshot, dt);
             _state?.MarkDynamicDirty();
-            _substeps.Publish();
-            _state?.SetSubstepTraces(_substeps.Published, snapshot.SelectedSystemIndex);
         }
 
         // Позволяет читать буфер событий выстрелов.

@@ -1,17 +1,17 @@
 # AI-map (снимок состояния ИИ)
 
 ## 1. Текущий маршрут тика
- - `Executor.Execute` → первичный спавн (`ShipSpawnService.EnsureInitialShips`), `Tasks.Tick`, `Ships.Tick`, `ExecutorShipUpdater.UpdateShips`, маркеры `GameStateService`.
+- `Executor.Execute` → первичный спавн (`ShipSpawnService.EnsureInitialShips`), `Tasks.Tick`, `Ships.Tick`, `ExecutorShipUpdater.UpdateShips`, маркеры `GameStateService`.
 - `ExecutorShipUpdater.UpdateShips` → цикл систем → цикл кораблей: получить `Ship` + `PilotMotive`, `Motivator.Update`, `SetTraceWriter` (только активная система), `ExecuteAction` (switch), `OnActionCompleted` при `Completed`, запись обратно в `Systems`/`Pilots`, `ClearTraceWriter`.
 - `Behaviors` (Move/Attack/Acquire) напрямую меняют `Ship`, иногда трогают цель/список выстрелов; работают с `StarSystemState`.
-- Данные: `ShotEvent` общим списком, `SubstepTraceBuffer` через статический `MoveToPosition` (трассы только в активной системе).
+- Данные: `ShotEvent` общим списком, путь шага хранится в `Ship.Path` (опорные точки внутри тика).
 
 ## 2. Роли объектов (как сейчас)
 - Intent: `PilotMotive.Order` (`EPilotOrder` + `ActionParam`).
 - Plan: стек `PilotAction` в `PilotMotive`, поддерживается через `Ensure*` (в `Motivator` и самом `PilotMotive`).
 - Behavior: `MoveToCoordinatesBehavior`, `AttackTargetBehavior`, `ChoiceTargetBehavior` — чистые статики, вызываются из `ExecutorShipUpdater`.
 - Sensors: нет отдельного слоя; выбор цели/проверки зашиты в поведения.
-- Actuators: изменение `Ship`, `PilotMotive`, события `ShotEvent`, трассы в `SubstepTraceBuffer`.
+- Actuators: изменение `Ship`, `PilotMotive`, события `ShotEvent`, заполнение `Ship.Path`.
 
 ## 3. Узкие места/источники путаницы
 - Контекст течёт насквозь: `Behaviors` знают о `StarSystemState` и иногда о `RuntimeContext`.
@@ -30,4 +30,4 @@
 - Завести сенсоры/квери (папка `Simulation/Sensors`): вынести логику поиска/валидации цели из `ChoiceTargetBehavior`.
 - Собрать планировщик в одном месте (`PilotMotive.UpdatePlan` или отдельный сервис) и убрать дубли `Ensure*` между `Motivator`/`PilotMotive`.
 - Сделать интерфейс для поведений + реестр, чтобы `ExecutorShipUpdater` выбирал поведение без switch.
- - Убрать статический trace writer: `MoveToPosition` принимает `ITraceSink` + `UID` в аргументах, активная система даёт буфер, остальные — `null`; цель — убрать глобал `Set/ClearTraceWriter`, сделать трассировку явной и тестируемой.
+- Убрать статический trace writer: `MoveToPosition` принимает явный приёмник трейсов + `UID` в аргументах, активная система даёт буфер, остальные — `null`; цель — убрать глобал `Set/ClearTraceWriter`, сделать трассировку явной и тестируемой.

@@ -5,7 +5,6 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Simulation.PilotMotivation;
-using _Project.Scripts.Simulation.Render;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -25,7 +24,6 @@ namespace _Project.Scripts.SystemMap
         private readonly Dictionary<UID, GameObject> _views = new();
         private readonly Dictionary<UID, Ship> _prevShips = new();
         private readonly Dictionary<UID, LineRenderer> _paths = new();
-        private readonly Dictionary<UID, LineRenderer> _substepLines = new();
 
         public void Init(Transform parentRoot)
         {
@@ -45,8 +43,7 @@ namespace _Project.Scripts.SystemMap
                             Ship[] nextShips,
                             int nextCount,
                             float progress,
-                            float stepDuration,
-                            System.Collections.Generic.IReadOnlyDictionary<UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps)
+                            float stepDuration)
         {
             progress = Mathf.Clamp01(progress);
             stepDuration = Mathf.Max(0.0001f, stepDuration);
@@ -89,10 +86,9 @@ namespace _Project.Scripts.SystemMap
                     Quaternion rot;
 
                     // Пытаемся использовать заранее подготовленные точки пути,
-                    // потом сабстепы, иначе интерполируем между снимками
+                    // иначе интерполируем между снимками
                     _prevShips.TryGetValue(sh.Uid, out var prev);
-                    if (!TrySamplePath(in prev, in sh, progress, out pos, out rot) &&
-                        !TrySampleSubstep(sh.Uid, progress, substeps, out pos, out rot))
+                    if (!TrySamplePath(in prev, in sh, progress, out pos, out rot))
                     {
                         Vector3 startPos = prev.Path.Count > 0 || _prevShips.ContainsKey(sh.Uid) ? prev.Position : sh.Position;
 
@@ -106,7 +102,6 @@ namespace _Project.Scripts.SystemMap
                     Vector3 target;
                     bool hasTarget = TryGetDestination(pilots, sh.PilotUid, out target);
                     UpdatePathRenderer(sh.Uid, pos, target, hasTarget);
-                    UpdateSubstepRenderer(sh.Uid, substeps);
                 }
             }
 
@@ -123,10 +118,6 @@ namespace _Project.Scripts.SystemMap
                         if (_paths.TryGetValue(id, out var path) && path)
                             Destroy(path.gameObject);
                         _paths.Remove(id);
-
-                        if (_substepLines.TryGetValue(id, out var subLine) && subLine)
-                            Destroy(subLine.gameObject);
-                        _substepLines.Remove(id);
 
                         if (_views[id])
                             Destroy(_views[id]);
@@ -172,7 +163,6 @@ namespace _Project.Scripts.SystemMap
             }
 
             _prevShips.Clear();
-            _substepLines.Clear();
         }
 
         private static class HashSetPool<T>
@@ -261,62 +251,6 @@ namespace _Project.Scripts.SystemMap
             return false;
         }
 
-        private static bool TrySampleSubstep(UID uid,
-                                             float progress,
-                                             System.Collections.Generic.IReadOnlyDictionary<UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps,
-                                             out Vector3 position,
-                                             out Quaternion rotation)
-        {
-            position = Vector3.zero;
-            rotation = Quaternion.identity;
-
-            if (substeps == null || !substeps.TryGetValue(uid, out var samples) || samples == null || samples.Count == 0)
-                return false;
-
-            progress = Mathf.Clamp01(progress);
-
-            if (samples.Count == 1)
-            {
-                position = samples[0].Position;
-                rotation = samples[0].Rotation;
-                return true;
-            }
-
-            var first = samples[0];
-            var lastIndex = samples.Count - 1;
-            var last = samples[lastIndex];
-
-            if (progress <= first.TimeFrac)
-            {
-                position = first.Position;
-                rotation = first.Rotation;
-                return true;
-            }
-
-            if (progress >= last.TimeFrac)
-            {
-                position = last.Position;
-                rotation = last.Rotation;
-                return true;
-            }
-
-            for (int i = 1; i < samples.Count; i++)
-            {
-                var prev = samples[i - 1];
-                var next = samples[i];
-                if (progress > next.TimeFrac)
-                    continue;
-
-                float span = next.TimeFrac - prev.TimeFrac;
-                float t = span > 0f ? Mathf.InverseLerp(prev.TimeFrac, next.TimeFrac, progress) : 0f;
-                position = Vector3.Lerp(prev.Position, next.Position, t);
-                rotation = Quaternion.Slerp(prev.Rotation, next.Rotation, t);
-                return true;
-            }
-
-            return false;
-        }
-
         private void UpdatePathRenderer(UID uid, in Vector3 startPos, in Vector3 targetPos, bool hasTarget)
         {
             if (!_paths.TryGetValue(uid, out var line) || !line)
@@ -352,30 +286,6 @@ namespace _Project.Scripts.SystemMap
             line.startColor = new Color(0.3f, 0.8f, 1f, 0.6f);
             line.endColor = new Color(0.3f, 0.8f, 1f, 0.2f);
             return line;
-        }
-
-        private void UpdateSubstepRenderer(UID uid, System.Collections.Generic.IReadOnlyDictionary<UID, System.Collections.Generic.List<_Project.Scripts.Simulation.Render.SubstepSample>> substeps)
-        {
-            if (substeps == null || !substeps.TryGetValue(uid, out var samples) || samples == null || samples.Count < 2)
-            {
-                if (_substepLines.TryGetValue(uid, out var lr) && lr)
-                    lr.gameObject.SetActive(false);
-                return;
-            }
-
-            if (!_substepLines.TryGetValue(uid, out var line) || !line)
-            {
-                line = CreatePathRenderer();
-                _substepLines[uid] = line;
-                line.startColor = new Color(0.1f, 1f, 0.5f, 0.6f);
-                line.endColor = new Color(0.1f, 1f, 0.5f, 0.2f);
-                line.widthMultiplier = 0.18f;
-            }
-
-            line.gameObject.SetActive(true);
-            line.positionCount = samples.Count;
-            for (int i = 0; i < samples.Count; i++)
-                line.SetPosition(i, samples[i].Position);
         }
 
         private static Material GetPathMaterial()
