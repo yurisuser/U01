@@ -90,14 +90,11 @@ namespace _Project.Scripts.SystemMap
 
                     // Пытаемся использовать заранее подготовленные точки пути,
                     // потом сабстепы, иначе интерполируем между снимками
-                    if (!TrySamplePath(sh, progress, out pos, out rot) &&
+                    _prevShips.TryGetValue(sh.Uid, out var prev);
+                    if (!TrySamplePath(in prev, in sh, progress, out pos, out rot) &&
                         !TrySampleSubstep(sh.Uid, progress, substeps, out pos, out rot))
                     {
-                        Vector3 startPos = sh.Position;
-                        if (_prevShips.TryGetValue(sh.Uid, out var prev))
-                        {
-                            startPos = prev.Position;
-                        }
+                        Vector3 startPos = prev.Path.Count > 0 || _prevShips.ContainsKey(sh.Uid) ? prev.Position : sh.Position;
 
                         pos = InterpolatePosition(startPos, sh.Position, progress);
                         rot = sh.Rotation;
@@ -198,20 +195,30 @@ namespace _Project.Scripts.SystemMap
             return Vector3.Lerp(p0, p1, Mathf.Clamp01(t));
         }
 
-        private static bool TrySamplePath(in Ship ship, float progress, out Vector3 position, out Quaternion rotation)
+        private static bool TrySamplePath(in Ship prev, in Ship next, float progress, out Vector3 position, out Quaternion rotation)
         {
-            position = ship.Position;
-            rotation = ship.Rotation;
+            // стартовые значения — из prev, если есть; иначе из next
+            if (prev.Path.Count > 0)
+            {
+                position = prev.Position;
+                rotation = prev.Rotation;
+            }
+            else
+            {
+                position = next.Position;
+                rotation = next.Rotation;
+            }
 
-            var samples = ship.PathSamples;
-            int count = ship.PathSampleCount;
-            if (samples == null || count <= 0)
+            // приоритет: использовать путь из prev (стартовый), если он есть, иначе из next
+            var samples = prev.Path.Count > 0 ? prev.Path : next.Path;
+            int count = samples.Count;
+            if (count <= 0)
                 return false;
 
             progress = Mathf.Clamp01(progress);
 
-            var first = samples[0];
-            var last = samples[count - 1];
+            var first = samples.GetAt(0);
+            var last = samples.GetAt(count - 1);
 
             if (progress <= first.T)
             {
@@ -229,15 +236,15 @@ namespace _Project.Scripts.SystemMap
 
             for (int i = 1; i < count; i++)
             {
-                var prev = samples[i - 1];
-                var next = samples[i];
-                if (progress > next.T)
+                var prevSample = samples.GetAt(i - 1);
+                var nextSample = samples.GetAt(i);
+                if (progress > nextSample.T)
                     continue;
 
-                float span = next.T - prev.T;
-                float t = span > 0f ? Mathf.InverseLerp(prev.T, next.T, progress) : 0f;
-                position = Vector3.Lerp(prev.Position, next.Position, t);
-                rotation = Quaternion.Slerp(prev.Rotation, next.Rotation, t);
+                float span = nextSample.T - prevSample.T;
+                float t = span > 0f ? Mathf.InverseLerp(prevSample.T, nextSample.T, progress) : 0f;
+                position = Vector3.Lerp(prevSample.Position, nextSample.Position, t);
+                rotation = Quaternion.Slerp(prevSample.Rotation, nextSample.Rotation, t);
                 return true;
             }
 

@@ -31,7 +31,7 @@ namespace _Project.Scripts.Simulation.Primitives
             var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero; // нормализованное направление к цели
 
             float moveDistance = Mathf.Max(0f, Mathf.Min(ship.Stats.MaxSpeed, distance)); // сколько пройти за шаг по скорости, не перелетая
-            int capacityLeft = ship.PathSamples != null ? ship.PathSamples.Length - ship.PathSampleCount : Ship.PathSampleCapacity;
+            int capacityLeft = Ship.PathSampleCapacity - ship.Path.Count;
             int steps = Mathf.Clamp(capacityLeft, 1, Ship.PathSampleCapacity);
             float perSubTurn = steps > 0 ? maxTurnPerStep / steps : 0f; // угол на подшаг, чтобы за весь шаг не превысить agility
 
@@ -112,21 +112,17 @@ namespace _Project.Scripts.Simulation.Primitives
 
         private static void ResetPath(ref Ship ship)
         {
-            ship.PathSampleCount = 0;
-            if (ship.PathSamples == null || ship.PathSamples.Length == 0)
-                ship.PathSamples = new ShipPathSample[Ship.PathSampleCapacity];
+            ship.Path.Clear();
         }
 
         private static void AppendSample(ref Ship ship, in Vector3 pos, in Quaternion rot, float t)
         {
-            int idx = ship.PathSampleCount;
-            if (idx >= ship.PathSamples.Length)
-                return;
-
-            ship.PathSamples[idx].Position = pos;
-            ship.PathSamples[idx].Rotation = rot;
-            ship.PathSamples[idx].T = Mathf.Clamp01(t);
-            ship.PathSampleCount = idx + 1;
+            ship.Path.TryAdd(new ShipPathSample
+            {
+                Position = pos,
+                Rotation = rot,
+                T = Mathf.Clamp01(t)
+            });
         }
     }
 }
