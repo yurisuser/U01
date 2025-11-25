@@ -44,6 +44,7 @@ namespace _Project.Scripts.SystemMap
         private Transform _planetOrbitsRoot;
         private Transform _moonOrbitsRoot;
         private Transform _planetsRoot;
+        private Transform _deadZoneRoot;
 
         private readonly List<LineRenderer> _allOrbitLines = new();
         private float _starScaleOverride = 1f;
@@ -63,6 +64,7 @@ namespace _Project.Scripts.SystemMap
                 _planetOrbitsRoot = CreateRoot("PlanetOrbits", _layerRoot);
                 _moonOrbitsRoot = CreateRoot("MoonOrbits", _layerRoot);
                 _planetsRoot = CreateRoot("Planets", _layerRoot);
+                _deadZoneRoot = CreateRoot("DeadZones", _layerRoot);
             }
 
             EnsureMaterial();
@@ -86,6 +88,7 @@ namespace _Project.Scripts.SystemMap
 
             ClearAll();
             DrawStar(system);
+            DrawDeadZones();
             DrawPlanetsAndMoons(system);
             UpdateLineWidthsImmediate();
         }
@@ -121,6 +124,21 @@ namespace _Project.Scripts.SystemMap
 
             var scale = Mathf.Max(0.0001f, baseStarScale * _starScaleOverride);
             starGo.transform.localScale = starGo.transform.localScale * scale;
+        }
+
+        private void DrawDeadZones()
+        {
+            if (!_deadZoneRoot || !orbitMaterial)
+                return;
+
+            float orbitUnit = _Project.Scripts.Galaxy.Config.OrbitMath.PlanetOrbitIndexToUnits(1);
+            float innerRadius = Mathf.Max(0f, Simulation.SimulationConsts.InnerDeadZoneOrbits * orbitUnit);
+            if (innerRadius <= 0f)
+                return;
+
+            var line = CreateCircle(_deadZoneRoot, Vector3.zero, innerRadius, Color.red);
+            line.widthMultiplier = 0.04f;
+            _allOrbitLines.Add(line);
         }
 
         private void DrawPlanetsAndMoons(in StarSys system)

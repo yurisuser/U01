@@ -1,5 +1,6 @@
 using _Project.Scripts.Simulation;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Galaxy.Config;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Primitives
@@ -17,7 +18,9 @@ namespace _Project.Scripts.Simulation.Primitives
             ResetPath(ref ship);
             AppendSample(ref ship, ship.Position, ship.Rotation, 0f);
 
-            if (TrySnapToTarget(ref ship, target)) // если уже в радиусе прибытия — телепортируем и выходим
+            var safeTarget = ApplyDeadZone(ship.Position, target); // корректируем цель с учётом мёртвых зон
+
+            if (TrySnapToTarget(ref ship, safeTarget)) // если уже в радиусе прибытия — телепортируем и выходим
             {
                 AppendSample(ref ship, ship.Position, ship.Rotation, 1f);
                 return true; // цель достигнута мгновенно
@@ -26,7 +29,7 @@ namespace _Project.Scripts.Simulation.Primitives
             var forward = NormalizeDirectionShip(ship); // нормализованное направление корабля
             float maxTurnPerStep = GetMaxTurnPerStep(ship); // макс угол поворота за весь шаг в радианах (ограничен)
 
-            var toTarget = target - ship.Position; // вектор до цели
+            var toTarget = safeTarget - ship.Position; // вектор до цели
             var distance = toTarget.magnitude;     // расстояние до цели
             var desiredDir = distance > Mathf.Epsilon ? toTarget / distance : Vector3.zero; // нормализованное направление к цели
 
@@ -56,7 +59,7 @@ namespace _Project.Scripts.Simulation.Primitives
                 }
             }
 
-            if (!reached && IsReached(ship.Position, target, SimulationConsts.ArriveDistance))
+            if (!reached && IsReached(ship.Position, safeTarget, SimulationConsts.ArriveDistance))
                 reached = true;
 
             if (reached)
@@ -108,6 +111,63 @@ namespace _Project.Scripts.Simulation.Primitives
         {
             var remaining = target - pos;
             return remaining.sqrMagnitude <= arriveDistance * arriveDistance;
+        }
+
+        private static Vector3 ApplyDeadZone(in Vector3 start, in Vector3 target)
+        {
+            // Радиусы мёртвых зон в юнитах сцены (орбиты вокруг (0,0))
+            float orbitUnit = OrbitMath.PlanetOrbitIndexToUnits(1);
+            float innerRadius = Mathf.Max(0f, SimulationConsts.InnerDeadZoneOrbits * orbitUnit);
+            // Внешний радиус пока не обрабатываем
+
+            var toTarget = target;
+            float dist = toTarget.magnitude;
+
+            // Если цель внутри — проецируем на границу
+            if (dist < innerRadius && dist > 0.0001f)
+            {
+                return toTarget.normalized * innerRadius;
+            }
+
+            // Если старт внутри — выталкиваем на границу
+            float startDist = start.magnitude;
+            if (startDist < innerRadius && startDist > 0.0001f)
+                return start.normalized * innerRadius;
+
+            // Если отрезок пересекает круг — уходим на касательную к внутреннему радиусу
+            if (SegmentIntersectsCircle(start, target, innerRadius))
+                return ComputeTangentPoint(start, target, innerRadius);
+
+            return target;
+        }
+
+        private static bool SegmentIntersectsCircle(in Vector3 a, in Vector3 b, float radius)
+        {
+            var d = b - a;
+            float lenSq = d.sqrMagnitude;
+            if (lenSq < Mathf.Epsilon)
+                return a.magnitude < radius;
+
+            float t = Mathf.Clamp01(Vector3.Dot(-a, d) / lenSq);
+            var closest = a + d * t;
+            return closest.sqrMagnitude < radius * radius;
+        }
+
+        private static Vector3 ComputeTangentPoint(in Vector3 start, in Vector3 target, float radius)
+        {
+            var fromCenter = start;
+            float dist = fromCenter.magnitude;
+            if (dist <= radius || dist < 0.0001f)
+                return target; // fallback
+
+            float angleToStart = Mathf.Atan2(fromCenter.y, fromCenter.x);
+            float angleOffset = Mathf.Acos(Mathf.Clamp(radius / dist, -1f, 1f));
+
+            // Выбор стороны обхода: используем знак z-компоненты cross(start, target)
+            float cross = Mathf.Sign(fromCenter.x * target.y - fromCenter.y * target.x);
+            float tangentAngle = angleToStart + angleOffset * (cross >= 0 ? 1f : -1f);
+
+            return new Vector3(Mathf.Cos(tangentAngle) * radius, Mathf.Sin(tangentAngle) * radius, 0f);
         }
 
         private static void ResetPath(ref Ship ship)
