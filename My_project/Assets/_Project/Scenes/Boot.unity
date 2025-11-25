@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 30364036}
   - component: {fileID: 30364040}
+  - component: {fileID: 30364041}
   m_Layer: 0
   m_Name: GameBootstrap
   m_TagString: Untagged
@@ -164,6 +165,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c25ec6a89d1c496facc6b1e1c43d5ad4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Core.GameBootstrap
+  stepDurationSeconds: 2
+--- !u!114 &30364041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 30364034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8ee1620425538746a918e131ab4438b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.Core.GCLogger
+  logGen0: 1
+  logGen1: 1
+  logGen2: 1
 --- !u!1 &210190809
 GameObject:
   m_ObjectHideFlags: 0
