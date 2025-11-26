@@ -10,14 +10,12 @@ namespace _Project.Scripts.Simulation.Execution.Spawn
     public sealed class ShipSpawnService
     {
         private readonly RuntimeContext _context; // Общий контекст симуляции.
-        private readonly Motivator _motivator; // Мотиватор для назначения приказов пилотам.
         private bool _initialShipsSpawned; // Флаг, чтобы не спавнить корабли повторно.
 
         // Запоминаем зависимости генератора.
-        public ShipSpawnService(RuntimeContext context, Motivator motivator)
+        public ShipSpawnService(RuntimeContext context)
         {
             _context = context;
-            _motivator = motivator;
         }
 
         // Создаём стартовые корабли во всех системах.
@@ -60,12 +58,6 @@ namespace _Project.Scripts.Simulation.Execution.Spawn
                     ship.IsActive = true;
 
                     _context.Ships.RegisterShip(systemId, ship);
-
-                    if (_context.Pilots != null)
-                    {
-                        var motiv = _motivator.CreateDefaultPatrol(ship.Position);
-                        _context.Pilots.SetMotiv(pilotUid, in motiv);
-                    }
                 }
             }
 

@@ -5,7 +5,6 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Scene;
-using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -96,29 +95,10 @@ namespace _Project.Scripts.SystemMap
                 _currentSystemUid = system.Value.Uid;
             }
 
-            RenderSystem(system.Value,
-                snapshot.PreviousShips,
-                snapshot.PreviousShipCount,
-                snapshot.CurrentShips,
-                snapshot.CurrentShipCount,
-                snapshot.NextShips,
-                snapshot.NextShipCount,
-                snapshot.StepProgress,
-                Mathf.Max(0.0001f, snapshot.LogicStepSeconds),
-                systemChanged);
+            RenderSystem(system.Value, systemChanged);
         }
 
-        private void RenderSystem(
-            in StarSys system,
-            Ship[] prevShips,
-            int prevCount,
-            Ship[] currShips,
-            int currCount,
-            Ship[] nextShips,
-            int nextCount,
-            float progress,
-            float stepDuration,
-            bool systemChanged)
+        private void RenderSystem(in StarSys system, bool systemChanged)
         {
             if (geoLayer != null)
             {
@@ -131,7 +111,7 @@ namespace _Project.Scripts.SystemMap
 
                 if (systemChanged)
                     geoLayer.Init(layersRoot);
-                geoLayer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
+                geoLayer.Render(system);
             }
 
             if (extraLayers == null)
@@ -143,7 +123,7 @@ namespace _Project.Scripts.SystemMap
                 {
                     if (systemChanged)
                         layer.Init(layersRoot);
-                    layer.Render(system, prevShips, prevCount, currShips, currCount, nextShips, nextCount, progress, stepDuration);
+                    layer.Render(system);
                 }
             }
         }

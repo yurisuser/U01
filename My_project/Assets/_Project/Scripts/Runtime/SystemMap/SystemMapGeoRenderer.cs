@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using _Project.Prefabs;
 using _Project.Scripts.Galaxy.Data;
-using _Project.Scripts.Ships;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -70,16 +69,7 @@ namespace _Project.Scripts.SystemMap
             ClearAll();
         }
 
-        public void Render(
-            in StarSys system,
-            Ship[] prevShips,
-            int prevCount,
-            Ship[] currShips,
-            int currCount,
-            Ship[] nextShips,
-            int nextCount,
-            float progress,
-            float stepDuration)
+        public void Render(in StarSys system)
         {
             if (_layerRoot == null)
                 return;

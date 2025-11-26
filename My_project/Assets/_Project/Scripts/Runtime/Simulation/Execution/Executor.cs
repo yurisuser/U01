@@ -1,13 +1,6 @@
-using System.Collections.Generic;
-using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Runtime;
-using _Project.Scripts.NPC.Fraction;
-using _Project.Scripts.Ships;
-using _Project.Scripts.Simulation.Behaviors;
-using _Project.Scripts.Simulation.PilotMotivation;
 using _Project.Scripts.Simulation;
-using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Execution
 {
@@ -16,19 +9,14 @@ namespace _Project.Scripts.Simulation.Execution
     {
         private readonly RuntimeContext _context; // Контекст мира.
         private readonly GameStateService _state; // Сервис состояния.
-        private readonly Motivator _motivator; // Конфигурация мотиваций.
-        private readonly ExecutorShipUpdater _shipUpdater; // Сервис обновления кораблей.
         private readonly Spawn.ShipSpawnService _shipSpawner; // Сервис первичного спавна.
-        private readonly List<ShotEvent> _shotEvents = new List<ShotEvent>(64); // Общий буфер событий выстрелов.
 
         // Готовим все зависимости исполнения шага.
         public Executor(RuntimeContext context, GameStateService state) //Конструктор
         {
             _context = context;
             _state = state;
-            _motivator = new Motivator(SimulationConsts.DefaultPatrolRadius, SimulationConsts.ArriveDistance, SimulationConsts.DefaultPatrolSpeed);
-            _shipUpdater = new ExecutorShipUpdater(_context, _motivator, _shotEvents);
-            _shipSpawner = new Spawn.ShipSpawnService(_context, _motivator);
+            _shipSpawner = new Spawn.ShipSpawnService(_context);
         }
 
         // Выполняем один логический ход симуляции.
@@ -40,15 +28,12 @@ namespace _Project.Scripts.Simulation.Execution
             {
                 _context.Tasks.Tick(dt);
                 _context.Ships.Tick(dt);
-                _shipUpdater.UpdateShips(dt, snapshot.SelectedSystemIndex);
+                // Временная заглушка: старый ИИ выключен, корабли не обновляем.
             }
 
             DoLogicStep(ref snapshot, dt);
             _state?.MarkDynamicDirty();
         }
-
-        // Позволяет читать буфер событий выстрелов.
-        public IReadOnlyList<ShotEvent> ShotEvents => _shotEvents;
 
         // Отдельный шаг логики (для отладки в редакторе).
         private static void DoLogicStep(ref Snapshot snapshot, float dt)
@@ -56,22 +41,6 @@ namespace _Project.Scripts.Simulation.Execution
 #if UNITY_EDITOR
             UnityEngine.Debug.Log($"Logic tick: {snapshot.TickIndex}, dt={dt:0.###}");
 #endif
-        }
-
-        // Выполняем конкретное действие пилота по его типу.
-        private BehaviorExecutionResult ExecuteAction(ref Ship ship, ref PilotMotive motive, in PilotAction action, StarSystemState state, float dt)
-        {
-            switch (action.Action)
-            {
-                case EAction.MoveToCoordinates:
-                    return MoveToCoordinatesBehavior.Execute(ref ship, ref motive, in action, dt);
-                case EAction.AttackTarget:
-                    return AttackTargetBehavior.Execute(ref ship, ref motive, in action, state, dt, _shotEvents);
-                case EAction.AcquireTarget:
-                    return ChoiceTargetBehavior.Execute(ref ship, ref motive, in action, state);
-                default:
-                    return BehaviorExecutionResult.None;
-            }
         }
     }
 }
