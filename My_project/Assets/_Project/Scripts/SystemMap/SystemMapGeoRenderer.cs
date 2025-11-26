@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using _Project.Prefabs;
+using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 
@@ -120,7 +121,7 @@ namespace _Project.Scripts.SystemMap
                 return;
 
             float orbitUnit = _Project.Scripts.Galaxy.Config.OrbitMath.PlanetOrbitIndexToUnits(1);
-            float innerRadius = Mathf.Max(0f, Simulation.SimulationConsts.InnerDeadZoneOrbits * orbitUnit);
+            float innerRadius = Mathf.Max(0f, Const.SimulationConsts.InnerDeadZoneOrbits * orbitUnit);
             if (innerRadius <= 0f)
                 return;
 
