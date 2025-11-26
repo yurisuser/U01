@@ -8,8 +8,7 @@ namespace _Project.Scripts.NPC.Individ
     {
         public readonly UID Id;
         public readonly String Name;
-        public readonly EFraction Frac;
-        
+        public readonly EFraction Frac;        
         public readonly float Intellect;
         public readonly float Perception;
         public readonly float Willpower;

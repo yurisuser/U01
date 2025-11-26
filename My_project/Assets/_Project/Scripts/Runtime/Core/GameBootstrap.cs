@@ -5,8 +5,6 @@ using _Project.Scripts.Core.Input;
 using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Galaxy.Generation;
-using _Project.Scripts.Simulation;
-using _Project.Scripts.Simulation.Execution;
 using UnityEngine;
 
 namespace _Project.Scripts.Core
@@ -38,10 +36,6 @@ namespace _Project.Scripts.Core
 
         [SerializeField] private float stepDurationSeconds = 2f;
 
-        private StepManager _stepManager;
-        private Executor _executor;
-        private SimulationThread _simulationThread;
-
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -68,23 +62,16 @@ namespace _Project.Scripts.Core
             _gameState.SetGalaxy(galaxy);
             _gameState.AttachRuntimeContext(context);
 
-            _executor = new Executor(context, _gameState);
-            _simulationThread = new SimulationThread(_executor);
-            _stepManager = new StepManager(_gameState, _simulationThread);
-
             StartCoroutine(LoadMainMenuDelayed());
         }
 
         private void Update()
         {
             Input?.Update();
-            _stepManager?.Update(Time.deltaTime);
         }
 
         private void OnDestroy()
         {
-            _simulationThread?.Dispose();
-            _simulationThread = null;
         }
 
         private IEnumerator LoadMainMenuDelayed()
