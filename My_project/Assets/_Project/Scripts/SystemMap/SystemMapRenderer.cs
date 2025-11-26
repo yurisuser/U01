@@ -51,8 +51,8 @@ namespace _Project.Scripts.SystemMap
             _state = GameBootstrap.GameState;
             if (_state != null)
             {
-                _state.RenderChanged += OnRenderChanged;
-                OnRenderChanged(_state.Render);
+                _state.StateChanged += OnStateChanged;
+                OnStateChanged();
             }
         }
 
@@ -62,7 +62,7 @@ namespace _Project.Scripts.SystemMap
                 _core.Input.Unsubscribe(Key.Escape, OnEscPressed);
 
             if (_state != null)
-                _state.RenderChanged -= OnRenderChanged;
+                _state.StateChanged -= OnStateChanged;
             _state = null;
         }
 
@@ -75,12 +75,12 @@ namespace _Project.Scripts.SystemMap
             await SceneController.LoadAsync(SceneId.GalaxyMap);
         }
 
-        private void OnRenderChanged(RenderSnapshot snapshot)
+        private void OnStateChanged()
         {
             if (Thread.CurrentThread.ManagedThreadId != _mainThreadId)
                 return;
 
-            var system = ResolveActiveSystem(snapshot);
+            var system = ResolveActiveSystem(_state);
             if (system == null)
             {
                 ClearLayers();
@@ -142,13 +142,13 @@ namespace _Project.Scripts.SystemMap
             }
         }
 
-        private static StarSys? ResolveActiveSystem(RenderSnapshot snapshot)
+        private static StarSys? ResolveActiveSystem(GameStateService state)
         {
-            var galaxy = snapshot.Galaxy;
+            var galaxy = state?.Galaxy;
             if (galaxy == null || galaxy.Length == 0)
                 return null;
 
-            var index = snapshot.SelectedSystemIndex;
+            var index = state.SelectedSystemIndex;
             if (index >= 0 && index < galaxy.Length)
                 return galaxy[index];
 

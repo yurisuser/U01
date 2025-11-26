@@ -20,7 +20,7 @@ namespace _Project.Scripts.Core
             get
             {
                 if (_gameState == null)
-                    _gameState = new GameStateService(2.0f);
+                    _gameState = new GameStateService();
 
                 return _gameState;
             }
@@ -34,8 +34,6 @@ namespace _Project.Scripts.Core
         /// <summary>Контроллер ввода.</summary>
         public InputController Input { get; } = new InputController();
 
-        [SerializeField] private float stepDurationSeconds = 2f;
-
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -48,9 +46,7 @@ namespace _Project.Scripts.Core
             DontDestroyOnLoad(gameObject);
 
             if (_gameState == null)
-                _gameState = new GameStateService(stepDurationSeconds);
-            else
-                _gameState.SetLogicStepSeconds(stepDurationSeconds);
+                _gameState = new GameStateService();
 
             var localizationPath = Path.Combine(Application.dataPath, "_Project/Localization/JSONS/en");
             LocalizationDatabase.Initialize(localizationPath);
@@ -60,7 +56,6 @@ namespace _Project.Scripts.Core
             context.Initialize(galaxy);
 
             _gameState.SetGalaxy(galaxy);
-            _gameState.AttachRuntimeContext(context);
 
             StartCoroutine(LoadMainMenuDelayed());
         }

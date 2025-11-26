@@ -47,21 +47,21 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             _state = GameBootstrap.GameState;
             if (_state != null)
             {
-                _state.RenderChanged += OnRenderChanged;
-                OnRenderChanged(_state.Render); // update immediately to keep map in sync
+                _state.StateChanged += OnStateChanged;
+                OnStateChanged(); // update immediately to keep map in sync
             }
         }
 
         private void OnDisable()
         {
             if (_state != null)
-                _state.RenderChanged -= OnRenderChanged;
+                _state.StateChanged -= OnStateChanged;
             _state = null;
         }
 
-        private void OnRenderChanged(RenderSnapshot snapshot)
+        private void OnStateChanged()
         {
-            Render(snapshot.Galaxy, clearBefore: true);
+            Render(_state?.Galaxy, clearBefore: true);
         }
 
         public void Render(StarSys[] systems, bool clearBefore = true)
