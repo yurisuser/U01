@@ -434,7 +434,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1830487893}
   - component: {fileID: 1830487892}
-  - component: {fileID: 1830487894}
   m_Layer: 0
   m_Name: StarsRoot
   m_TagString: Untagged
@@ -456,11 +455,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.GalaxyMapRenderer
   catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
   defaultPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
-  dwarfMul: 0.7
-  normalMul: 1
-  giantMul: 1.8
-  supergiantMul: 2.5
-  globalScale: 1
   starsRoot: {fileID: 1830487893}
 --- !u!4 &1830487893
 Transform:
@@ -477,20 +471,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1830487894
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1830487891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75dbeaacd90248da99f156fb88202c51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapShipRenderer
-  order: 10
-  catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
 --- !u!1 &1866142961
 GameObject:
   m_ObjectHideFlags: 0

@@ -2,7 +2,6 @@ using System.Collections;
 using System.IO;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Input;
-using _Project.Scripts.Core.Runtime;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Galaxy.Generation;
 using UnityEngine;
@@ -52,9 +51,6 @@ namespace _Project.Scripts.Core
             LocalizationDatabase.Initialize(localizationPath);
 
             var galaxy = GalaxyCreator.Create();
-            var context = RuntimeWorldService.RequireContext();
-            context.Initialize(galaxy);
-
             _gameState.SetGalaxy(galaxy);
 
             StartCoroutine(LoadMainMenuDelayed());
