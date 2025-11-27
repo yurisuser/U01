@@ -20,7 +20,7 @@ namespace _Project.Scripts.Simulation.Core
             _gameState = gameState;
             _clock = clock;
             _globalPipeline = new NoopSimulationPipeline("GlobalNoop");
-            _localPipeline = new NoopSimulationPipeline("LocalNoop");
+            _localPipeline = new _Project.Scripts.Simulation.Local.LocalSimulationPipeline();
         }
 
         /// <summary>Выполнить шаг из FixedUpdate с заданным fixedDeltaTime.</summary>
