@@ -4,6 +4,7 @@ using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Input;
 using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Galaxy.Generation;
+using _Project.Scripts.Simulation.Core;
 using UnityEngine;
 
 namespace _Project.Scripts.Core
@@ -12,6 +13,8 @@ namespace _Project.Scripts.Core
     public sealed class GameBootstrap : MonoBehaviour
     {
         private static GameStateService _gameState;
+        private SimulationRootController _simulation;
+        private SimulationClock _simulationClock;
 
         /// <summary>Глобальный сервис состояния игры.</summary>
         public static GameStateService GameState
@@ -53,12 +56,21 @@ namespace _Project.Scripts.Core
             var galaxy = GalaxyCreator.Create();
             _gameState.SetGalaxy(galaxy);
 
+            // Стартуем минимальный каркас симуляции: пока заглушки.
+            _simulationClock = new SimulationClock(Time.fixedDeltaTime);
+            _simulation = new SimulationRootController(_gameState, _simulationClock);
+
             StartCoroutine(LoadMainMenuDelayed());
         }
 
         private void Update()
         {
             Input?.Update();
+        }
+
+        private void FixedUpdate()
+        {
+            _simulation?.TickFixed(Time.fixedDeltaTime);
         }
 
         private void OnDestroy()
