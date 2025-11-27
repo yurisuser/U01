@@ -5,10 +5,10 @@ namespace _Project.Scripts.Simulation.Core
     /// <summary>Данные одного шага симуляции.</summary>
     public sealed class SimulationStepContext
     {
-        public SimulationStepContext(GameStateService gameState, int tick, float deltaTime, ERunMode runMode)
+        public SimulationStepContext(GameStateService gameState, int day, float deltaTime, ERunMode runMode)
         {
             GameState = gameState;
-            Tick = tick;
+            Day = day;
             DeltaTime = deltaTime;
             RunMode = runMode;
         }
@@ -16,8 +16,8 @@ namespace _Project.Scripts.Simulation.Core
         /// <summary>Глобальное состояние игры.</summary>
         public GameStateService GameState { get; }
 
-        /// <summary>Текущий номер хода (глобальный тик).</summary>
-        public int Tick { get; }
+        /// <summary>Текущий номер хода/дня.</summary>
+        public int Day { get; }
 
         /// <summary>Длительность шага для локальной симуляции.</summary>
         public float DeltaTime { get; }

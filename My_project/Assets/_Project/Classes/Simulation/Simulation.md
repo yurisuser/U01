@@ -19,7 +19,7 @@ Simulation/
     ISimulationPipeline.cs        // контракт пайплайна (RunStep, порядок стадий)
     ISimulationStage.cs           // контракт стадии (Run(context))
     SimulationStepContext.cs      // базовый контекст: tick, ссылки на GameState, буферы логов/событий
-    (Const) SimulationConsts.cs   // базовые константы симуляции лежат в `_Project/Classes/CONST/SimulationConsts.cs` — подключаем оттуда
+    (Const) SimulationConsts.cs   // базовые константы симуляции лежат в `_Project/CONST/SimulationConsts.cs` — подключаем оттуда
 
   Global/
     GlobalSimulationPipeline.cs   // конвейер стадий за один глобальный ход (1 ход = 1 день)

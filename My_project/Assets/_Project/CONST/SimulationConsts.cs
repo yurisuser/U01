@@ -9,5 +9,8 @@ namespace _Project.Scripts.Const
         // --- Спавн ---
         public const int ShipsPerSystem = 4;
         public const float SpawnRadius = 5f;
+
+        // --- Тайминги ---
+        public const float GlobalStepSeconds = 2f; // длительность хода глобальной симуляции (1 ход = 1 день)
     }
 }

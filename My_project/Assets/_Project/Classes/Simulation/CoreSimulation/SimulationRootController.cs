@@ -1,3 +1,4 @@
+using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
 using UnityEngine;
 
@@ -9,11 +10,12 @@ namespace _Project.Scripts.Simulation.Core
         private readonly GameStateService _gameState;
         private readonly SimulationClock _clock;
         private float _globalAccumulator;
+        private ERunMode? _nextRunMode; // отложенное переключение режима после хода
 
         private ISimulationPipeline _globalPipeline;
         private ISimulationPipeline _localPipeline;
 
-        public SimulationRootController(GameStateService gameState, SimulationClock clock)
+        public SimulationRootController(GameStateService gameState, SimulationClock clock) //конструктор
         {
             _gameState = gameState;
             _clock = clock;
@@ -38,33 +40,50 @@ namespace _Project.Scripts.Simulation.Core
         private void RunTick(float deltaTime)
         {
             var mode = _gameState?.RunMode ?? ERunMode.Paused;
-            if (mode == ERunMode.Paused)
-                return;
 
-            var tick = _clock.AdvanceTick();
-            var ctx = new SimulationStepContext(_gameState, tick, deltaTime, mode);
+            // Локальная часть крутится каждый фикс-кадр, если не пауза.
+            if (mode != ERunMode.Paused)
+            {
+                var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode);
+                _localPipeline?.RunStep(localCtx);
 
-            Debug.Log($"[Simulation] Tick={tick}, mode={mode}, dt={deltaTime:0.###}");
+                // Глобальная часть — раз в заданный интервал (1 ход = 1 день).
+                _globalAccumulator += deltaTime;
+                if (_globalAccumulator >= SimulationConsts.GlobalStepSeconds)
+                {
+                    _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
+                    var day = _clock.AdvanceDay();
+                    var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode);
+                    Debug.Log($"[Simulation] Day={day}, mode={mode}, dt={SimulationConsts.GlobalStepSeconds:0.###}");
+                    _globalPipeline?.RunStep(globalCtx);
 
-            _globalPipeline?.RunStep(ctx);
-            _localPipeline?.RunStep(ctx);
+                    if (mode == ERunMode.Step)
+                        _nextRunMode = ERunMode.Paused; // шаг выполнен — обратно в паузу
+                }
+            }
 
-            // В пошаговом режиме сразу возвращаемся в паузу после одного шага.
-            if (mode == ERunMode.Step)
-                _gameState?.SetRunMode(ERunMode.Paused);
+            // Применяем отложенную смену режима после хода.
+            if (_nextRunMode.HasValue)
+            {
+                var current = mode;
+                var next = _nextRunMode.Value;
+                _nextRunMode = null;
+
+                if (current != next)
+                {
+                    _gameState?.SetRunMode(next);
+                    Debug.Log($"[Simulation] RunMode: {current} -> {next}");
+                }
+            }
         }
 
         /// <summary>Поставить симуляцию на паузу.</summary>
-        public void Pause() => _gameState?.SetRunMode(ERunMode.Paused);
+        public void Pause() => _nextRunMode = ERunMode.Paused;
 
         /// <summary>Включить автоматический режим (поточный, шаг за шагом без паузы).</summary>
-        public void SetAuto() => _gameState?.SetRunMode(ERunMode.Auto);
+        public void SetAuto() => _nextRunMode = ERunMode.Auto;
 
         /// <summary>Сделать один шаг и вернуться в паузу.</summary>
-        public void StepOnce()
-        {
-            _gameState?.SetRunMode(ERunMode.Step);
-            Tick();
-        }
+        public void StepOnce() => _nextRunMode = ERunMode.Step;
     }
 }
