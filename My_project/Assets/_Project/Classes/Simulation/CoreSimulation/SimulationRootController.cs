@@ -52,9 +52,8 @@ namespace _Project.Scripts.Simulation.Core
             ApplyNextRunMode(mode);
         }
 
-        private bool CheckRunLocal()
+        private bool CheckRunLocal() // Локальная симуляция крутится только если есть выбранная система.
         {
-            // Локальная симуляция крутится только если есть выбранная система.
             return _gameState?.GetSelectedSystem() != null;
         }
 
@@ -91,7 +90,7 @@ namespace _Project.Scripts.Simulation.Core
                 return;
 
             _gameState?.SetRunMode(next);
-            //Debug.Log($"[Simulation] RunMode: {current} -> {next}");
+            Debug.Log($"[Simulation] RunMode: {current} -> {next}");
         }
     }
 }
