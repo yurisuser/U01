@@ -7,6 +7,6 @@ namespace _Project.Scripts.Simulation.Core
         string Name { get; }
 
         /// <summary>Выполнить один шаг по переданному контексту.</summary>
-        void RunStep(SimulationStepContext context);
+        void RunStep(in SimulationStepContext context);
     }
 }

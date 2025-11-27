@@ -61,7 +61,7 @@ namespace _Project.Scripts.Simulation.Core
         private void RunLocal(float deltaTime, ERunMode mode)
         {
             var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode);
-            _localPipeline?.RunStep(localCtx);
+            _localPipeline?.RunStep(in localCtx);
         }
 
         private bool CheckRunGlobal(float deltaTime)
@@ -75,8 +75,8 @@ namespace _Project.Scripts.Simulation.Core
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
             var day = _clock.NextDay();
             var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode);
-            Debug.Log($"[Simulation] Day={day}, mode={mode}, dt={SimulationConsts.GlobalStepSeconds:0.###}");
-            _globalPipeline?.RunStep(globalCtx);
+           Debug.Log(day);
+            _globalPipeline?.RunStep(in globalCtx);
         }
 
         private void ApplyNextRunMode(ERunMode current)
@@ -91,7 +91,7 @@ namespace _Project.Scripts.Simulation.Core
                 return;
 
             _gameState?.SetRunMode(next);
-            Debug.Log($"[Simulation] RunMode: {current} -> {next}");
+            //Debug.Log($"[Simulation] RunMode: {current} -> {next}");
         }
     }
 }

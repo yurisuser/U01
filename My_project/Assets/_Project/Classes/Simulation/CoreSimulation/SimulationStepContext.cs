@@ -3,7 +3,7 @@ using _Project.Scripts.Core.GameState;
 namespace _Project.Scripts.Simulation.Core
 {
     /// <summary>Данные одного шага симуляции.</summary>
-    public sealed class SimulationStepContext
+    public readonly struct SimulationStepContext
     {
         public SimulationStepContext(GameStateService gameState, int day, float deltaTime, ERunMode runMode)
         {

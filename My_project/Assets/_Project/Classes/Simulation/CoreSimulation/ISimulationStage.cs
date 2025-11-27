@@ -6,6 +6,6 @@ namespace _Project.Scripts.Simulation.Core
     public interface ISimulationStage
     {
         /// <summary>Выполнить стадию для переданного контекста.</summary>
-        void Run(SimulationStepContext context);
+        void Run(in SimulationStepContext context);
     }
 }

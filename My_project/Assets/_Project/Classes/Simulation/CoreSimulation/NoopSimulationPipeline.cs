@@ -10,7 +10,7 @@ namespace _Project.Scripts.Simulation.Core
             Name = string.IsNullOrWhiteSpace(name) ? "Noop" : name;
         }
 
-        public void RunStep(SimulationStepContext context)
+        public void RunStep(in SimulationStepContext context)
         {
             // Ничего не делаем — заглушка.
         }
