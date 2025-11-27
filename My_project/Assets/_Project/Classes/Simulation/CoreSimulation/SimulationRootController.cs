@@ -23,14 +23,8 @@ namespace _Project.Scripts.Simulation.Core
             _localPipeline = new NoopSimulationPipeline("LocalNoop");
         }
 
-        /// <summary>Выполнить шаг симуляции согласно текущему режиму (dt берётся из SimulationClock).</summary>
-        public void Tick()
-        {
-            RunTick(_clock.DeltaTime);
-        }
-
         /// <summary>Выполнить шаг из FixedUpdate с заданным fixedDeltaTime.</summary>
-        public void TickFixed(float fixedDeltaTime)
+        public void TickFixed(float fixedDeltaTime) //Дергается из Bootstrap
         {
             _clock.SetDeltaTime(fixedDeltaTime);
             RunTick(fixedDeltaTime);
@@ -41,49 +35,63 @@ namespace _Project.Scripts.Simulation.Core
         {
             var mode = _gameState?.RunMode ?? ERunMode.Paused;
 
-            // Локальная часть крутится каждый фикс-кадр, если не пауза.
             if (mode != ERunMode.Paused)
             {
-                var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode);
-                _localPipeline?.RunStep(localCtx);
+                if (CheckRunLocal())
+                    RunLocal(deltaTime, mode);
 
-                // Глобальная часть — раз в заданный интервал (1 ход = 1 день).
-                _globalAccumulator += deltaTime;
-                if (_globalAccumulator >= SimulationConsts.GlobalStepSeconds)
+                bool shouldRunGlobal = CheckRunGlobal(deltaTime);
+                if (shouldRunGlobal)
                 {
-                    _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
-                    var day = _clock.AdvanceDay();
-                    var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode);
-                    Debug.Log($"[Simulation] Day={day}, mode={mode}, dt={SimulationConsts.GlobalStepSeconds:0.###}");
-                    _globalPipeline?.RunStep(globalCtx);
-
+                    RunGlobal(mode);
                     if (mode == ERunMode.Step)
                         _nextRunMode = ERunMode.Paused; // шаг выполнен — обратно в паузу
                 }
             }
 
-            // Применяем отложенную смену режима после хода.
-            if (_nextRunMode.HasValue)
-            {
-                var current = mode;
-                var next = _nextRunMode.Value;
-                _nextRunMode = null;
-
-                if (current != next)
-                {
-                    _gameState?.SetRunMode(next);
-                    Debug.Log($"[Simulation] RunMode: {current} -> {next}");
-                }
-            }
+            ApplyNextRunMode(mode);
         }
 
-        /// <summary>Поставить симуляцию на паузу.</summary>
-        public void Pause() => _nextRunMode = ERunMode.Paused;
+        private bool CheckRunLocal()
+        {
+            // Локальная симуляция крутится только если есть выбранная система.
+            return _gameState?.GetSelectedSystem() != null;
+        }
 
-        /// <summary>Включить автоматический режим (поточный, шаг за шагом без паузы).</summary>
-        public void SetAuto() => _nextRunMode = ERunMode.Auto;
+        private void RunLocal(float deltaTime, ERunMode mode)
+        {
+            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode);
+            _localPipeline?.RunStep(localCtx);
+        }
 
-        /// <summary>Сделать один шаг и вернуться в паузу.</summary>
-        public void StepOnce() => _nextRunMode = ERunMode.Step;
+        private bool CheckRunGlobal(float deltaTime)
+        {
+            _globalAccumulator += deltaTime;
+            return _globalAccumulator >= SimulationConsts.GlobalStepSeconds;
+        }
+
+        private void RunGlobal(ERunMode mode)
+        {
+            _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
+            var day = _clock.NextDay();
+            var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode);
+            Debug.Log($"[Simulation] Day={day}, mode={mode}, dt={SimulationConsts.GlobalStepSeconds:0.###}");
+            _globalPipeline?.RunStep(globalCtx);
+        }
+
+        private void ApplyNextRunMode(ERunMode current)
+        {
+            if (!_nextRunMode.HasValue)
+                return;
+
+            var next = _nextRunMode.Value;
+            _nextRunMode = null;
+
+            if (current == next)
+                return;
+
+            _gameState?.SetRunMode(next);
+            Debug.Log($"[Simulation] RunMode: {current} -> {next}");
+        }
     }
 }
