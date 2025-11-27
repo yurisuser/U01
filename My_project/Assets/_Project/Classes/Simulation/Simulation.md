@@ -1,18 +1,21 @@
 Simulation.md
-# Структура симуляции
+# План структуры симуляции
 
 ## Цель
 Простая и расширяемая схема: один каркас, две симметричные ветки (глобальная и локальная), чёткий порядок стадий.
+Локальная - открытая система. Обновляется по Update/FixUpdate
+Глобальная - вся галактика, без открытой системы. Обновляется раз в несколько секунд.
 
 ## Карта папок
 ```
 Simulation/
-  Core/
+  CoreSimulation/
     SimulationRootController.cs   // оркестратор: решает, когда тикать Global/Local, держит общий счётчик ходов/времени
     SimulationClock.cs            // единый счётчик ходов/дней и dt для Local
     ISimulationPipeline.cs        // контракт пайплайна (RunStep, порядок стадий)
     ISimulationStage.cs           // контракт стадии (Run(context))
     SimulationStepContext.cs      // базовый контекст: tick, ссылки на GameState, буферы логов/событий
+    (Const) SimulationConsts.cs   // базовые константы симуляции лежат в `_Project/Classes/CONST/SimulationConsts.cs` — подключаем оттуда
 
   Global/
     GlobalSimulationPipeline.cs   // конвейер стадий за один глобальный ход (1 ход = 1 день)
@@ -48,6 +51,7 @@ Simulation/
 ```
 
 ## Принципы
+- Избегать кода, вызывающего сборку мусора
 - GameState живёт в Core (не в Simulation); Simulation читает/меняет его через сервис.
 - Порядок стадий фиксируем явным списком, номера в именах — для читаемости.
 - Стадии — классы (ISimulationStage/StageBase), коллекции стадий без боксинга.
