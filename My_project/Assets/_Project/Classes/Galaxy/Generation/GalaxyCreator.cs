@@ -102,6 +102,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Ядро
             arr[0] = new StarSys // Центральная звездная система
             {
+                State = new _Project.Scripts.Galaxy.Data.SystemState(),
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
                 OldY = 0f
@@ -110,6 +111,7 @@ namespace _Project.Scripts.Galaxy.Generation
             for (int i = 1; i < count; i++)
             {
                 var sys = new StarSys();
+                sys.State = new _Project.Scripts.Galaxy.Data.SystemState();
 
                 Vector3 pos = PlaceWithMinDistance(
                     index: i,

@@ -17,6 +17,7 @@ namespace _Project.Scripts.Galaxy.Data
         public Star Star;
         public PlanetSys[] PlanetSysArr;
         public Individ[] IndividArr;
+        public SystemState State;
 
         public int[] PlanetOrbits;
         public float OldX;
