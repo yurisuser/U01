@@ -7,8 +7,8 @@ namespace _Project.Scripts.Const
         public const float InnerDeadZoneOrbits = 1f;
 
         // --- Спавн ---
-        public const int ShipsPerSystem = 4;
-        public const float SpawnRadius = 5f;
+        public const int ShipsPerSystem = 5;
+        public const float SpawnRadius = 100f;
 
         // --- Тайминги ---
         public const float GlobalStepSeconds = 2f; // длительность хода глобальной симуляции (1 ход = 1 день)
