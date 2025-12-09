@@ -5,15 +5,16 @@ namespace _Project.Scripts.Simulation.Core
     /// <summary>Данные одного шага симуляции.</summary>
     public readonly struct SimulationStepContext
     {
-        public SimulationStepContext(GameStateService gameState, int day, float deltaTime, ERunMode runMode)
+        public SimulationStepContext(GameStateService gameState, int day, float deltaTime, ERunMode runMode, SimulationEventBus eventBus)
         {
             GameState = gameState;
             Day = day;
             DeltaTime = deltaTime;
             RunMode = runMode;
+            EventBus = eventBus;
         }
 
-        /// <summary>Глобальное состояние игры.</summary>
+        /// <summary>Сервис глобального состояния игры.</summary>
         public GameStateService GameState { get; }
 
         /// <summary>Текущий номер хода/дня.</summary>
@@ -24,6 +25,9 @@ namespace _Project.Scripts.Simulation.Core
 
         /// <summary>Режим выполнения на этот шаг.</summary>
         public ERunMode RunMode { get; }
+
+        /// <summary>Буфер событий текущего шага.</summary>
+        public SimulationEventBus EventBus { get; }
 
         /// <summary>Находимся ли в паузе.</summary>
         public bool IsPaused => RunMode == ERunMode.Paused;

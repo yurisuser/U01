@@ -9,6 +9,7 @@ namespace _Project.Scripts.Simulation.Core
     {
         private readonly GameStateService _gameState;
         private readonly SimulationClock _clock;
+        private readonly SimulationEventBus _eventBus;
         private float _globalAccumulator;
         private ERunMode? _nextRunMode; // отложенное переключение режима после хода
 
@@ -19,6 +20,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _gameState = gameState;
             _clock = clock;
+            _eventBus = new SimulationEventBus();
             _globalPipeline = new NoopSimulationPipeline("GlobalNoop");
             _localPipeline = new _Project.Scripts.Simulation.Local.LocalSimulationPipeline();
         }
@@ -33,6 +35,7 @@ namespace _Project.Scripts.Simulation.Core
         /// <summary>Общий исполняющий блок для шага.</summary>
         private void RunTick(float deltaTime)
         {
+            _eventBus.Clear(); // новый буфер событий на шаг
             var mode = _gameState?.RunMode ?? ERunMode.Paused;
 
             if (mode != ERunMode.Paused)
@@ -59,7 +62,7 @@ namespace _Project.Scripts.Simulation.Core
 
         private void RunLocal(float deltaTime, ERunMode mode)
         {
-            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode);
+            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus);
             _localPipeline?.RunStep(in localCtx);
         }
 
@@ -73,8 +76,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
             var day = _clock.NextDay();
-            var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode);
-           Debug.Log(day);
+            var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode, _eventBus);
             _globalPipeline?.RunStep(in globalCtx);
         }
 
