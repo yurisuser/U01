@@ -7,7 +7,7 @@
         public static Ship Spawn(ShipSpawnRequest request)
         {
             // TODO: учесть Position/Rotation из заявки (ShipCreator пока ставит свои значения).
-            // TODO: добавить корабль в SystemState и оповестить EventBus (ShipSpawned).
+            // TODO: добавить корабль в LocalSysRuntimeContext и оповестить EventBus (ShipSpawned).
             var ship = ShipCreator.CreateShip(request.Fraction, request.PilotUid);
             return ship;
         }

@@ -3,6 +3,7 @@ using UnityEngine;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Core.GameState;
+using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Simulation.Local
 {
@@ -44,7 +45,7 @@ namespace _Project.Scripts.Simulation.Local
                 systemState.CommitShipSnapshot(localCtx.DeltaTime, Time.unscaledTime);
         }
 
-        private static SystemState? ResolveActiveState(GameStateService gameState)
+        private static LocalSysRuntimeContext? ResolveActiveState(GameStateService gameState)
         {
             if (gameState == null)
                 return null;
@@ -60,7 +61,7 @@ namespace _Project.Scripts.Simulation.Local
             var system = galaxy[index];
             if (system.State == null)
             {
-                system.State = new SystemState();
+                system.State = new LocalSysRuntimeContext();
                 galaxy[index] = system;
             }
 

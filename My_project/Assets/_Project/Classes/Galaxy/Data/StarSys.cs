@@ -1,6 +1,7 @@
 using UnityEngine;
 using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Individ;
+using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Galaxy.Data
 {
@@ -17,7 +18,7 @@ namespace _Project.Scripts.Galaxy.Data
         public Star Star;
         public PlanetSys[] PlanetSysArr;
         public Individ[] IndividArr;
-        public SystemState State;
+        public LocalSysRuntimeContext State;
 
         public int[] PlanetOrbits;
         public float OldX;

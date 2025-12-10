@@ -1,5 +1,6 @@
 using System;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Simulation;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -102,7 +103,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Ядро
             arr[0] = new StarSys // Центральная звездная система
             {
-                State = new _Project.Scripts.Galaxy.Data.SystemState(),
+                State = new LocalSysRuntimeContext(),
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
                 OldY = 0f
@@ -111,7 +112,7 @@ namespace _Project.Scripts.Galaxy.Generation
             for (int i = 1; i < count; i++)
             {
                 var sys = new StarSys();
-                sys.State = new _Project.Scripts.Galaxy.Data.SystemState();
+                sys.State = new LocalSysRuntimeContext();
 
                 Vector3 pos = PlaceWithMinDistance(
                     index: i,

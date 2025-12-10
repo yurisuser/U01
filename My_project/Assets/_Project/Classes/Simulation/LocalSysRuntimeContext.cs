@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using _Project.Scripts.Ships;
 
-namespace _Project.Scripts.Galaxy.Data
+namespace _Project.Scripts.Simulation
 {
-    /// <summary>Динамическое состояние звёздной системы: корабли и прочие живые сущности.</summary>
-    public sealed class SystemState
+    /// <summary>Динамическое состояние звёздной системы: корабли, снапшоты, ИИ-агенты.</summary>
+    public sealed class LocalSysRuntimeContext
     {
         private List<Ship> _prevShipSnapshots = new(32);
         private List<Ship> _currShipSnapshots = new(32);

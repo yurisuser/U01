@@ -4,6 +4,7 @@ using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Simulation;
 
 namespace _Project.Scripts.Simulation.Local.Stages
 {
@@ -28,7 +29,7 @@ namespace _Project.Scripts.Simulation.Local.Stages
             var systemState = system.State;
             if (systemState == null)
             {
-                systemState = new SystemState();
+                systemState = new LocalSysRuntimeContext();
                 system.State = systemState;
                 galaxy[systemIndex] = system;
             }
