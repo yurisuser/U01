@@ -1,35 +1,40 @@
-Current task.md
+## План патруля для кораблей (черновик)
 
-Минимальный каркас:
-LocalSimulationContext (readonly struct): ссылки на GameStateService, идентификатор активной системы/снэпшот, float dt, int day, буферы (шоты, события). Без аллокаций.
-LocalSimulationPipeline : держит список стадий List<ISimulationStage>, Name = "Local", RunStep(in ctx) проходит стадии по порядку.
-Стадии по плану (можно пустые заглушки):
-LocalInputStage — собирает команды игрока/триггеры (пока noop).
-LocalPerceptionStage — строит видимый мир для юнитов (пока noop).
-LocalAiStage — принятие решений (noop).
-LocalMovementStage — движение (noop).
-LocalInteractionStage — стыковка/ремонт (noop).
-LocalCombatStage — бой (noop).
-LocalEventsStage — события (noop).
-LocalSnapshotStage — сбор среза для рендера (noop или заполняет пустой снапшот).
-Проведение через SimulationRootController: RunLocal создаёт LocalSimulationContext и вызывает LocalSimulationPipeline.RunStep. Контекст можно собрать из SimulationStepContext + активной системы (например, GetSelectedSystem()).
+1. **Где живёт логика**
+   - Сохраняем всё в локальной симуляции: 
+         `LocalPerceptionStage` собирает цели/опасности, 
+         `LocalAiStage` выдает приказы, 
+         `LocalMovementStage` исполняет.
+   - В `SystemState` добавляем списки `ShipAgents` (содержит UID корабля, актуальную команду и целевую точку патруля).
 
-Чтобы не плодить мусор: стадиям передавать in LocalSimulationContext; пайплайн — один список стадий (классы-заглушки без аллокаций внутри). Логи — по флагу.
+2. **Данные агента**
+   - Поля: `UID ShipId`, `Vector2 PatrolTarget`, `AiCommandType CurrentCommand`, `float RepathCooldown`.
+   - Дополнительно флажок «нужен ли новый патруль» если корабль достиг цели или потерял задачу.
 
-Папки/файлы:
+3. **Примитивы поведения**
+   - `MoveToPositionCommand` (корабль должен дойти до `PatrolTarget`).
+   - `PatrolCommand` – обертка, которая проверяет дистанцию, выбирает новую точку в радиусе (например, 100–200 условных единиц) и создаёт `MoveToPosition`.
+   - Все команды – простые структуры с таймером и статусом (`Pending`, `Running`, `Completed`).
 
-Simulation/Local/
-  LocalSimulationPipeline.cs
-  LocalSimulationContext.cs
-  Stages/
-    01_InputStage.cs
-    02_PerceptionStage.cs
-    03_AiStage.cs
-    04_MovementStage.cs
-    05_InteractionStage.cs
-    06_CombatStage.cs
-    07_EventsStage.cs
-    08_SnapshotStage.cs
-Ступени пока Noop (шаблон), чтобы собрать структуру.
+4. **Пайплайн шага**
+   1. Perception обновляет `ShipAgents`: дополняет списком кораблей, обновляет их позиции.
+   2. AiStage:
+      - Для каждого агента: если `CurrentCommand` null или выполнена — генерируем новую точку (случайная позиция в плоскости системы, ограничиваемся заданным радиусом). Записываем в `PatrolTarget`.
+      - Создаём `MoveToPositionCommand`, кладём в очередь команд (например `SystemState.PendingShipCommands`).
+   3. MovementStage:
+      - Берет `PendingShipCommands`, сдвигает корабль к точке (линейное движение в той же плоскости).
+      - При достижении расстояния <= порога (например, 2ед.) отправляет событие `CommandCompleted`, чтобы AiStage в следующий проход сгенерил новую цель.
 
-Если устраивает — могу накинуть каркас с noop-стадиями и подключить к SimulationRootController вместо NoopSimulationPipeline.
+5. **Хранение данных**
+   - `SystemState`: 
+     - `List<Ship> Ships` (как сейчас).
+     - `List<ShipAgentState> ShipAgents`.
+     - `Queue<ShipCommand> PendingShipCommands`.
+   - `ShipAgentState` ищем по UID. Если корабль уничтожен/покинул систему — удаляем запись.
+
+6. **Прочие детали**
+   - Все расчёты в одной плоскости (Z = 0).
+   - Новая цель патруля = `Random.insideUnitCircle * patrolRadius`.
+   - Расстояние проверки – `Vector2.Distance(currentPos, target)`.
+   - На будущее: когда появятся другие задачи, `ShipAgentState` уже будет расширяемым (можно добавить `AiRole`, `Priority`).
+   - Никаких статических синглтонов: всё держим в `SystemState` и передаём через контексты стадий.
