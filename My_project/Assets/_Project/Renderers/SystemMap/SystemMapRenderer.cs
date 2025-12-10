@@ -10,12 +10,13 @@ namespace _Project.Scripts.SystemMap
 {
     /// <summary>Управляет слоями рендера карты системы и обновляет их актуальными данными.</summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(SystemMapShipRenderer))]
     public sealed class SystemMapRenderer : MonoBehaviour
     {
         [Header("Корневой объект для слоёв")]
         [SerializeField] private Transform layersRoot;
         [SerializeField] private SystemMapGeoRenderer geoLayer;
-        [SerializeField] private MonoBehaviour[] extraLayers;
+        [SerializeField] private SystemMapShipRenderer shipLayer;
 
         [Header("Масштаб элементов системы")]
         [SerializeField] private float starScale = 1f;
@@ -40,6 +41,11 @@ namespace _Project.Scripts.SystemMap
                 rootGo.transform.SetParent(transform, false);
                 layersRoot = rootGo.transform;
             }
+
+            if (!geoLayer)
+                geoLayer = GetComponent<SystemMapGeoRenderer>() ?? GetComponentInChildren<SystemMapGeoRenderer>(true);
+            if (!shipLayer)
+                shipLayer = GetComponent<SystemMapShipRenderer>() ?? GetComponentInChildren<SystemMapShipRenderer>(true) ?? gameObject.AddComponent<SystemMapShipRenderer>();
         }
 
         private void OnEnable()
@@ -64,6 +70,7 @@ namespace _Project.Scripts.SystemMap
             if (_state != null)
                 _state.StateChanged -= OnStateChanged;
             _state = null;
+            _currentSystemUid = default;
         }
 
         private async void OnEscPressed()
@@ -95,10 +102,23 @@ namespace _Project.Scripts.SystemMap
                 _currentSystemUid = system.Value.Uid;
             }
 
-            RenderSystem(system.Value, systemChanged);
+            RenderStaticSystem(system.Value, systemChanged);
+            RenderShips(system.Value, systemChanged);
         }
 
-        private void RenderSystem(in StarSys system, bool systemChanged)
+        private void Update()
+        {
+            if (_state == null)
+                return;
+
+            var system = ResolveActiveSystem(_state);
+            if (system == null)
+                return;
+
+            RenderShips(system.Value, false);
+        }
+
+        private void RenderStaticSystem(in StarSys system, bool systemChanged)
         {
             if (geoLayer != null)
             {
@@ -114,32 +134,26 @@ namespace _Project.Scripts.SystemMap
                 geoLayer.Render(system);
             }
 
-            if (extraLayers == null)
+            if (systemChanged)
+                shipLayer?.Init(layersRoot);
+        }
+
+        private void RenderShips(in StarSys system, bool systemChanged)
+        {
+            if (!shipLayer)
                 return;
 
-            for (int i = 0; i < extraLayers.Length; i++)
-            {
-                if (extraLayers[i] is ISystemMapLayer layer)
-                {
-                    if (systemChanged)
-                        layer.Init(layersRoot);
-                    layer.Render(system);
-                }
-            }
+            if (systemChanged)
+                shipLayer.Init(layersRoot);
+
+            shipLayer.Render(system);
         }
 
         private void ClearLayers()
         {
             geoLayer?.Dispose();
-
-            if (extraLayers == null)
-                return;
-
-            for (int i = 0; i < extraLayers.Length; i++)
-            {
-                if (extraLayers[i] is ISystemMapLayer layer)
-                    layer.Dispose();
-            }
+            _currentSystemUid = default;
+            shipLayer?.Dispose();
         }
 
         private static StarSys? ResolveActiveSystem(GameStateService state)
@@ -154,5 +168,6 @@ namespace _Project.Scripts.SystemMap
 
             return galaxy[0];
         }
+
     }
 }
