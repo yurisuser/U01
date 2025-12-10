@@ -74,7 +74,7 @@ struct ShipTask
 ```csharp
 struct ShipTaskParams
 {
-    ShipTaskParamsType Type; // MoveToPoint, AttackTarget, TradeSell, ...
+    ShipTaskType Type; // MoveToPoint, AttackTarget, TradeSell, ...
 
     MoveToPointParams MoveToPoint;
     FollowEntityParams FollowEntity;
@@ -95,7 +95,7 @@ struct ShipTaskParams
     - `AttackTargetParams { UID TargetUid; AttackPriority Priority; }`
     - `TradeSellParams { UID StationUid; TradeItem[] Items; }`
 - Такой подход оставляет структуру типобезопасной и не раздувает данные лишними полями.
-- При создании команды выставляем `Type` и заполняем только соответствующий блок (например, `Type = ShipTaskParamsType.AttackTarget`, `AttackTarget = new AttackTargetParams { ... }`). Остальные структуры остаются default.
+- При создании команды выставляем `Type` и заполняем только соответствующий блок (например, `Type = ShipTaskType.AttackTarget`, `AttackTarget = new AttackTargetParams { ... }`). Остальные структуры остаются default.
 
 ## «Лететь в систему» — пример разбивки
 1. `MoveToPoint` — долететь до ближайшего прыжкового узла (ворота/портал).
