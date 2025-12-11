@@ -152,7 +152,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapRenderer
   layersRoot: {fileID: 200395029}
   geoLayer: {fileID: 200395030}
-  shipLayer: {fileID: 0}
+  shipLayer: {fileID: 200395031}
   starScale: 1
   planetScale: 1
   moonScale: 1
@@ -207,7 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapShipRenderer
   order: 5
   catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
-  shipScale: 0.5
+  shipScale: 1
 --- !u!1001 &453937181
 PrefabInstance:
   m_ObjectHideFlags: 0
