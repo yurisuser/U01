@@ -5,6 +5,7 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation;
+using _Project.Scripts.Simulation.Ships;
 
 namespace _Project.Scripts.Simulation.Local.Stages
 {
@@ -29,6 +30,7 @@ namespace _Project.Scripts.Simulation.Local.Stages
             var systemState = system.State;
             if (systemState == null)
             {
+                // Гарантируем runtime-контекст для активной системы.
                 systemState = new LocalSysRuntimeContext();
                 system.State = systemState;
                 galaxy[systemIndex] = system;
@@ -36,15 +38,24 @@ namespace _Project.Scripts.Simulation.Local.Stages
 
             var ships = systemState.Ships;
             int deficit = SimulationConsts.ShipsPerSystem - ships.Count;
-            if (deficit <= 0)
-                return;
-
-            for (int i = 0; i < deficit; i++)
+            if (deficit > 0) //если кораблей меньше минимума
             {
-                var ship = SpawnShip();
-                ship.Position = SamplePosition(SimulationConsts.SpawnRadius);
-                ship.Rotation = SampleOrientation();
-                ships.Add(ship);
+                // Дособираем тестовые корабли до целевого количества.
+                for (int i = 0; i < deficit; i++)
+                {
+                    var ship = SpawnShip();
+                    ship.Position = SamplePosition(SimulationConsts.SpawnRadius);
+                    ship.Rotation = SampleOrientation();
+                    ships.Add(ship);
+                }
+            }
+
+            for (int i = 0; i < ships.Count; i++)
+            {
+                var ship = ships[i];
+                // Если у корабля нет задач, выдаём новую точку патруля.
+                ShipTaskPlanner.EnsurePatrolTask(ref ship, SimulationConsts.SpawnRadius);
+                ships[i] = ship;
             }
         }
 

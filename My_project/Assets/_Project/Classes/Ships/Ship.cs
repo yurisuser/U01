@@ -1,6 +1,7 @@
 ﻿
 using System;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
+using _Project.Scripts.Simulation.Ships;
 using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
@@ -16,6 +17,7 @@ namespace _Project.Scripts.Ships
         public ShipStats Stats;           // базовые характеристики корабля (Hp, скорость, маневренность)
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
+        public ShipTaskState TaskState;   // задачи корабля
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
@@ -45,6 +47,7 @@ namespace _Project.Scripts.Ships
             };
             IsActive = isActive;          // сохраняем активность
             Equipment = default;          // инициализируется позже (в ShipCreator)
+            TaskState = ShipTaskState.Default;
         }
     }
 }
