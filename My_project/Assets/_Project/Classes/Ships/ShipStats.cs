@@ -4,6 +4,6 @@ namespace _Project.Scripts.Ships
     {
         public int Hp;         // текущее здоровье
         public float MaxSpeed; // максимальная крейсерская скорость
-        public float Agility;  // маневренность Рад/сек
+        public float Agility;  // маневренность Рад/сек. Она же отвечает и за ускорение/торможение
     }
 }

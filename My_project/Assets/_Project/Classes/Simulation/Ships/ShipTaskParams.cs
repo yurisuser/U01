@@ -12,5 +12,6 @@ namespace _Project.Scripts.Simulation.Ships
     {
         public Vector3 Target;
         public float Tolerance;
+        public bool KeepSpeed;
     }
 }

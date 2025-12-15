@@ -15,6 +15,7 @@ namespace _Project.Scripts.Ships
         public Vector3 Position;          // мировая позиция центра масс
         public Quaternion Rotation;       // мировая ориентация корабля
         public ShipStats Stats;           // базовые характеристики корабля (Hp, скорость, маневренность)
+        public float CurrentSpeed;        // текущая скорость (ед/сек)
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
         public ShipTaskState TaskState;   // задачи корабля
@@ -45,6 +46,7 @@ namespace _Project.Scripts.Ships
                 MaxSpeed = maxSpeed,      // максимальная скорость берём из каталога
                 Agility = agility         // маневренность берём из каталога
             };
+            CurrentSpeed = 0f;            // начальная скорость
             IsActive = isActive;          // сохраняем активность
             Equipment = default;          // инициализируется позже (в ShipCreator)
             TaskState = ShipTaskState.Default;
