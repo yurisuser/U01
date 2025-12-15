@@ -45,7 +45,7 @@ namespace _Project.Scripts.Simulation.Local
                 systemState.CommitShipSnapshot(localCtx.DeltaTime, Time.unscaledTime);
         }
 
-        private static LocalSysRuntimeContext? ResolveActiveState(GameStateService gameState)
+        private static LocalSysRuntimeContext ResolveActiveState(GameStateService gameState)
         {
             if (gameState == null)
                 return null;
