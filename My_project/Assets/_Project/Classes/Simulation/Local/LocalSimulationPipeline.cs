@@ -14,14 +14,14 @@ namespace _Project.Scripts.Simulation.Local
 
         public LocalSimulationPipeline()
         {
-            _stages.Add(new Stages.LocalInputStage());
-            _stages.Add(new Stages.LocalPerceptionStage());
-            _stages.Add(new Stages.LocalAiStage());
-            _stages.Add(new Stages.LocalMovementStage());
-            _stages.Add(new Stages.LocalInteractionStage());
-            _stages.Add(new Stages.LocalCombatStage());
-            _stages.Add(new Stages.LocalEventsStage());
-            _stages.Add(new Stages.LocalSnapshotStage());
+            _stages.Add(new Stages.Input.LocalInputStage());
+            _stages.Add(new Stages.Perception.LocalPerceptionStage());
+            _stages.Add(new Stages.Ai.LocalAiStage());
+            _stages.Add(new Stages.Movement.LocalMovementStage());
+            _stages.Add(new Stages.Interaction.LocalInteractionStage());
+            _stages.Add(new Stages.Combat.LocalCombatStage());
+            _stages.Add(new Stages.Events.LocalEventsStage());
+            _stages.Add(new Stages.Snapshot.LocalSnapshotStage());
         }
 
         public string Name => "Local";
