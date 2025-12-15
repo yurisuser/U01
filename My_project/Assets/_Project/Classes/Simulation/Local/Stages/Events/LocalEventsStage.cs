@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Events
 {
     /// <summary>Сбор локальных событий.</summary>
     public sealed class LocalEventsStage : ILocalSimulationStage

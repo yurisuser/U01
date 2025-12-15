@@ -1,16 +1,13 @@
 using UnityEngine;
 using _Project.Scripts.Simulation.Ships;
 
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Movement
 {
     /// <summary>Движение юнитов/снарядов.</summary>
     public sealed class LocalMovementStage : ILocalSimulationStage
     {
         public void Run(in LocalSimulationContext context)
         {
-            if (!context.HasActiveSystem)
-                return;
-
             var system = context.ActiveSystem.Value;
             var runtime = system.State;
             if (runtime == null)

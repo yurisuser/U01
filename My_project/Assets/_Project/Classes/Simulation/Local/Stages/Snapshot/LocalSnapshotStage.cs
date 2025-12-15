@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Snapshot
 {
     /// <summary>Сбор среза для SystemMap.</summary>
     public sealed class LocalSnapshotStage : ILocalSimulationStage

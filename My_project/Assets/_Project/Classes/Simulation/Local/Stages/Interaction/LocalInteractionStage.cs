@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
     /// <summary>Локальные взаимодействия (стыковка/ремонт).</summary>
     public sealed class LocalInteractionStage : ILocalSimulationStage

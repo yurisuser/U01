@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Perception
 {
     /// <summary>Перцепция: построение картины мира для юнитов.</summary>
     public sealed class LocalPerceptionStage : ILocalSimulationStage

@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Combat
 {
     /// <summary>Бой на локальном уровне.</summary>
     public sealed class LocalCombatStage : ILocalSimulationStage

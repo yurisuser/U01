@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Input
 {
     /// <summary>Вход локальной симуляции: команды игрока/триггеры.</summary>
     public sealed class LocalInputStage : ILocalSimulationStage

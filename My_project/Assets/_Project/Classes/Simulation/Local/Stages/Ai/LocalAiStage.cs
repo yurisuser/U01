@@ -7,7 +7,7 @@ using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Ships;
 
-namespace _Project.Scripts.Simulation.Local.Stages
+namespace _Project.Scripts.Simulation.Local.Stages.Ai
 {
     /// <summary>Тактическое принятие решений.</summary>
     public sealed class LocalAiStage : ILocalSimulationStage
@@ -15,7 +15,7 @@ namespace _Project.Scripts.Simulation.Local.Stages
         public void Run(in LocalSimulationContext context)
         {
             var gameState = context.GameState;
-            if (gameState == null || !context.HasActiveSystem)
+            if (gameState == null)
                 return;
 
             var galaxy = gameState.Galaxy;
