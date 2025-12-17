@@ -17,10 +17,10 @@ namespace _Project.Scripts.Simulation.Ships
         {
             return new ShipTask(ShipTaskType.MoveToPoint, new ShipTaskParams
             {
-                Type = ShipTaskType.MoveToPoint,
-                MoveToPoint = new MoveToPointParams
+                TypeTask = ShipTaskType.MoveToPoint,
+                MoveToPointParams = new MoveToPointParams
                 {
-                    Target = target,
+                    Destination = target,
                     Tolerance = tolerance,
                     KeepSpeed = keepSpeed
                 }
