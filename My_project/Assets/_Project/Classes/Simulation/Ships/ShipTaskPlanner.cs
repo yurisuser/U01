@@ -1,4 +1,5 @@
 using UnityEngine;
+using _Project.Scripts.Const;
 using _Project.Scripts.Ships;
 
 namespace _Project.Scripts.Simulation.Ships
@@ -11,7 +12,7 @@ namespace _Project.Scripts.Simulation.Ships
                 return;
 
             var target = SamplePatrolPoint(patrolRadius);
-            ship.TaskState.PushTask(ShipTask.MoveTo(target, 2f, keepSpeed: true));
+            ship.TaskState.PushTask(ShipTask.MoveTo(target, SimulationConsts.DestinationPointTolerance, keepSpeed: true));
         }
 
         private static Vector3 SamplePatrolPoint(float radius)
