@@ -15,6 +15,9 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
         public static float NextSpeed;
         public static Vector3 StepDestinationPosition;
 
+        private static readonly CourseChanger CourseChanger = new();
+        private static readonly MoveChanger MoveChanger = new();
+        private static readonly SpeedChanger SpeedChanger = new();
         public void Run(in LocalSimulationContext context) // основной вход стадии
         {
             var system = context.ActiveSystem.Value;
@@ -45,7 +48,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
             CurrDirection = GetCurrentDirection(ship);
             CurrSpeed = GetCurrentSpeed(ship);
 
-            var toTarget = moveTaskParams.Destination - CurrPosition;
+            var toTarget = moveTaskParams.Destination - CurrPosition;// расстояние и направление к цели
             float distance = toTarget.magnitude;
             if (distance <= moveTaskParams.Tolerance)
             {
@@ -53,8 +56,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
                 return;
             }
 
-            NextDirection = GetNextDirection(CurrDirection, toTarget, ship.Stats.Agility, deltaTime);
-            NextSpeed = GetNextSpeed(CurrSpeed, ship.Stats.MaxSpeed, ship.Stats.Agility, moveTaskParams.KeepSpeed, deltaTime, distance, moveTaskParams.Tolerance);
+            NextDirection = CourseChanger.GetDirection(CurrPosition, CurrDirection, moveTaskParams.Destination, ship.Stats.Agility, deltaTime );
+            NextSpeed = SpeedChanger.GetSpeed(ref ship, moveTaskParams, deltaTime);
             StepDestinationPosition = GetStepShift(NextDirection, NextSpeed, deltaTime, distance);
             NextPosition = GetNextPosition(CurrPosition, StepDestinationPosition);
 

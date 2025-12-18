@@ -12,6 +12,8 @@ namespace _Project.Scripts.Const
 
         // --- Ship tasks ---
         public const float DestinationPointTolerance = 0.01f; //допустимость неточности достижения координат
+        public const float AccelerationOfAgility = 3; // умножить на агилити для получения разгона/торможения
+        public const float AgilityTurnConeFactor = 1f; // множитель ширины конуса разворота
 
         // --- Тайминги ---
         public const float GlobalStepSeconds = 2f; // длительность хода глобальной симуляции (1 ход = 1 день)
