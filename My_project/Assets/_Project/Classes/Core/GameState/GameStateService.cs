@@ -11,7 +11,7 @@ namespace _Project.Scripts.Core.GameState
         private StarSys[] _galaxy = Array.Empty<StarSys>();
         private int _selectedSystemIndex = -1;
         private ERunMode _runMode = ERunMode.Paused;
-        private SelectedObject? _selectedObject;
+        private readonly SelectedObjectService _selectedObjectService = new SelectedObjectService();
 
         public event Action StateChanged; // Уведомление для UI/логики о смене состояния.
 
@@ -22,8 +22,8 @@ namespace _Project.Scripts.Core.GameState
         public ERunMode RunMode => _runMode;
         public StarSys[] Galaxy => _galaxy;
         public int SelectedSystemIndex => _selectedSystemIndex;
-        /// <summary>Текущий выделенный объект (корабль, планета и т.д.).</summary>
-        public SelectedObject? SelectedObject => _selectedObject;
+        /// <summary>Сервис выделенного объекта.</summary>
+        public SelectedObjectService SelectedObjectService => _selectedObjectService;
 
         public StarSys? GetSelectedSystem()
         {
@@ -101,21 +101,6 @@ namespace _Project.Scripts.Core.GameState
                 return;
 
             _selectedSystemIndex = -1;
-            NotifyChanged();
-        }
-
-        public void SetSelectedObject(in SelectedObject info)
-        {
-            _selectedObject = info;
-            NotifyChanged();
-        }
-
-        public void ClearSelectedObject()
-        {
-            if (_selectedObject == null)
-                return;
-
-            _selectedObject = null;
             NotifyChanged();
         }
 

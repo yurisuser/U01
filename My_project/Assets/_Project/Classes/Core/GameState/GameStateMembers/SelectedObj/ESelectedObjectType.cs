@@ -1,7 +1,7 @@
 namespace _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj
 {
     /// <summary>Категории поддерживаемых объектов для выделения.</summary>
-    public enum SelectedObjectType
+    public enum ESelectedObjectType
     {
         None = 0,
         Star = 1,
