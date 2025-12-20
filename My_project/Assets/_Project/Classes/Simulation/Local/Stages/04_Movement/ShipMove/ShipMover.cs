@@ -18,6 +18,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
         private static readonly CourseChanger CourseChanger = new();
         private static readonly MoveChanger MoveChanger = new();
         private static readonly SpeedChanger SpeedChanger = new();
+        
         public void Run(in LocalSimulationContext context) // основной вход стадии
         {
             var system = context.ActiveSystem.Value;
@@ -59,7 +60,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
             NextDirection = CourseChanger.GetDirection(CurrPosition, CurrDirection, moveTaskParams.Destination, ship.Stats.Agility, deltaTime );
             NextSpeed = SpeedChanger.GetSpeed(ref ship, moveTaskParams, deltaTime);
             StepDestinationPosition = GetStepShift(NextDirection, NextSpeed, deltaTime, distance);
-            NextPosition = GetNextPosition(CurrPosition, StepDestinationPosition);
+            NextPosition = MoveChanger.GetShift(ref ship, NextDirection, deltaTime);
 
             Apply(ref ship);
 
@@ -92,47 +93,6 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
         private static float GetCurrentSpeed(in Ship ship)
         {
             return Mathf.Max(0f, ship.CurrentSpeed);
-        }
-
-        private static Vector3 GetNextPosition(in Vector3 currentPosition, in Vector3 frameShift)
-        {
-            return currentPosition + frameShift;
-        }
-
-        private static Vector3 GetNextDirection(Vector3 currentDirection, Vector3 toTarget, float agility, float deltaTime)
-        {
-            if (toTarget.sqrMagnitude <= 0f)
-                return currentDirection;
-
-            var desired = toTarget.normalized;
-
-            if (currentDirection.sqrMagnitude <= 0f)
-                return desired;
-
-            currentDirection.Normalize();
-            float maxAngle = Mathf.Max(0f, agility) * Mathf.Rad2Deg * Mathf.Max(0f, deltaTime);
-            if (maxAngle <= 0f)
-                return desired;
-
-            float angleBetween = Vector3.SignedAngle(currentDirection, desired, Vector3.forward);
-            float clampedAngle = Mathf.Clamp(angleBetween, -maxAngle, maxAngle);
-            return (Quaternion.AngleAxis(clampedAngle, Vector3.forward) * currentDirection).normalized;
-        }
-
-        private static float GetNextSpeed(float currentSpeed, float maxSpeed, float agility, bool keepSpeed, float deltaTime, float distance, float tolerance)
-        {
-            float targetSpeed;
-            if (keepSpeed || agility <= 0f)
-            {
-                targetSpeed = maxSpeed;
-            }
-            else
-            {
-                float required = Mathf.Sqrt(Mathf.Max(0f, 2f * agility * (distance - tolerance)));
-                targetSpeed = Mathf.Min(maxSpeed, required);
-            }
-
-            return Mathf.MoveTowards(Mathf.Max(0f, currentSpeed), targetSpeed, agility * Mathf.Max(0f, deltaTime));
         }
 
         private static Vector3 GetStepShift(Vector3 direction, float speed, float deltaTime, float distance)

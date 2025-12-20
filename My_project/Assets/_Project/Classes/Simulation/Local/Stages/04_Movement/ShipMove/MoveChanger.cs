@@ -7,10 +7,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
     /// <summary>Отвечает за расчёт смещения и скорости корабля.</summary>
     public sealed class MoveChanger
     {
-        public void UpdateMotion(ref Ship ship, in Vector3 direction, float deltaTime)
+        public Vector3 GetShift(ref Ship ship, in Vector3 direction, float deltaTime)
         {
             if (direction.sqrMagnitude <= 0f || deltaTime <= 0f)
-                return;
+                return ship.Position;
 
             float maxSpeed = Mathf.Max(0f, ship.Stats.MaxSpeed);
             float accel = Mathf.Max(0f, ship.Stats.Agility);
@@ -33,10 +33,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             ship.CurrentSpeed = Mathf.MoveTowards(Mathf.Max(0f, ship.CurrentSpeed), targetSpeed, accel * deltaTime);
 
             if (ship.CurrentSpeed <= 0f)
-                return;
+                return ship.Position;
 
             direction.Normalize();
-            ship.Position += direction * (ship.CurrentSpeed * deltaTime);
+            return ship.Position + direction * (ship.CurrentSpeed * deltaTime);
         }
     }
 }
