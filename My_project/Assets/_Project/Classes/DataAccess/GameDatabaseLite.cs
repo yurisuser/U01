@@ -13,7 +13,6 @@ namespace _Project.DataAccess
     {
         private const string RelativePath = "Data/game.db";
         private const string SqliteHeader = "SQLite format 3\0";
-
         private static string _fullPath;
         private static IReadOnlyList<CatalogWeapon> _weapons;
         private static IReadOnlyList<CatalogShip> _ships;
@@ -116,6 +115,9 @@ namespace _Project.DataAccess
             connection.Open();
             CreateSchema(connection);
             EnsureShipColumns(connection);
+            EnsureWeaponsSchema(connection);
+            EnsureLegacyItemsRemoval(connection);
+            EnsureEquipmentColumns(connection);
             SeedDefaults(connection);
         }
 
@@ -150,9 +152,81 @@ CREATE TABLE IF NOT EXISTS weapons (
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
     description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 0,
+    max_stack INTEGER NOT NULL DEFAULT 1,
+    tech_level INTEGER NOT NULL DEFAULT 1,
     damage REAL NOT NULL,
     rate_per_second REAL NOT NULL,
     range REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS goods (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 1,
+    max_stack INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS ammo (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 1,
+    max_stack INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS quest (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 1,
+    max_stack INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS engines (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 0,
+    max_stack INTEGER NOT NULL DEFAULT 1,
+    tech_level INTEGER NOT NULL DEFAULT 1,
+    speed REAL NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS scanners (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 0,
+    max_stack INTEGER NOT NULL DEFAULT 1,
+    tech_level INTEGER NOT NULL DEFAULT 1,
+    radius REAL NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS shields (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 0,
+    max_stack INTEGER NOT NULL DEFAULT 1,
+    tech_level INTEGER NOT NULL DEFAULT 1,
+    volume REAL NOT NULL DEFAULT 0,
+    regen REAL NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS ships (
     id INTEGER PRIMARY KEY,
@@ -202,6 +276,167 @@ CREATE TABLE IF NOT EXISTS ships (
             }
         }
 
+        private static void EnsureLegacyItemsRemoval(IDbConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='items'";
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                return;
+
+            reader.Close();
+            cmd.CommandText = "DROP TABLE IF EXISTS items";
+            cmd.ExecuteNonQuery();
+        }
+
+        private static void EnsureWeaponsSchema(IDbConnection connection)
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var schemaCmd = connection.CreateCommand())
+            {
+                schemaCmd.CommandText = "PRAGMA table_info(weapons)";
+                using var reader = schemaCmd.ExecuteReader();
+                while (reader.Read())
+                    existing.Add(reader.GetString(1));
+            }
+
+            if (existing.Count == 0)
+                return;
+
+            if (existing.Contains("item_id") || !existing.Contains("key") || !existing.Contains("display_name") || !existing.Contains("description"))
+            {
+                using var tx = connection.BeginTransaction();
+                using var cmd = connection.CreateCommand();
+                cmd.Transaction = tx;
+
+                cmd.CommandText = @"
+CREATE TABLE weapons_new (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price INTEGER NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable INTEGER NOT NULL DEFAULT 0,
+    max_stack INTEGER NOT NULL DEFAULT 1,
+    damage REAL NOT NULL,
+    rate_per_second REAL NOT NULL,
+    range REAL NOT NULL
+);";
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='items'";
+                var hasItems = cmd.ExecuteScalar() != null;
+
+                if (existing.Contains("item_id") && hasItems)
+                {
+                    cmd.CommandText = @"
+INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, damage, rate_per_second, range)
+SELECT w.item_id, i.key, i.display_name, i.description, i.price, i.weight, i.stackable, i.max_stack, w.damage, w.rate_per_second, w.range
+FROM weapons w
+JOIN items i ON i.id = w.item_id;";
+                }
+                else
+                {
+                    var idExpr = existing.Contains("id") ? "id" : "item_id";
+                    var keyExpr = existing.Contains("key") ? "key" : "'weapon_' || " + idExpr;
+                    var nameExpr = existing.Contains("display_name") ? "display_name" : "'Weapon ' || " + idExpr;
+                    var descExpr = existing.Contains("description") ? "description" : "''";
+                    var priceExpr = existing.Contains("price") ? "price" : "0";
+                    var weightExpr = existing.Contains("weight") ? "weight" : "1";
+                    var stackExpr = existing.Contains("stackable") ? "stackable" : "0";
+                    var maxStackExpr = existing.Contains("max_stack") ? "max_stack" : "1";
+
+                    cmd.CommandText = $@"
+INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, damage, rate_per_second, range)
+SELECT {idExpr}, {keyExpr}, {nameExpr}, {descExpr}, {priceExpr}, {weightExpr}, {stackExpr}, {maxStackExpr}, damage, rate_per_second, range
+FROM weapons;";
+                }
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "DROP TABLE weapons;";
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "ALTER TABLE weapons_new RENAME TO weapons;";
+                cmd.ExecuteNonQuery();
+
+                tx.Commit();
+                return;
+            }
+
+            using var alter = connection.CreateCommand();
+            if (!existing.Contains("price"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN price INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("weight"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN weight REAL NOT NULL DEFAULT 1";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("stackable"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN stackable INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("max_stack"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN max_stack INTEGER NOT NULL DEFAULT 1";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("tech_level"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN tech_level INTEGER NOT NULL DEFAULT 1";
+                alter.ExecuteNonQuery();
+            }
+        }
+
+        private static void EnsureEquipmentColumns(IDbConnection connection)
+        {
+            EnsureColumns(connection, "engines", new[]
+            {
+                ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("speed", "REAL NOT NULL DEFAULT 0")
+            });
+            EnsureColumns(connection, "scanners", new[]
+            {
+                ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("radius", "REAL NOT NULL DEFAULT 0")
+            });
+            EnsureColumns(connection, "shields", new[]
+            {
+                ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("volume", "REAL NOT NULL DEFAULT 0"),
+                ("regen", "REAL NOT NULL DEFAULT 0")
+            });
+        }
+
+        private static void EnsureColumns(IDbConnection connection, string table, (string Name, string Sql)[] columns)
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = $"PRAGMA table_info({table})";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    existing.Add(reader.GetString(1));
+            }
+
+            using var alter = connection.CreateCommand();
+            foreach (var col in columns)
+            {
+                if (existing.Contains(col.Name))
+                    continue;
+                alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {col.Name} {col.Sql}";
+                alter.ExecuteNonQuery();
+            }
+        }
+
         private static void SeedDefaults(IDbConnection connection)
         {
             using var tx = connection.BeginTransaction();
@@ -209,9 +444,27 @@ CREATE TABLE IF NOT EXISTS ships (
             cmd.Transaction = tx;
 
             cmd.CommandText = @"
-INSERT OR IGNORE INTO weapons (id, key, display_name, description, damage, rate_per_second, range) VALUES
-    (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 12.0, 1.5, 50.0),
-    (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 35.0, 0.5, 120.0);
+INSERT OR IGNORE INTO weapons (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range) VALUES
+    (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 100, 1, 0, 1, 1, 12.0, 1.5, 50.0),
+    (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 300, 1, 0, 1, 2, 35.0, 0.5, 120.0);
+
+INSERT OR IGNORE INTO goods (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
+    (1, 'test_goods', 'Тестовый товар', 'Тестовый груз для проверки.', 10, 1, 1, 50);
+
+INSERT OR IGNORE INTO ammo (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
+    (1, 'test_ammo', 'Тестовые боеприпасы', 'Тестовые патроны для проверки.', 5, 0.2, 1, 200);
+
+INSERT OR IGNORE INTO quest (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
+    (1, 'test_quest', 'Тестовый квестовый предмет', 'Квестовый предмет для проверки.', 0, 0.5, 1, 10);
+
+INSERT OR IGNORE INTO engines (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, speed) VALUES
+    (1, 'test_engine', 'Тестовый двигатель', 'Двигатель для проверки.', 200, 5, 0, 1, 1, 10.0);
+
+INSERT OR IGNORE INTO scanners (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius) VALUES
+    (1, 'test_scanner', 'Тестовый сканер', 'Сканер для проверки.', 150, 2, 0, 1, 1, 100.0);
+
+INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, volume, regen) VALUES
+    (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 300.0, 5.0);
 
 INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots) VALUES
     (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 0, 1.0, '', 2),

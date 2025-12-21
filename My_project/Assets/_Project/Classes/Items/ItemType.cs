@@ -1,10 +1,14 @@
 namespace _Project.Items
 {
-        public enum ItemType
+    public enum ItemType
     {
-        Cargo = 0,
+        None = 0,
         Weapon = 1,
-        Equipment = 2,
-        Artifact = 3
+        Goods = 2,
+        Ammo = 3,
+        Quest = 4,
+        Engine = 5,
+        Scanner = 6,
+        Shield = 7
     }
 }

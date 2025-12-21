@@ -7,6 +7,7 @@ namespace _Project.Items
     public struct ItemStack
     {
         [field: SerializeField] public int Id { get; private set; }
-        [field: SerializeField] public int Amount { get; private set; }
+        [field: SerializeField] public ItemType Type { get; private set; }
+        [field: SerializeField] public int Quantity { get; private set; }
     }
 }
