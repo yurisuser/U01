@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS weapons (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 0,
+    stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
     damage REAL NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS goods (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 1,
+    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS ammo (
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS ammo (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 1,
+    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS quest (
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS quest (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 1,
+    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS engines (
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS engines (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 0,
+    stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
     speed REAL NOT NULL DEFAULT 0
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS scanners (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 0,
+    stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
     radius REAL NOT NULL DEFAULT 0
@@ -222,9 +222,10 @@ CREATE TABLE IF NOT EXISTS shields (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 0,
+    stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
+    radius REAL NOT NULL DEFAULT 0,
     volume REAL NOT NULL DEFAULT 0,
     regen REAL NOT NULL DEFAULT 0
 );
@@ -379,7 +380,7 @@ FROM weapons;";
 
             if (!existing.Contains("stackable"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN stackable INTEGER NOT NULL DEFAULT 0";
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1))";
                 alter.ExecuteNonQuery();
             }
 
@@ -411,6 +412,7 @@ FROM weapons;";
             EnsureColumns(connection, "shields", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("radius", "REAL NOT NULL DEFAULT 0"),
                 ("volume", "REAL NOT NULL DEFAULT 0"),
                 ("regen", "REAL NOT NULL DEFAULT 0")
             });
@@ -463,8 +465,8 @@ INSERT OR IGNORE INTO engines (id, key, display_name, description, price, weight
 INSERT OR IGNORE INTO scanners (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius) VALUES
     (1, 'test_scanner', 'Тестовый сканер', 'Сканер для проверки.', 150, 2, 0, 1, 1, 100.0);
 
-INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, volume, regen) VALUES
-    (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 300.0, 5.0);
+INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius, volume, regen) VALUES
+    (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 25.0, 300.0, 5.0);
 
 INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots) VALUES
     (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 0, 1.0, '', 2),
