@@ -13,7 +13,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
                 return ship.Position;
 
             float maxSpeed = Mathf.Max(0f, ship.Stats.MaxSpeed);
-            float accel = Mathf.Max(0f, ship.Stats.Agility);
+            float accel = ship.Stats.Acceleration > 0f ? ship.Stats.Acceleration : Mathf.Max(0f, ship.Stats.Agility);
 
             // пытаемся плавно выйти на нужную скорость
             float targetSpeed = maxSpeed;

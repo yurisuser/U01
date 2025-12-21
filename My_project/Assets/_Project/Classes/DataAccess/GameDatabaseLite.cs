@@ -52,7 +52,7 @@ namespace _Project.DataAccess
             if (!forceReload && _ships != null) return _ships;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, hp, max_speed, agility, weapon_slots FROM ships ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots FROM ships ORDER BY id";
 
             var list = new List<CatalogShip>();
             using (var reader = cmd.ExecuteReader())
@@ -66,8 +66,11 @@ namespace _Project.DataAccess
                     var hp = reader.GetInt32(4);
                     var maxSpeed = (float)reader.GetDouble(5);
                     var agility = (float)reader.GetDouble(6);
-                    var weaponSlots = Convert.ToByte(reader.GetInt32(7));
-                    list.Add(new CatalogShip(id, key, displayName, description, hp, maxSpeed, agility, weaponSlots));
+                    var acceleration = (float)reader.GetDouble(7);
+                    var prefabSize = (float)reader.GetDouble(8);
+                    var prefabName = reader.GetString(9);
+                    var weaponSlots = Convert.ToByte(reader.GetInt32(10));
+                    list.Add(new CatalogShip(id, key, displayName, description, hp, maxSpeed, agility, acceleration, prefabSize, prefabName, weaponSlots));
                 }
             }
 
@@ -112,6 +115,7 @@ namespace _Project.DataAccess
             using var connection = new SqliteConnection($"URI=file:{path}");
             connection.Open();
             CreateSchema(connection);
+            EnsureShipColumns(connection);
             SeedDefaults(connection);
         }
 
@@ -158,10 +162,44 @@ CREATE TABLE IF NOT EXISTS ships (
     hp INTEGER NOT NULL,
     max_speed REAL NOT NULL,
     agility REAL NOT NULL,
+    acceleration REAL NOT NULL DEFAULT 0,
+    prefab_size REAL NOT NULL DEFAULT 1,
+    prefab_name TEXT NOT NULL DEFAULT '',
     weapon_slots INTEGER NOT NULL
 );
 ";
             cmd.ExecuteNonQuery();
+        }
+
+        private static void EnsureShipColumns(IDbConnection connection)
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(ships)";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    existing.Add(reader.GetString(1));
+            }
+
+            using var alter = connection.CreateCommand();
+            if (!existing.Contains("acceleration"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN acceleration REAL NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("prefab_size"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN prefab_size REAL NOT NULL DEFAULT 1";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("prefab_name"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN prefab_name TEXT NOT NULL DEFAULT ''";
+                alter.ExecuteNonQuery();
+            }
         }
 
         private static void SeedDefaults(IDbConnection connection)
@@ -175,9 +213,9 @@ INSERT OR IGNORE INTO weapons (id, key, display_name, description, damage, rate_
     (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 12.0, 1.5, 50.0),
     (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 35.0, 0.5, 120.0);
 
-INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, weapon_slots) VALUES
-    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 2),
-    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 4);
+INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots) VALUES
+    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 0, 1.0, '', 2),
+    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 0, 1.0, '', 4);
 ";
             cmd.ExecuteNonQuery();
             tx.Commit();

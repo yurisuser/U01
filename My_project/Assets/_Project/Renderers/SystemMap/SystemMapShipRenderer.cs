@@ -40,10 +40,6 @@ namespace _Project.Scripts.SystemMap
             if (_layerRoot == null)
                 return;
 
-            var prefab = ResolveShipPrefab();
-            if (!prefab)
-                return;
-
             var state = sys.State;
             if (state == null)
             {
@@ -63,6 +59,9 @@ namespace _Project.Scripts.SystemMap
             {
                 var ship = current[i];
                 int key = ship.Uid.Id;
+                var prefab = ResolveShipPrefab(in ship);
+                if (!prefab)
+                    continue;
                 var view = GetOrCreateView(prefab, key, ship);
                 _reusableKeys.Remove(key);
 
@@ -91,7 +90,8 @@ namespace _Project.Scripts.SystemMap
             if (selectable != null)
                 selectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, ship.Uid, ESelectedObjectType.Ship);
             var transform = go.transform;
-            transform.localScale = Vector3.one * Mathf.Max(0.0001f, shipScale);
+            float prefabScale = ship.PrefabSize > 0f ? ship.PrefabSize : 1f;
+            transform.localScale = Vector3.one * Mathf.Max(0.0001f, shipScale * prefabScale);
             _shipInstances[key] = transform;
             return transform;
         }
@@ -136,8 +136,18 @@ namespace _Project.Scripts.SystemMap
             _reusableKeys.Clear();
         }
 
-        private GameObject ResolveShipPrefab()
+        private GameObject ResolveShipPrefab(in Ship ship)
         {
+            if (catalog != null && catalog.ShipPrefabsByKey != null && !string.IsNullOrWhiteSpace(ship.PrefabKey))
+            {
+                var entries = catalog.ShipPrefabsByKey;
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    if (string.Equals(entries[i].Key, ship.PrefabKey, System.StringComparison.OrdinalIgnoreCase))
+                        return entries[i].Prefab;
+                }
+            }
+
             if (_resolvedShipPrefab)
                 return _resolvedShipPrefab;
 

@@ -11,6 +11,7 @@ namespace _Project.Prefabs
         public GameObject[] PlanetPrefabsByType;  // индекс = (int)EPlanetType
         public GameObject[] MoonPrefabsByType;    // индекс = (int)EMoonType
         public GameObject[] ShipPrefabsByClass;   // индекс = (int)EShipClass (добавим enum позже)
+        public ShipPrefabEntry[] ShipPrefabsByKey; // поиск по ключу из БД
 
         // ==== Материалы, цвета, эффекты ====
         public Color OrbitPlanetColor;            // цвет линий орбит планет

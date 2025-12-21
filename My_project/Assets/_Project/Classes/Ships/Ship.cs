@@ -15,6 +15,8 @@ namespace _Project.Scripts.Ships
         public Vector3 Position;          // мировая позиция центра масс
         public Quaternion Rotation;       // мировая ориентация корабля
         public ShipStats Stats;           // базовые характеристики корабля (Hp, скорость, маневренность)
+        public float PrefabSize;          // масштаб префаба
+        public string PrefabKey;          // ключ префаба
         public float CurrentSpeed;        // текущая скорость (ед/сек)
         public bool IsActive;             // активен ли корабль в мире
         public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
@@ -31,7 +33,10 @@ namespace _Project.Scripts.Ships
             int hp,                       // здоровье
             float maxSpeed,               // максимальная скорость
             float agility,                // маневренность (сколько радиан за ход может повернуть корабль)
-            bool isActive                 // активность
+            bool isActive,                // активность
+            float acceleration,           // ускорение/торможение
+            float prefabSize,             // масштаб префаба
+            string prefabKey              // ключ префаба
         )
         {
             Uid = uid;                    // присваиваем уникальный ID
@@ -44,10 +49,13 @@ namespace _Project.Scripts.Ships
             {
                 Hp = hp,                  // здоровье
                 MaxSpeed = maxSpeed,      // максимальная скорость берём из каталога
-                Agility = agility         // маневренность берём из каталога
+                Agility = agility,        // маневренность берём из каталога
+                Acceleration = acceleration // ускорение/торможение берём из каталога
             };
             CurrentSpeed = 0f;            // начальная скорость
             IsActive = isActive;          // сохраняем активность
+            PrefabSize = prefabSize;
+            PrefabKey = prefabKey;
             Equipment = default;          // инициализируется позже (в ShipCreator)
             TaskState = ShipTaskState.Default;
         }

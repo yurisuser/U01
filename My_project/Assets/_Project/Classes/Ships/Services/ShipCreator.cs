@@ -24,7 +24,10 @@ namespace _Project.Scripts.Ships
                 catalog.Hp,
                 catalog.MaxSpeed,
                 catalog.Agility,
-                GetIsActive()
+                GetIsActive(),
+                catalog.Acceleration,
+                catalog.PrefabSize,
+                catalog.PrefabName
             );
 
             ship.Equipment.Init(catalog.WeaponSlots);
