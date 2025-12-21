@@ -7,13 +7,13 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
     /// <summary>Оркестратор перемещения кораблей: направление → скорость → шаг.</summary>
     public sealed class ShipMover : IMovementProcessor // имплементируем интерфейс движения
     {
-        public static Vector3 CurrPosition;
-        public static Vector3 CurrDirection;
-        public static float CurrSpeed;
-        public static Vector3 NextPosition;
-        public static Vector3 NextDirection;
-        public static float NextSpeed;
-        public static Vector3 StepDestinationPosition;
+        private static Vector3 CurrPosition;
+        private static Vector3 CurrDirection;
+        private static float CurrSpeed;
+        private static Vector3 NextPosition;
+        private static Vector3 NextDirection;
+        private static float NextSpeed;
+        private static Vector3 StepDestinationPosition;
 
         private static readonly CourseChanger CourseChanger = new();
         private static readonly MoveChanger MoveChanger = new();

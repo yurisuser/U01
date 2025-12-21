@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using _Project.Scripts.Core;
+using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.DebugState;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Ships;
@@ -62,6 +63,8 @@ namespace _Project.Scripts.SystemMap.Debug
                 return;
 
             var gameState = GameBootstrap.GameState;
+            if (gameState.RunMode == ERunMode.Paused)
+                return;
             var system = gameState.GetSelectedSystem();
             if (system == null || system.Value.State == null)
             {
