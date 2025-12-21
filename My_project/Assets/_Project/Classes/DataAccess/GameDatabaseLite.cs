@@ -8,13 +8,19 @@ using UnityEngine;
 
 namespace _Project.DataAccess
 {
-    /// <summary>Обёртка над SQLite для чтения каталогов оружия и кораблей.</summary>
+    /// <summary>Обёртка над SQLite для чтения каталогов предметов и кораблей.</summary>
     public static class GameDatabaseLite
     {
         private const string RelativePath = "Data/game.db";
         private const string SqliteHeader = "SQLite format 3\0";
         private static string _fullPath;
         private static IReadOnlyList<CatalogWeapon> _weapons;
+        private static IReadOnlyList<CatalogGoods> _goods;
+        private static IReadOnlyList<CatalogAmmo> _ammo;
+        private static IReadOnlyList<CatalogQuest> _quest;
+        private static IReadOnlyList<CatalogEngine> _engines;
+        private static IReadOnlyList<CatalogScanner> _scanners;
+        private static IReadOnlyList<CatalogShield> _shields;
         private static IReadOnlyList<CatalogShip> _ships;
 
         /// <summary>Возвращает список оружия из базы (с кешированием).</summary>
@@ -23,7 +29,7 @@ namespace _Project.DataAccess
             if (!forceReload && _weapons != null) return _weapons;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, damage, rate_per_second, range FROM weapons ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range FROM weapons ORDER BY id";
 
             var list = new List<CatalogWeapon>();
             using (var reader = cmd.ExecuteReader())
@@ -34,14 +40,201 @@ namespace _Project.DataAccess
                     var key = reader.GetString(1);
                     var displayName = reader.GetString(2);
                     var description = reader.GetString(3);
-                    var damage = (float)reader.GetDouble(4);
-                    var ratePerSecond = (float)reader.GetDouble(5);
-                    var range = (float)reader.GetDouble(6);
-                    list.Add(new CatalogWeapon(id, key, displayName, description, damage, ratePerSecond, range));
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    var techLevel = reader.GetInt32(8);
+                    var damage = (float)reader.GetDouble(9);
+                    var ratePerSecond = (float)reader.GetDouble(10);
+                    var range = (float)reader.GetDouble(11);
+                    list.Add(new CatalogWeapon(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, damage, ratePerSecond, range));
                 }
             }
 
             _weapons = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список товаров из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogGoods> GetGoods(bool forceReload = false)
+        {
+            if (!forceReload && _goods != null) return _goods;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack FROM goods ORDER BY id";
+
+            var list = new List<CatalogGoods>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    list.Add(new CatalogGoods(id, key, displayName, description, price, weight, stackable, maxStack));
+                }
+            }
+
+            _goods = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список боеприпасов из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogAmmo> GetAmmo(bool forceReload = false)
+        {
+            if (!forceReload && _ammo != null) return _ammo;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack FROM ammo ORDER BY id";
+
+            var list = new List<CatalogAmmo>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    list.Add(new CatalogAmmo(id, key, displayName, description, price, weight, stackable, maxStack));
+                }
+            }
+
+            _ammo = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список квестовых предметов из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogQuest> GetQuest(bool forceReload = false)
+        {
+            if (!forceReload && _quest != null) return _quest;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack FROM quest ORDER BY id";
+
+            var list = new List<CatalogQuest>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    list.Add(new CatalogQuest(id, key, displayName, description, price, weight, stackable, maxStack));
+                }
+            }
+
+            _quest = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список двигателей из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogEngine> GetEngines(bool forceReload = false)
+        {
+            if (!forceReload && _engines != null) return _engines;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, speed FROM engines ORDER BY id";
+
+            var list = new List<CatalogEngine>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    var techLevel = reader.GetInt32(8);
+                    var speed = (float)reader.GetDouble(9);
+                    list.Add(new CatalogEngine(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, speed));
+                }
+            }
+
+            _engines = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список сканеров из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogScanner> GetScanners(bool forceReload = false)
+        {
+            if (!forceReload && _scanners != null) return _scanners;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius FROM scanners ORDER BY id";
+
+            var list = new List<CatalogScanner>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    var techLevel = reader.GetInt32(8);
+                    var radius = (float)reader.GetDouble(9);
+                    list.Add(new CatalogScanner(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, radius));
+                }
+            }
+
+            _scanners = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список щитов из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogShield> GetShields(bool forceReload = false)
+        {
+            if (!forceReload && _shields != null) return _shields;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius, volume, regen FROM shields ORDER BY id";
+
+            var list = new List<CatalogShield>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var key = reader.GetString(1);
+                    var displayName = reader.GetString(2);
+                    var description = reader.GetString(3);
+                    var price = reader.GetInt32(4);
+                    var weight = (float)reader.GetDouble(5);
+                    var stackable = reader.GetInt32(6) != 0;
+                    var maxStack = reader.GetInt32(7);
+                    var techLevel = reader.GetInt32(8);
+                    var radius = (float)reader.GetDouble(9);
+                    var volume = (float)reader.GetDouble(10);
+                    var regen = (float)reader.GetDouble(11);
+                    list.Add(new CatalogShield(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, radius, volume, regen));
+                }
+            }
+
+            _shields = list;
             return list;
         }
 
@@ -318,8 +511,9 @@ CREATE TABLE weapons_new (
     description TEXT NOT NULL,
     price INTEGER NOT NULL DEFAULT 0,
     weight REAL NOT NULL DEFAULT 1,
-    stackable INTEGER NOT NULL DEFAULT 0,
+    stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
+    tech_level INTEGER NOT NULL DEFAULT 1,
     damage REAL NOT NULL,
     rate_per_second REAL NOT NULL,
     range REAL NOT NULL
@@ -332,8 +526,8 @@ CREATE TABLE weapons_new (
                 if (existing.Contains("item_id") && hasItems)
                 {
                     cmd.CommandText = @"
-INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, damage, rate_per_second, range)
-SELECT w.item_id, i.key, i.display_name, i.description, i.price, i.weight, i.stackable, i.max_stack, w.damage, w.rate_per_second, w.range
+INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
+SELECT w.item_id, i.key, i.display_name, i.description, i.price, i.weight, i.stackable, i.max_stack, 1, w.damage, w.rate_per_second, w.range
 FROM weapons w
 JOIN items i ON i.id = w.item_id;";
                 }
@@ -349,8 +543,8 @@ JOIN items i ON i.id = w.item_id;";
                     var maxStackExpr = existing.Contains("max_stack") ? "max_stack" : "1";
 
                     cmd.CommandText = $@"
-INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, damage, rate_per_second, range)
-SELECT {idExpr}, {keyExpr}, {nameExpr}, {descExpr}, {priceExpr}, {weightExpr}, {stackExpr}, {maxStackExpr}, damage, rate_per_second, range
+INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
+SELECT {idExpr}, {keyExpr}, {nameExpr}, {descExpr}, {priceExpr}, {weightExpr}, {stackExpr}, {maxStackExpr}, 1, damage, rate_per_second, range
 FROM weapons;";
                 }
                 cmd.ExecuteNonQuery();
