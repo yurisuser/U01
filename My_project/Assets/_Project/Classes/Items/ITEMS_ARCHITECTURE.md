@@ -45,10 +45,19 @@
 - `ItemStack.Type` выбирает таблицу.
 - `ItemStack.Id` — ключ внутри этой таблицы.
 - Общих предметов в БД нет.
+ - `stackable` хранится как 0/1 (BOOLEAN в SQLite).
 
 ## Чтение из БД
 - Профильные ридеры: `Weapon/Goods/Ammo/Quest/Engine/Scanner/Shield` (каждый читает свою таблицу).
 - Оркестратор: `ItemCatalogService` даёт базовую информацию по `ItemStack` (без спец. полей).
+
+## Как добавить новый тип
+1) Добавить таблицу в БД (через `GameDatabaseLite.CreateSchema`).
+2) Завести модель каталога в `CatalogTypes.cs`.
+3) Добавить метод чтения в `GameDatabaseLite`.
+4) Создать профильный ридер.
+5) Добавить кейс в `ItemCatalogService`.
+6) Обновить `ItemType`.
 
 ## Что точно НЕ делаем сейчас
 - Логику трюма/переноса.
