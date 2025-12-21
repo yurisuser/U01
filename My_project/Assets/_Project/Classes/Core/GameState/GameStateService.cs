@@ -2,6 +2,7 @@ using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
+using _Project.Scripts.Core.GameState.GameStateMembers.SelectedSystem;
 
 namespace _Project.Scripts.Core.GameState
 {
@@ -9,8 +10,8 @@ namespace _Project.Scripts.Core.GameState
     public sealed class GameStateService
     {
         private StarSys[] _galaxy = Array.Empty<StarSys>();
-        private int _selectedSystemIndex = -1;
         private ERunMode _runMode = ERunMode.Paused;
+        private readonly SelectedSystemService _selectedSystemService = new SelectedSystemService();
         private readonly SelectedObjectService _selectedObjectService = new SelectedObjectService();
 
         public event Action StateChanged; // Уведомление для UI/логики о смене состояния.
@@ -21,19 +22,13 @@ namespace _Project.Scripts.Core.GameState
 
         public ERunMode RunMode => _runMode;
         public StarSys[] Galaxy => _galaxy;
-        public int SelectedSystemIndex => _selectedSystemIndex;
+        public int SelectedSystemIndex => _selectedSystemService.SelectedSystemIndex;
         /// <summary>Сервис выделенного объекта.</summary>
         public SelectedObjectService SelectedObjectService => _selectedObjectService;
 
         public StarSys? GetSelectedSystem()
         {
-            if (_galaxy == null || _galaxy.Length == 0)
-                return null;
-
-            if (_selectedSystemIndex < 0 || _selectedSystemIndex >= _galaxy.Length)
-                return null;
-
-            return _galaxy[_selectedSystemIndex];
+            return _selectedSystemService.GetSelectedSystem(_galaxy);
         }
 
         public void SetRunMode(ERunMode mode)
@@ -48,60 +43,32 @@ namespace _Project.Scripts.Core.GameState
         public void SetGalaxy(StarSys[] galaxy)
         {
             _galaxy = galaxy ?? Array.Empty<StarSys>();
-
-            if (_galaxy.Length == 0)
-                _selectedSystemIndex = -1;
-            else if (_selectedSystemIndex < 0 || _selectedSystemIndex >= _galaxy.Length)
-                _selectedSystemIndex = 0;
-
+            _selectedSystemService.OnGalaxySet(_galaxy);
             NotifyChanged();
         }
 
         public bool SelectSystemByIndex(int index)
         {
-            if (_galaxy == null || _galaxy.Length == 0)
-            {
-                _selectedSystemIndex = -1;
+            var success = _selectedSystemService.SelectSystemByIndex(index, _galaxy, out var changed);
+            if (changed)
                 NotifyChanged();
-                return false;
-            }
 
-            if (index < 0)
-                index = 0;
-            else if (index >= _galaxy.Length)
-                index = _galaxy.Length - 1;
-
-            if (_selectedSystemIndex == index)
-                return true;
-
-            _selectedSystemIndex = index;
-            NotifyChanged();
-            return true;
+            return success;
         }
 
         public bool SelectSystemByUid(UID uid)
         {
-            var galaxy = _galaxy;
-            if (galaxy == null || galaxy.Length == 0)
-                return false;
+            var success = _selectedSystemService.SelectSystemByUid(uid, _galaxy, out var changed);
+            if (changed)
+                NotifyChanged();
 
-            for (int i = 0; i < galaxy.Length; i++)
-            {
-                var sys = galaxy[i];
-                if (sys.Uid.Type == uid.Type && sys.Uid.Id == uid.Id)
-                    return SelectSystemByIndex(i);
-            }
-
-            return false;
+            return success;
         }
 
         public void ClearSelectedSystem()
         {
-            if (_selectedSystemIndex == -1)
-                return;
-
-            _selectedSystemIndex = -1;
-            NotifyChanged();
+            if (_selectedSystemService.ClearSelectedSystem())
+                NotifyChanged();
         }
 
         private void NotifyChanged()
