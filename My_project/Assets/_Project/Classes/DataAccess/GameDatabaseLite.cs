@@ -350,6 +350,8 @@ CREATE TABLE IF NOT EXISTS weapons (
     stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
+    power_use REAL NOT NULL DEFAULT 0,
+    cpu_use REAL NOT NULL DEFAULT 0,
     damage REAL NOT NULL,
     rate_per_second REAL NOT NULL,
     range REAL NOT NULL
@@ -394,6 +396,8 @@ CREATE TABLE IF NOT EXISTS engines (
     stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
+    power_use REAL NOT NULL DEFAULT 0,
+    cpu_use REAL NOT NULL DEFAULT 0,
     speed REAL NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS scanners (
@@ -406,6 +410,8 @@ CREATE TABLE IF NOT EXISTS scanners (
     stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
+    power_use REAL NOT NULL DEFAULT 0,
+    cpu_use REAL NOT NULL DEFAULT 0,
     radius REAL NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS shields (
@@ -418,6 +424,8 @@ CREATE TABLE IF NOT EXISTS shields (
     stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1,
     tech_level INTEGER NOT NULL DEFAULT 1,
+    power_use REAL NOT NULL DEFAULT 0,
+    cpu_use REAL NOT NULL DEFAULT 0,
     radius REAL NOT NULL DEFAULT 0,
     volume REAL NOT NULL DEFAULT 0,
     regen REAL NOT NULL DEFAULT 0
@@ -430,10 +438,14 @@ CREATE TABLE IF NOT EXISTS ships (
     hp INTEGER NOT NULL,
     max_speed REAL NOT NULL,
     agility REAL NOT NULL,
+    power REAL NOT NULL DEFAULT 0,
+    cpu REAL NOT NULL DEFAULT 0,
     acceleration REAL NOT NULL DEFAULT 0,
     prefab_size REAL NOT NULL DEFAULT 1,
     prefab_name TEXT NOT NULL DEFAULT '',
-    weapon_slots INTEGER NOT NULL
+    weapon_slots INTEGER NOT NULL,
+    shield_slots INTEGER NOT NULL DEFAULT 0,
+    engine_slots INTEGER NOT NULL DEFAULT 0
 );
 ";
             cmd.ExecuteNonQuery();
@@ -457,6 +469,18 @@ CREATE TABLE IF NOT EXISTS ships (
                 alter.ExecuteNonQuery();
             }
 
+            if (!existing.Contains("power"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN power REAL NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("cpu"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN cpu REAL NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
             if (!existing.Contains("prefab_size"))
             {
                 alter.CommandText = "ALTER TABLE ships ADD COLUMN prefab_size REAL NOT NULL DEFAULT 1";
@@ -466,6 +490,18 @@ CREATE TABLE IF NOT EXISTS ships (
             if (!existing.Contains("prefab_name"))
             {
                 alter.CommandText = "ALTER TABLE ships ADD COLUMN prefab_name TEXT NOT NULL DEFAULT ''";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("shield_slots"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN shield_slots INTEGER NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("engine_slots"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN engine_slots INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
         }
@@ -589,6 +625,18 @@ FROM weapons;";
                 alter.CommandText = "ALTER TABLE weapons ADD COLUMN tech_level INTEGER NOT NULL DEFAULT 1";
                 alter.ExecuteNonQuery();
             }
+
+            if (!existing.Contains("power_use"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN power_use REAL NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
+
+            if (!existing.Contains("cpu_use"))
+            {
+                alter.CommandText = "ALTER TABLE weapons ADD COLUMN cpu_use REAL NOT NULL DEFAULT 0";
+                alter.ExecuteNonQuery();
+            }
         }
 
         private static void EnsureEquipmentColumns(IDbConnection connection)
@@ -596,16 +644,22 @@ FROM weapons;";
             EnsureColumns(connection, "engines", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("power_use", "REAL NOT NULL DEFAULT 0"),
+                ("cpu_use", "REAL NOT NULL DEFAULT 0"),
                 ("speed", "REAL NOT NULL DEFAULT 0")
             });
             EnsureColumns(connection, "scanners", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("power_use", "REAL NOT NULL DEFAULT 0"),
+                ("cpu_use", "REAL NOT NULL DEFAULT 0"),
                 ("radius", "REAL NOT NULL DEFAULT 0")
             });
             EnsureColumns(connection, "shields", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
+                ("power_use", "REAL NOT NULL DEFAULT 0"),
+                ("cpu_use", "REAL NOT NULL DEFAULT 0"),
                 ("radius", "REAL NOT NULL DEFAULT 0"),
                 ("volume", "REAL NOT NULL DEFAULT 0"),
                 ("regen", "REAL NOT NULL DEFAULT 0")
@@ -640,9 +694,9 @@ FROM weapons;";
             cmd.Transaction = tx;
 
             cmd.CommandText = @"
-INSERT OR IGNORE INTO weapons (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range) VALUES
-    (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 100, 1, 0, 1, 1, 12.0, 1.5, 50.0),
-    (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 300, 1, 0, 1, 2, 35.0, 0.5, 120.0);
+INSERT OR IGNORE INTO weapons (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range) VALUES
+    (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 100, 1, 0, 1, 1, 5, 2, 12.0, 1.5, 50.0),
+    (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 300, 1, 0, 1, 2, 8, 3, 35.0, 0.5, 120.0);
 
 INSERT OR IGNORE INTO goods (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_goods', 'Тестовый товар', 'Тестовый груз для проверки.', 10, 1, 1, 50);
@@ -653,18 +707,18 @@ INSERT OR IGNORE INTO ammo (id, key, display_name, description, price, weight, s
 INSERT OR IGNORE INTO quest (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_quest', 'Тестовый квестовый предмет', 'Квестовый предмет для проверки.', 0, 0.5, 1, 10);
 
-INSERT OR IGNORE INTO engines (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, speed) VALUES
-    (1, 'test_engine', 'Тестовый двигатель', 'Двигатель для проверки.', 200, 5, 0, 1, 1, 10.0);
+INSERT OR IGNORE INTO engines (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed) VALUES
+    (1, 'test_engine', 'Тестовый двигатель', 'Двигатель для проверки.', 200, 5, 0, 1, 1, 10, 4, 10.0);
 
-INSERT OR IGNORE INTO scanners (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius) VALUES
-    (1, 'test_scanner', 'Тестовый сканер', 'Сканер для проверки.', 150, 2, 0, 1, 1, 100.0);
+INSERT OR IGNORE INTO scanners (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius) VALUES
+    (1, 'test_scanner', 'Тестовый сканер', 'Сканер для проверки.', 150, 2, 0, 1, 1, 3, 6, 100.0);
 
-INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius, volume, regen) VALUES
-    (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 25.0, 300.0, 5.0);
+INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen) VALUES
+    (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 7, 5, 25.0, 300.0, 5.0);
 
-INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots) VALUES
-    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 0, 1.0, '', 2),
-    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 0, 1.0, '', 4);
+INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, power, cpu, acceleration, prefab_size, prefab_name, weapon_slots, shield_slots, engine_slots) VALUES
+    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 50, 40, 0, 1.0, '', 2, 1, 1),
+    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 120, 90, 0, 1.0, '', 4, 2, 1);
 ";
             cmd.ExecuteNonQuery();
             tx.Commit();
