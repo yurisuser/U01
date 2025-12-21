@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using _Project.Prefabs;
 using _Project.Scripts.Const;
+using _Project.Scripts.Core;
+using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Selection;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -110,6 +113,9 @@ namespace _Project.Scripts.SystemMap
                 ? $"Star_{system.Star.type}"
                 : starName;
             starGo.transform.localPosition = Vector3.zero;
+            var starSelectable = starGo.GetComponent<SelectableData>();
+            if (starSelectable != null)
+                starSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, system.Star.Uid, ESelectedObjectType.Star);
 
             var scale = Mathf.Max(0.0001f, baseStarScale * _starScaleOverride);
             starGo.transform.localScale = starGo.transform.localScale * scale;
@@ -160,6 +166,9 @@ namespace _Project.Scripts.SystemMap
                         ? $"Planet_{i}_{planetSys.Planet.Type}_Orbit{planetSys.OrbitIndex}"
                         : planetName;
                     planetGo.transform.localPosition = planetPos;
+                    var planetSelectable = planetGo.GetComponent<SelectableData>();
+                    if (planetSelectable != null)
+                        planetSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, planetSys.Planet.Uid, ESelectedObjectType.Planet);
                     var planetScale = Mathf.Max(0.0001f, basePlanetScale * _planetScaleOverride);
                     planetGo.transform.localScale = planetGo.transform.localScale * planetScale;
                 }
@@ -217,6 +226,9 @@ namespace _Project.Scripts.SystemMap
                     ? $"Moon_{planetIndex}_{k}_{moon.Type}_O{orbitIndex}"
                     : moonName;
                 moonGo.transform.localPosition = localPos;
+                var moonSelectable = moonGo.GetComponent<SelectableData>();
+                if (moonSelectable != null)
+                    moonSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, moon.Uid, ESelectedObjectType.Moon);
                 var moonScale = Mathf.Max(0.0001f, baseMoonScale * _moonScaleOverride);
                 moonGo.transform.localScale = moonGo.transform.localScale * moonScale;
             }
