@@ -67,6 +67,7 @@ namespace _Project.Scripts.Ships
             }
 
             int systemIndex = _data.SystemIndex >= 0 ? _data.SystemIndex : GameBootstrap.GameState.SelectedSystemIndex;
+            Debug.Log($"Данные выбора: SystemIndex={systemIndex}, UID={_data.Uid.Type}/{_data.Uid.Id}, Type={_data.SelectedType}", this);
             GameBootstrap.GameState.SelectedService.SetSelected(systemIndex, _data.Uid, _data.SelectedType);
         }
     }

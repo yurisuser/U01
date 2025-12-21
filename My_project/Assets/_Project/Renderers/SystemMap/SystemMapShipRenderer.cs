@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using _Project.Prefabs;
+using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
@@ -80,7 +81,7 @@ namespace _Project.Scripts.SystemMap
             {
                 var existingSelectable = view.GetComponent<SelectableData>();
                 if (existingSelectable != null && !existingSelectable.HasData)
-                    existingSelectable.SetData(-1, ship.Uid, ESelectedObjectType.Ship);
+                    existingSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, ship.Uid, ESelectedObjectType.Ship);
                 return view;
             }
 
@@ -88,7 +89,7 @@ namespace _Project.Scripts.SystemMap
             go.name = $"Ship_{ship.Uid.Id}";
             var selectable = go.GetComponent<SelectableData>();
             if (selectable != null)
-                selectable.SetData(-1, ship.Uid, ESelectedObjectType.Ship);
+                selectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, ship.Uid, ESelectedObjectType.Ship);
             var transform = go.transform;
             transform.localScale = Vector3.one * Mathf.Max(0.0001f, shipScale);
             _shipInstances[key] = transform;
