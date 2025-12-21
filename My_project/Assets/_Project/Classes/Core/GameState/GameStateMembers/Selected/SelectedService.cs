@@ -1,6 +1,7 @@
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedSystem;
+using UnityEngine;
 
 namespace _Project.Scripts.Core.GameState.GameStateMembers
 {
@@ -19,6 +20,7 @@ namespace _Project.Scripts.Core.GameState.GameStateMembers
         {
             var selection = new SelectedObject(systemIndex, uid, type);
             _selectedObjectService.SetSelectedObject(selection);
+            UnityEngine.Debug.Log($"Выбрано: SystemIndex={systemIndex}, UID={uid.Type}/{uid.Id}, Type={type}");
         }
 
         public void ClearSelected()
