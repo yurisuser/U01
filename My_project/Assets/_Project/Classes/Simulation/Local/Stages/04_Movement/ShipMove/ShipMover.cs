@@ -114,7 +114,6 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
 
         private static void CompleteTask(ref Ship ship, ref ShipTask task, in MoveToPointParams move) // финализация MoveToPoint
         {
-            ship.Position = move.Destination; // фиксируемся точно в целевой точке
             if (!move.KeepSpeed) // если требуется остановка
                 ship.CurrentSpeed = 0f; // обнуляем скорость
             ship.TaskState.Pop(); // удаляем задачу из стека

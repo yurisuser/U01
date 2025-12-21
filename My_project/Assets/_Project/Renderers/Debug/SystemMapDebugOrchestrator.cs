@@ -16,7 +16,7 @@ namespace _Project.Scripts.SystemMap.Debug
         public bool showPoints = true;
 
         [Header("Параметры путей")]
-        [SerializeField] private int maxPathPoints = 300;
+        [SerializeField] private int maxPathPoints = 1500;
 
         [Header("Подчинённые рендереры")]
         [SerializeField] private DebugPathsRenderer pathsRenderer;

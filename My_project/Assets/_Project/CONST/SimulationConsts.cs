@@ -11,7 +11,7 @@ namespace _Project.Scripts.Const
         public const float SpawnRadius = 200f;
 
         // --- Ship tasks ---
-        public const float DestinationPointTolerance = 0.01f; //допустимость неточности достижения координат
+        public const float DestinationPointTolerance = 3f; //допустимость неточности достижения координат
         public const float AccelerationOfAgility = 8; // умножить на агилити для получения разгона/торможения
         public const float AgilityTurnConeFactor = 10f; // множитель ширины конуса разворота
 
