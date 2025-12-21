@@ -143,14 +143,14 @@ namespace _Project.Scripts.SystemMap
 
             if (catalog == null || catalog.ShipPrefabsByClass == null || catalog.ShipPrefabsByClass.Length == 0)
             {
-                Debug.LogWarning("[SystemMap][Ships] Не задан PrefabCatalog или массив ShipPrefabsByClass пуст.", this);
+                UnityEngine.Debug.LogWarning("[SystemMap][Ships] Не задан PrefabCatalog или массив ShipPrefabsByClass пуст.", this);
                 return null;
             }
 
             var prefab = catalog.ShipPrefabsByClass[0];
             if (!prefab)
             {
-                Debug.LogWarning("[SystemMap][Ships] Ship prefab по индексу 0 не задан в каталоге.", this);
+                UnityEngine.Debug.LogWarning("[SystemMap][Ships] Ship prefab по индексу 0 не задан в каталоге.", this);
                 return null;
             }
 

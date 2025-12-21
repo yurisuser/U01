@@ -5,6 +5,7 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Scene;
+using _Project.Scripts.SystemMap.Debug;
 
 namespace _Project.Scripts.SystemMap
 {
@@ -17,6 +18,7 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private Transform layersRoot;
         [SerializeField] private SystemMapGeoRenderer geoLayer;
         [SerializeField] private SystemMapShipRenderer shipLayer;
+        [SerializeField] private SystemMapDebugOrchestrator debugOrchestrator;
 
         [Header("Масштаб элементов системы")]
         [SerializeField] private float starScale = 1f;
@@ -46,6 +48,7 @@ namespace _Project.Scripts.SystemMap
                 geoLayer = GetComponent<SystemMapGeoRenderer>() ?? GetComponentInChildren<SystemMapGeoRenderer>(true);
             if (!shipLayer)
                 shipLayer = GetComponent<SystemMapShipRenderer>() ?? GetComponentInChildren<SystemMapShipRenderer>(true) ?? gameObject.AddComponent<SystemMapShipRenderer>();
+            EnsureDebugOrchestrator();
         }
 
         private void OnEnable()
@@ -91,7 +94,7 @@ namespace _Project.Scripts.SystemMap
             if (system == null)
             {
                 ClearLayers();
-                Debug.LogWarning("[SystemMap] Нет выбранной системы для отображения.");
+                UnityEngine.Debug.LogWarning("[SystemMap] Нет выбранной системы для отображения.");
                 return;
             }
 
@@ -154,6 +157,30 @@ namespace _Project.Scripts.SystemMap
             geoLayer?.Dispose();
             _currentSystemUid = default;
             shipLayer?.Dispose();
+        }
+
+        private void EnsureDebugOrchestrator()
+        {
+            if (debugOrchestrator)
+            {
+                debugOrchestrator.SetRoot(layersRoot);
+                return;
+            }
+
+            debugOrchestrator = GetComponentInChildren<SystemMapDebugOrchestrator>(true);
+            if (debugOrchestrator)
+            {
+                debugOrchestrator.SetRoot(layersRoot);
+                return;
+            }
+
+            if (!layersRoot)
+                return;
+
+            var debugRoot = new GameObject("DebugLayer");
+            debugRoot.transform.SetParent(layersRoot, false);
+            debugOrchestrator = debugRoot.AddComponent<SystemMapDebugOrchestrator>();
+            debugOrchestrator.SetRoot(layersRoot);
         }
 
         private static StarSys? ResolveActiveSystem(GameStateService state)
