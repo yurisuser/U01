@@ -1,20 +1,21 @@
-using System;
 using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
+using Delaunator;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
 {
     public static class ConstellationCreator
     {
-        // Временные константы для отладки. После отладки перенесём в CONST.
-        private const int AngularSegments = 6;
-        private const int RadialSegments = 8;
-        private const int MinGroupSize = 7;
-        private const int MaxGroupSize = 20;
-        private const int MinLinksPerStar = 1;
-        private const int MaxLinksPerStar = 4;
-        private const float LinkDistanceLimit = 150f;
+        // Константы как в олде (Settings.Galaxy)
+        private const int ConstellationAmount = 90;
+        private const float GalaxyRadius = 500f;
+
+        private static List<List<int>> _hypersList;
+        private static Sector[] _sectorsArr;
+        private static StarDistance[][] _distancesSorted;
+        private static float[] _distanceFromCenter;
+        private static StarSys[] _galaxy;
 
         // Оркестратор: запускает стадии генерации и связывает их между собой.
         public static void Generate(StarSys[] galaxy)
@@ -22,478 +23,348 @@ namespace _Project.Scripts.Galaxy.Generation
             if (galaxy == null || galaxy.Length == 0)
                 return;
 
+            _galaxy = galaxy;
             for (int i = 0; i < galaxy.Length; i++)
             {
                 ref var sys = ref galaxy[i];
                 sys.links = System.Array.Empty<int>();
-                sys.ConstellationId = -1;
+                sys.ConstellationId = 0;
             }
 
-            var activeStars = CollectActiveStars(galaxy, LinkDistanceLimit);
-            var fragments = SegmentStars(activeStars, galaxy, AngularSegments, RadialSegments);
-            PickFragmentCenters(fragments);
-
-            var groups = BuildGroups(fragments, galaxy, MinGroupSize, MaxGroupSize, LinkDistanceLimit);
-            var links = BuildIntraGroupLinks(groups, galaxy, MinLinksPerStar, MaxLinksPerStar, LinkDistanceLimit);
-
-            var interGroupLinks = BuildInterGroupLinks(groups, galaxy);
-            if (interGroupLinks.Count > 0)
-                links.AddRange(interGroupLinks);
-
-            ApplyLinks(galaxy, links);
-
-            for (int i = 0; i < groups.Count; i++)
-            {
-                var group = groups[i];
-                for (int j = 0; j < group.StarIndices.Count; j++)
-                {
-                    int starIndex = group.StarIndices[j];
-                    ref var sys = ref galaxy[starIndex];
-                    sys.ConstellationId = i;
-                }
-            }
-
-            Validate(groups, links, MinGroupSize, MaxGroupSize, MinLinksPerStar, MaxLinksPerStar);
+            BuildDistancesSorted();   // Предподготовка расстояний для быстрых выборок
+            CreateHypers();           // Делоне-граф по позициям звёзд
+            //UnlinkPeriphery();        // Убираем связи у периферии
+            //LinkPeriphery();          // Возвращаем по одной связи на периферию
+            InitSectors();            // Сиды созвездий (по индексу)
+            Expansion();              // Расширение созвездий по графу
+            //RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
+            //AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
+            ApplyLinks();               // Запись линков в StarSys
         }
 
-        // Первый проход: исключаем звезды без соседки ближе лимита (дистанция по текущим координатам).
-        private static List<int> CollectActiveStars(StarSys[] galaxy, float linkDistanceLimit)
+        private static void BuildDistancesSorted()
         {
-            var result = new List<int>(galaxy.Length);
-            if (galaxy.Length <= 1)
-                return result;
+            // Для каждой звезды строим список всех расстояний до остальных, сортируем по близости.
+            // Используется для быстрых выборок ближайших систем и радиуса от центра.
+            int count = _galaxy.Length;
+            _distancesSorted = new StarDistance[count][];
+            _distanceFromCenter = new float[count];
 
-            float limitSq = linkDistanceLimit * linkDistanceLimit;
-
-            for (int i = 1; i < galaxy.Length; i++)
+            for (int i = 0; i < count; i++)
             {
-                var pos = galaxy[i].GalaxyPosition;
-                bool hasNeighbor = false;
-
-                for (int j = 1; j < galaxy.Length; j++)
+                var list = new StarDistance[count];
+                for (int j = 0; j < count; j++)
                 {
-                    if (i == j) continue;
-                    var other = galaxy[j].GalaxyPosition;
-                    float dx = pos.x - other.x;
-                    float dy = pos.y - other.y;
-                    if (dx * dx + dy * dy <= limitSq)
+                    float dist = Distance(i, j);
+                    list[j] = new StarDistance
                     {
-                        hasNeighbor = true;
-                        break;
-                    }
-                }
-
-                if (hasNeighbor)
-                    result.Add(i);
-            }
-
-            return result;
-        }
-
-        // Делим активные звезды на угловые сегменты и радиальные кольца.
-        private static List<ConstellationFragment> SegmentStars(IReadOnlyList<int> starIndices, StarSys[] galaxy, int angularSegments, int radialSegments)
-        {
-            var fragments = new List<ConstellationFragment>(angularSegments * radialSegments);
-            for (int seg = 0; seg < angularSegments; seg++)
-            {
-                for (int ring = 0; ring < radialSegments; ring++)
-                {
-                    fragments.Add(new ConstellationFragment
-                    {
-                        SegmentIndex = seg,
-                        RingIndex = ring
-                    });
-                }
-            }
-
-            if (starIndices.Count == 0)
-                return fragments;
-
-            float maxR2 = 0f;
-            for (int i = 0; i < starIndices.Count; i++)
-            {
-                int index = starIndices[i];
-                var pos = galaxy[index].GalaxyPosition;
-                float r2 = pos.x * pos.x + pos.y * pos.y;
-                if (r2 > maxR2) maxR2 = r2;
-            }
-
-            if (maxR2 <= 0f)
-                maxR2 = 1f;
-
-            float fullAngle = Mathf.PI * 2f;
-            for (int i = 0; i < starIndices.Count; i++)
-            {
-                int starIndex = starIndices[i];
-                var pos = galaxy[starIndex].GalaxyPosition;
-                float r2 = pos.x * pos.x + pos.y * pos.y;
-
-                int ringIndex = (int)((r2 / maxR2) * radialSegments);
-                if (ringIndex >= radialSegments)
-                    ringIndex = radialSegments - 1;
-
-                float angle = Mathf.Atan2(pos.y, pos.x);
-                if (angle < 0f) angle += fullAngle;
-
-                int segmentIndex = (int)((angle / fullAngle) * angularSegments);
-                if (segmentIndex >= angularSegments)
-                    segmentIndex = angularSegments - 1;
-
-                int fragmentIndex = segmentIndex * radialSegments + ringIndex;
-                fragments[fragmentIndex].StarIndices.Add(starIndex);
-            }
-
-            return fragments;
-        }
-
-        // Для каждого фрагмента выбираем случайную звезду как центр.
-        private static void PickFragmentCenters(List<ConstellationFragment> fragments)
-        {
-            for (int i = 0; i < fragments.Count; i++)
-            {
-                var fragment = fragments[i];
-                if (fragment.StarIndices.Count == 0)
-                    continue;
-
-                int pick = UnityEngine.Random.Range(0, fragment.StarIndices.Count);
-                fragment.CenterStarIndex = fragment.StarIndices[pick];
-            }
-        }
-
-        // Собираем группы вокруг центров с ограничением дистанции и размером 7–20.
-        private static List<ConstellationGroup> BuildGroups(List<ConstellationFragment> fragments, StarSys[] galaxy, int minGroupSize, int maxGroupSize, float linkDistanceLimit)
-        {
-            var groups = new List<ConstellationGroup>(fragments.Count);
-            float limitSq = linkDistanceLimit * linkDistanceLimit;
-
-            for (int i = 0; i < fragments.Count; i++)
-            {
-                var fragment = fragments[i];
-                if (fragment.StarIndices.Count == 0)
-                    continue;
-
-                var remaining = new List<int>(fragment.StarIndices);
-                bool useFragmentCenter = true;
-                ConstellationGroup lastGroup = null;
-
-                while (remaining.Count > 0)
-                {
-                    int centerIndex = fragment.CenterStarIndex;
-                    if (!useFragmentCenter || centerIndex <= 0 || !remaining.Contains(centerIndex))
-                        centerIndex = remaining[UnityEngine.Random.Range(0, remaining.Count)];
-                    useFragmentCenter = false;
-
-                    var candidates = new List<StarDistance>(remaining.Count);
-                    for (int j = 0; j < remaining.Count; j++)
-                    {
-                        int starIndex = remaining[j];
-                        float distSq = DistanceSq(galaxy, centerIndex, starIndex);
-                        if (distSq <= limitSq)
-                        {
-                            candidates.Add(new StarDistance
-                            {
-                                Index = starIndex,
-                                DistSq = distSq
-                            });
-                        }
-                    }
-
-                    if (candidates.Count < minGroupSize)
-                    {
-                        candidates.Clear();
-                        for (int j = 0; j < remaining.Count; j++)
-                        {
-                            int starIndex = remaining[j];
-                            float distSq = DistanceSq(galaxy, centerIndex, starIndex);
-                            candidates.Add(new StarDistance
-                            {
-                                Index = starIndex,
-                                DistSq = distSq
-                            });
-                        }
-                    }
-
-                    if (candidates.Count == 0)
-                        break;
-
-                    candidates.Sort(StarDistanceComparer);
-                    int countToTake = Mathf.Min(maxGroupSize, candidates.Count);
-
-                    if (countToTake < minGroupSize && lastGroup != null)
-                    {
-                        int space = maxGroupSize - lastGroup.StarIndices.Count;
-                        if (space > 0)
-                        {
-                            int take = Mathf.Min(space, countToTake);
-                            var selected = new HashSet<int>();
-                            for (int j = 0; j < take; j++)
-                            {
-                                int starIndex = candidates[j].Index;
-                                selected.Add(starIndex);
-                                lastGroup.StarIndices.Add(starIndex);
-                            }
-
-                            var nextRemaining = new List<int>(remaining.Count - selected.Count);
-                            for (int j = 0; j < remaining.Count; j++)
-                            {
-                                int starIndex = remaining[j];
-                                if (!selected.Contains(starIndex))
-                                    nextRemaining.Add(starIndex);
-                            }
-
-                            remaining = nextRemaining;
-                            continue;
-                        }
-                    }
-
-                    var group = new ConstellationGroup
-                    {
-                        CenterStarIndex = centerIndex,
-                        SegmentIndex = fragment.SegmentIndex,
-                        RingIndex = fragment.RingIndex
+                        index = j,
+                        distance = dist
                     };
-
-                    var picked = new HashSet<int>();
-                    for (int j = 0; j < countToTake; j++)
-                    {
-                        int starIndex = candidates[j].Index;
-                        group.StarIndices.Add(starIndex);
-                        picked.Add(starIndex);
-                    }
-
-                    groups.Add(group);
-                    lastGroup = group;
-
-                    var newRemaining = new List<int>(remaining.Count - picked.Count);
-                    for (int j = 0; j < remaining.Count; j++)
-                    {
-                        int starIndex = remaining[j];
-                        if (!picked.Contains(starIndex))
-                            newRemaining.Add(starIndex);
-                    }
-
-                    remaining = newRemaining;
                 }
+
+                System.Array.Sort(list, (a, b) => a.distance >= b.distance ? 1 : -1);
+                _distancesSorted[i] = list;
             }
 
-            return groups;
+            for (int i = 0; i < count; i++)
+                _distanceFromCenter[i] = _distancesSorted[0][i].distance; // Дистанция от центра (индекс 0)
         }
 
-        // Внутри группы: 1–4 линка на звезду, с ограничением по длине.
-        private static List<ConstellationLinkEdge> BuildIntraGroupLinks(List<ConstellationGroup> groups, StarSys[] galaxy, int minLinksPerStar, int maxLinksPerStar, float linkDistanceLimit)
+        private static float Distance(int a, int b)
         {
-            var links = new List<ConstellationLinkEdge>();
-            var edgeSet = new HashSet<long>();
-            float limitSq = linkDistanceLimit * linkDistanceLimit;
+            var aPos = _galaxy[a].GalaxyPosition;
+            var bPos = _galaxy[b].GalaxyPosition;
+            return Vector3.Distance(aPos, bPos);
+        }
 
-            for (int g = 0; g < groups.Count; g++)
+        private static void CreateHypers()
+        {
+            // Строим делоне-триангуляцию по XY координатам и превращаем треугольники в граф связей.
+            var coords = new List<double>(_galaxy.Length * 2);
+            for (int i = 0; i < _galaxy.Length; i++)
             {
-                var group = groups[g];
-                int count = group.StarIndices.Count;
-                if (count < 2)
+                var pos = _galaxy[i].GalaxyPosition;
+                coords.Add(pos.x);
+                coords.Add(pos.y);
+            }
+
+            var tr = new Triangulation(coords);
+
+            _hypersList = new List<List<int>>(_galaxy.Length);
+            for (int i = 0; i < _galaxy.Length; i++)
+                _hypersList.Add(new List<int>());
+
+            for (int i = 0; i < tr.triangles.Count - 2; i += 3)
+            {
+                AddConnection(tr.triangles[i], tr.triangles[i + 1]);
+                AddConnection(tr.triangles[i + 1], tr.triangles[i + 2]);
+                AddConnection(tr.triangles[i + 2], tr.triangles[i]);
+            }
+        }
+
+        private static void UnlinkPeriphery()
+        {
+            // Полностью отрезаем центр и периферийные звёзды за радиусом.
+            RemoveAllConnections(0); // Центральная чёрная дыра
+
+            for (int i = 1; i < _galaxy.Length; i++)
+            {
+                if (_distanceFromCenter[i] > GalaxyRadius)
+                    RemoveAllConnections(i);
+            }
+        }
+
+        private static void LinkPeriphery()
+        {
+            // Для звёзд за радиусом возвращаем минимум одну связь, чтобы не остались изолированными.
+            for (int i = 0; i < _distancesSorted[0].Length; i++)
+            {
+                if (_distancesSorted[0][i].distance < GalaxyRadius)
                     continue;
+                AddOnceForClear(_distancesSorted[0][i].index);
+            }
+        }
 
-                var indexMap = new int[galaxy.Length];
-                for (int i = 0; i < indexMap.Length; i++)
-                    indexMap[i] = -1;
-
-                for (int i = 0; i < count; i++)
-                    indexMap[group.StarIndices[i]] = i;
-
-                var candidates = new List<int>[count];
-                for (int i = 0; i < count; i++)
+        private static void AddOnceForClear(int id)
+        {
+            // Возвращаем одну связь, чтобы периферия не была изолированной
+            for (int i = 1; i < _distancesSorted[id].Length; i++)
+            {
+                int idNeib = _distancesSorted[id][i].index;
+                if (_hypersList[idNeib].Count > 0)
                 {
-                    int starIndex = group.StarIndices[i];
-                    var list = new List<StarDistance>(count);
-
-                    for (int j = 0; j < count; j++)
-                    {
-                        if (i == j) continue;
-                        int otherIndex = group.StarIndices[j];
-                        float distSq = DistanceSq(galaxy, starIndex, otherIndex);
-                        if (distSq <= limitSq)
-                        {
-                            list.Add(new StarDistance
-                            {
-                                Index = otherIndex,
-                                DistSq = distSq
-                            });
-                        }
-                    }
-
-                    list.Sort(StarDistanceComparer);
-                    var ordered = new List<int>(list.Count);
-                    for (int j = 0; j < list.Count; j++)
-                        ordered.Add(list[j].Index);
-
-                    candidates[i] = ordered;
+                    AddConnection(id, idNeib);
+                    break;
                 }
-
-                var degrees = new int[count];
-                var targets = new int[count];
-                for (int i = 0; i < count; i++)
-                    targets[i] = UnityEngine.Random.Range(minLinksPerStar, maxLinksPerStar + 1);
-
-                for (int i = 0; i < count; i++)
+                if (_distanceFromCenter[idNeib] <= GalaxyRadius)
                 {
-                    int starIndex = group.StarIndices[i];
-                    while (degrees[i] < targets[i])
-                    {
-                        bool added = false;
-                        var candidateList = candidates[i];
-                        for (int j = 0; j < candidateList.Count; j++)
-                        {
-                            int otherIndex = candidateList[j];
-                            int otherPos = indexMap[otherIndex];
-                            if (otherPos < 0)
-                                continue;
-
-                            if (degrees[otherPos] >= targets[otherPos])
-                                continue;
-
-                            long key = GetEdgeKey(starIndex, otherIndex);
-                            if (edgeSet.Contains(key))
-                                continue;
-
-                            edgeSet.Add(key);
-                            links.Add(new ConstellationLinkEdge(starIndex, otherIndex));
-                            degrees[i]++;
-                            degrees[otherPos]++;
-                            added = true;
-                            break;
-                        }
-
-                        if (!added)
-                            break;
-                    }
+                    AddConnection(id, idNeib);
+                    break;
                 }
             }
-
-            return links;
         }
 
-        // Между соседними созвездиями: один гиперпереход.
-        private static List<ConstellationLinkEdge> BuildInterGroupLinks(List<ConstellationGroup> groups, StarSys[] galaxy)
+        private static void InitSectors()
         {
-            var links = new List<ConstellationLinkEdge>();
-            if (groups.Count < 2)
-                return links;
-
-            var edgeSet = new HashSet<long>();
-            float limitSq = LinkDistanceLimit * LinkDistanceLimit;
-
-            for (int i = 0; i < groups.Count; i++)
+            // Создаём созвездия по индексу: 1..ConstellationAmount-1.
+            _sectorsArr = new Sector[ConstellationAmount];
+            for (int i = 1; i < _sectorsArr.Length; i++)
             {
-                int a = groups[i].CenterStarIndex;
-                if (a <= 0)
-                    continue;
+                if (i >= _galaxy.Length)
+                    break;
 
-                float bestDist = float.MaxValue;
-                int bestIndex = -1;
-
-                for (int j = 0; j < groups.Count; j++)
+                var sector = new Sector
                 {
-                    if (i == j) continue;
-                    int b = groups[j].CenterStarIndex;
-                    if (b <= 0) continue;
+                    id = i,
+                    isOpen = true,
+                    members = new List<MemberSector>()
+                };
+                var member = new MemberSector
+                {
+                    idSector = i,
+                    idSystem = i,
+                    isOpen = true
+                };
+                _galaxy[member.idSystem].ConstellationId = member.idSector;
+                sector.members.Add(member);
+                _sectorsArr[i] = sector;
+            }
+        }
 
-                    float distSq = DistanceSq(galaxy, a, b);
-                    if (distSq < bestDist)
+        private static void Expansion()
+        {
+            // По очереди расширяем все созвездия, пока есть куда расти.
+            bool key = true;
+            while (key)
+            {
+                key = false;
+                for (int i = 1; i < _sectorsArr.Length; i++)
+                {
+                    if (_sectorsArr[i] == null || !_sectorsArr[i].isOpen)
+                        continue;
+                    ExpansionSector(_sectorsArr[i]);
+                    key = true;
+                }
+            }
+        }
+
+        private static void ExpansionSector(Sector sector)
+        {
+            // Пытаемся расширить сектор через первого открытого участника.
+            for (int i = 0; i < sector.members.Count; i++)
+            {
+                if (!sector.members[i].isOpen)
+                    continue;
+                int idNewMember = GetNewSystem(sector.members[i]);
+                if (idNewMember == 0)
+                {
+                    sector.members[i].isOpen = false;
+                    continue;
+                }
+                sector.members.Add(CreateNewMember(idNewMember, sector.id));
+                return;
+            }
+            sector.isOpen = false;
+        }
+
+        private static int GetNewSystem(MemberSector member)
+        {
+            // Берём первого соседа по графу, который ещё не принадлежит созвездию.
+            for (int i = 0; i < _hypersList[member.idSystem].Count; i++)
+            {
+                int neibourId = _hypersList[member.idSystem][i];
+                if (_galaxy[neibourId].ConstellationId == 0)
+                    return neibourId;
+            }
+            return 0;
+        }
+
+        private static MemberSector CreateNewMember(int idSystem, int idSector)
+        {
+            _galaxy[idSystem].ConstellationId = idSector;
+            var member = new MemberSector
+            {
+                idSector = idSector,
+                idSystem = idSystem,
+                isOpen = true
+            };
+            return member;
+        }
+
+        private static void AddConnection(int idA, int idB)
+        {
+            if (!_hypersList[idA].Contains(idB))
+                _hypersList[idA].Add(idB);
+            if (!_hypersList[idB].Contains(idA))
+                _hypersList[idB].Add(idA);
+        }
+
+        private static void AddIntersectorConnection()
+        {
+            for (int i = 1; i < _sectorsArr.Length; i++)
+            {
+                if (_sectorsArr[i] == null)
+                    continue;
+
+                for (int k = 0; k < _sectorsArr[i].bestNeibourSectorMembersList.Count; k++)
+                {
+                    AddConnection(
+                        _sectorsArr[i].bestNeibourSectorMembersList[k].idOwnSys,
+                        _sectorsArr[i].bestNeibourSectorMembersList[k].idExternSys
+                    );
+                }
+            }
+        }
+
+        private static void RemoveConnection(int idA, int idB)
+        {
+            _hypersList[idA].Remove(idB);
+            _hypersList[idB].Remove(idA);
+        }
+
+        private static void RemoveAllConnections(int id)
+        {
+            for (int i = 0; i < _hypersList[id].Count; i++)
+            {
+                var idNear = _hypersList[id][i];
+                _hypersList[idNear].Remove(id);
+            }
+            _hypersList[id].Clear();
+        }
+
+        private static void RemoveInterSectorConnection()
+        {
+            // Удаляем все межсозвездные связи, сохраняя лучший мост между парами созвездий.
+            for (int i = 0; i < _hypersList.Count; i++)
+            {
+                for (int k = _hypersList[i].Count - 1; k >= 0; k--)
+                {
+                    int targetId = _hypersList[i][k];
+                    if (_galaxy[i].ConstellationId != _galaxy[targetId].ConstellationId)
                     {
-                        bestDist = distSq;
-                        bestIndex = b;
+                        SaveBestConnection(i, targetId);
+                        RemoveConnection(i, targetId);
                     }
                 }
-
-                if (bestIndex < 0 || bestDist > limitSq)
-                    continue;
-
-                long key = GetEdgeKey(a, bestIndex);
-                if (edgeSet.Contains(key))
-                    continue;
-
-                edgeSet.Add(key);
-                links.Add(new ConstellationLinkEdge(a, bestIndex));
-            }
-
-            return links;
-        }
-
-        // Записываем линки в StarSys.
-        private static void ApplyLinks(StarSys[] galaxy, List<ConstellationLinkEdge> links)
-        {
-            var linkLists = new List<int>[galaxy.Length];
-
-            for (int i = 0; i < links.Count; i++)
-            {
-                int a = links[i].A;
-                int b = links[i].B;
-
-                if (a < 0 || b < 0 || a >= galaxy.Length || b >= galaxy.Length)
-                    continue;
-
-                if (linkLists[a] == null)
-                    linkLists[a] = new List<int>();
-                if (linkLists[b] == null)
-                    linkLists[b] = new List<int>();
-
-                linkLists[a].Add(b);
-                linkLists[b].Add(a);
-            }
-
-            for (int i = 0; i < galaxy.Length; i++)
-            {
-                ref var sys = ref galaxy[i];
-                sys.links = linkLists[i] == null
-                    ? System.Array.Empty<int>()
-                    : linkLists[i].ToArray();
+                if (_galaxy[i].ConstellationId == 0)
+                    RemoveAllConnections(i); // Системы вне созвездий не оставляем
             }
         }
 
-        // Валидация размеров групп и степени звёзд.
-        private static void Validate(List<ConstellationGroup> groups, List<ConstellationLinkEdge> links, int minGroupSize, int maxGroupSize, int minLinksPerStar, int maxLinksPerStar)
+        private static void SaveBestConnection(int idSysA, int idSysB)
         {
-            if (groups == null || links == null)
+            // Сохраняем лучший мост по расстоянию между парой созвездий.
+            if (_galaxy[idSysA].ConstellationId <= 0 || _galaxy[idSysB].ConstellationId <= 0)
                 return;
 
-            // Пока только базовые проверки, без исправлений.
-            for (int i = 0; i < groups.Count; i++)
+            var secA = _sectorsArr[_galaxy[idSysA].ConstellationId];
+            var secB = _sectorsArr[_galaxy[idSysB].ConstellationId];
+            if (secA == null || secB == null)
+                return;
+
+            secA.AddBest(idSysA, idSysB, Distance(idSysA, idSysB));
+            secB.AddBest(idSysB, idSysA, Distance(idSysA, idSysB));
+        }
+
+        private static void ApplyLinks()
+        {
+            // Записываем рассчитанные связи в StarSys.
+            for (int i = 0; i < _hypersList.Count; i++)
             {
-                int count = groups[i].StarIndices.Count;
-                if (count < minGroupSize || count > maxGroupSize)
+                ref var sys = ref _galaxy[i];
+                sys.links = _hypersList[i].ToArray();
+            }
+        }
+
+        private class Sector
+        {
+            public int id;
+            public List<MemberSector> members;
+            public bool isOpen;
+            public List<BestNeibourSectorMember> bestNeibourSectorMembersList = new List<BestNeibourSectorMember>();
+
+            public void AddBest(int idOwn, int idExtern, float distance)
+            {
+                int oldIndex = bestNeibourSectorMembersList.FindIndex(x => x.idNeibourSector == _galaxy[idExtern].ConstellationId);
+                var addingBest = new BestNeibourSectorMember
                 {
-                    // Здесь можно будет добавить реакцию на неверный размер.
+                    idNeibourSector = _galaxy[idExtern].ConstellationId,
+                    idOwnSys = idOwn,
+                    idExternSys = idExtern,
+                    distance = distance
+                };
+                if (oldIndex < 0)
+                {
+                    bestNeibourSectorMembersList.Add(addingBest);
+                    return;
+                }
+                if (bestNeibourSectorMembersList[oldIndex].distance > distance)
+                {
+                    bestNeibourSectorMembersList[oldIndex] = addingBest;
                 }
             }
         }
 
-        private static float DistanceSq(StarSys[] galaxy, int a, int b)
+        private class MemberSector
         {
-            var aPos = galaxy[a].GalaxyPosition;
-            var bPos = galaxy[b].GalaxyPosition;
-            float dx = aPos.x - bPos.x;
-            float dy = aPos.y - bPos.y;
-            return dx * dx + dy * dy;
+            public int idSystem;
+            public int idSector;
+            public bool isOpen;
         }
 
-        private static long GetEdgeKey(int a, int b)
+        private struct BestNeibourSectorMember
         {
-            int min = a < b ? a : b;
-            int max = a < b ? b : a;
-            return ((long)min << 32) | (uint)max;
+            public int idNeibourSector;
+            public int idOwnSys;
+            public int idExternSys;
+            public float distance;
         }
 
         private struct StarDistance
         {
-            public int Index;
-            public float DistSq;
+            public int index;
+            public float distance;
         }
-
-        private static readonly System.Comparison<StarDistance> StarDistanceComparer = (a, b) =>
-        {
-            if (a.DistSq < b.DistSq) return -1;
-            if (a.DistSq > b.DistSq) return 1;
-            return 0;
-        };
     }
 }

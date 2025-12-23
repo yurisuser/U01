@@ -13,6 +13,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [Header("Line settings")]
         [SerializeField] private Material lineMaterial;
         [SerializeField] private Color lineColor = new Color(0.4f, 0.8f, 1f, 0.5f);
+        [SerializeField] private float constellationSaturation = 0.75f;
+        [SerializeField] private float constellationValue = 0.9f;
+        [SerializeField] private float constellationAlpha = 0.65f;
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
 
@@ -100,6 +103,10 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     var line = CreateLine(parent);
                     line.SetPosition(0, systems[i].GalaxyPosition);
                     line.SetPosition(1, systems[other].GalaxyPosition);
+                    var colorA = GetConstellationColor(systems[i].ConstellationId);
+                    var colorB = GetConstellationColor(systems[other].ConstellationId);
+                    line.startColor = colorA;
+                    line.endColor = colorB;
                     _lines.Add(line);
                 }
             }
@@ -181,6 +188,34 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             int min = a < b ? a : b;
             int max = a < b ? b : a;
             return ((long)min << 32) | (uint)max;
+        }
+
+        // Цвет по id созвездия: стабильный, но визуально различимый.
+        private Color GetConstellationColor(int constellationId)
+        {
+            if (constellationId < 0)
+                return lineColor;
+
+            float hue = Hash01(constellationId);
+            var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
+            color.a = constellationAlpha;
+            return color;
+        }
+
+        private static float Hash01(int seed)
+        {
+            unchecked
+            {
+                uint x = (uint)seed;
+                x ^= x >> 17;
+                x *= 0xED5AD4BBu;
+                x ^= x >> 11;
+                x *= 0xAC4C1B51u;
+                x ^= x >> 15;
+                x *= 0x31848BABu;
+                x ^= x >> 14;
+                return (x & 0xFFFFFFu) / 16777216f;
+            }
         }
     }
 }
