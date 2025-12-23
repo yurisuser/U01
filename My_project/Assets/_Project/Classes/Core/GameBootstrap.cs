@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using _Project.DataAccess;             // для каталога и прогрева БД
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Core.Input;
 using _Project.Scripts.Core.Scene;
@@ -49,6 +50,8 @@ namespace _Project.Scripts.Core
 
             if (_gameState == null)
                 _gameState = new GameStateService();
+
+            CatalogPreloader.PreloadAll(forceReload: true); // прогреваем все каталоги в память
 
             var localizationPath = Path.Combine(Application.dataPath, "_Project/Localization/JSONS/en");
             LocalizationDatabase.Initialize(localizationPath);
