@@ -93,6 +93,9 @@ namespace _Project.Scripts.Galaxy.Generation
                 sysData = StarSysCreator.Create(sysData, star, planetSysArr, planetOrbits); // Обновляем звездную систему с учетом планет
             }
 
+            // Генерация созвездий и гиперпереходов после создания всех систем.
+            ConstellationCreator.Generate(galaxy);
+
             return galaxy;
         }
 
