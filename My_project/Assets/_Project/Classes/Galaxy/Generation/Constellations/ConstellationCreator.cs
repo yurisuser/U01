@@ -8,8 +8,8 @@ namespace _Project.Scripts.Galaxy.Generation
     public static class ConstellationCreator
     {
         // Константы как в олде (Settings.Galaxy)
-        private const int ConstellationAmount = 20;
-        private const float PeripheryRadius = 500f;
+        private const int ConstellationAmount = 30;
+        private const float PeripheryRadius = 480f;
 
         private static List<List<int>> _hypersList;
         private static Sector[] _sectorsArr;
