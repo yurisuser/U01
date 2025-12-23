@@ -14,7 +14,7 @@ namespace _Project.Scripts.Galaxy.Generation
         private const int MaxGroupSize = 20;
         private const int MinLinksPerStar = 1;
         private const int MaxLinksPerStar = 4;
-        private const float LinkDistanceLimit = 20f;
+        private const float LinkDistanceLimit = 150f;
 
         // Оркестратор: запускает стадии генерации и связывает их между собой.
         public static void Generate(StarSys[] galaxy)
@@ -172,42 +172,108 @@ namespace _Project.Scripts.Galaxy.Generation
                 if (fragment.StarIndices.Count == 0)
                     continue;
 
-                int centerIndex = fragment.CenterStarIndex;
-                if (centerIndex <= 0)
-                    centerIndex = fragment.StarIndices[0];
+                var remaining = new List<int>(fragment.StarIndices);
+                bool useFragmentCenter = true;
+                ConstellationGroup lastGroup = null;
 
-                var candidates = new List<StarDistance>(fragment.StarIndices.Count);
-                for (int j = 0; j < fragment.StarIndices.Count; j++)
+                while (remaining.Count > 0)
                 {
-                    int starIndex = fragment.StarIndices[j];
-                    float distSq = DistanceSq(galaxy, centerIndex, starIndex);
-                    if (distSq <= limitSq)
+                    int centerIndex = fragment.CenterStarIndex;
+                    if (!useFragmentCenter || centerIndex <= 0 || !remaining.Contains(centerIndex))
+                        centerIndex = remaining[UnityEngine.Random.Range(0, remaining.Count)];
+                    useFragmentCenter = false;
+
+                    var candidates = new List<StarDistance>(remaining.Count);
+                    for (int j = 0; j < remaining.Count; j++)
                     {
-                        candidates.Add(new StarDistance
+                        int starIndex = remaining[j];
+                        float distSq = DistanceSq(galaxy, centerIndex, starIndex);
+                        if (distSq <= limitSq)
                         {
-                            Index = starIndex,
-                            DistSq = distSq
-                        });
+                            candidates.Add(new StarDistance
+                            {
+                                Index = starIndex,
+                                DistSq = distSq
+                            });
+                        }
                     }
+
+                    if (candidates.Count < minGroupSize)
+                    {
+                        candidates.Clear();
+                        for (int j = 0; j < remaining.Count; j++)
+                        {
+                            int starIndex = remaining[j];
+                            float distSq = DistanceSq(galaxy, centerIndex, starIndex);
+                            candidates.Add(new StarDistance
+                            {
+                                Index = starIndex,
+                                DistSq = distSq
+                            });
+                        }
+                    }
+
+                    if (candidates.Count == 0)
+                        break;
+
+                    candidates.Sort(StarDistanceComparer);
+                    int countToTake = Mathf.Min(maxGroupSize, candidates.Count);
+
+                    if (countToTake < minGroupSize && lastGroup != null)
+                    {
+                        int space = maxGroupSize - lastGroup.StarIndices.Count;
+                        if (space > 0)
+                        {
+                            int take = Mathf.Min(space, countToTake);
+                            var selected = new HashSet<int>();
+                            for (int j = 0; j < take; j++)
+                            {
+                                int starIndex = candidates[j].Index;
+                                selected.Add(starIndex);
+                                lastGroup.StarIndices.Add(starIndex);
+                            }
+
+                            var nextRemaining = new List<int>(remaining.Count - selected.Count);
+                            for (int j = 0; j < remaining.Count; j++)
+                            {
+                                int starIndex = remaining[j];
+                                if (!selected.Contains(starIndex))
+                                    nextRemaining.Add(starIndex);
+                            }
+
+                            remaining = nextRemaining;
+                            continue;
+                        }
+                    }
+
+                    var group = new ConstellationGroup
+                    {
+                        CenterStarIndex = centerIndex,
+                        SegmentIndex = fragment.SegmentIndex,
+                        RingIndex = fragment.RingIndex
+                    };
+
+                    var picked = new HashSet<int>();
+                    for (int j = 0; j < countToTake; j++)
+                    {
+                        int starIndex = candidates[j].Index;
+                        group.StarIndices.Add(starIndex);
+                        picked.Add(starIndex);
+                    }
+
+                    groups.Add(group);
+                    lastGroup = group;
+
+                    var newRemaining = new List<int>(remaining.Count - picked.Count);
+                    for (int j = 0; j < remaining.Count; j++)
+                    {
+                        int starIndex = remaining[j];
+                        if (!picked.Contains(starIndex))
+                            newRemaining.Add(starIndex);
+                    }
+
+                    remaining = newRemaining;
                 }
-
-                if (candidates.Count == 0)
-                    continue;
-
-                candidates.Sort(StarDistanceComparer);
-
-                var group = new ConstellationGroup
-                {
-                    CenterStarIndex = centerIndex,
-                    SegmentIndex = fragment.SegmentIndex,
-                    RingIndex = fragment.RingIndex
-                };
-
-                int countToTake = Mathf.Min(maxGroupSize, candidates.Count);
-                for (int j = 0; j < countToTake; j++)
-                    group.StarIndices.Add(candidates[j].Index);
-
-                groups.Add(group);
             }
 
             return groups;
