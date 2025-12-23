@@ -1,9 +1,6 @@
-using _Project.Scripts.Ships;
-
-namespace _Project.Items.Equip
+namespace _Project.Scripts.Ships
 {
     public static class EquipService
     {
-
     }
 }
