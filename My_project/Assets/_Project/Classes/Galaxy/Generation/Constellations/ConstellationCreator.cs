@@ -8,8 +8,8 @@ namespace _Project.Scripts.Galaxy.Generation
     public static class ConstellationCreator
     {
         // Константы как в олде (Settings.Galaxy)
-        private const int ConstellationAmount = 90;
-        private const float GalaxyRadius = 500f;
+        private const int ConstellationAmount = 20;
+        private const float PeripheryRadius = 500f;
 
         private static List<List<int>> _hypersList;
         private static Sector[] _sectorsArr;
@@ -33,12 +33,12 @@ namespace _Project.Scripts.Galaxy.Generation
 
             BuildDistancesSorted();   // Предподготовка расстояний для быстрых выборок
             CreateHypers();           // Делоне-граф по позициям звёзд
-            //UnlinkPeriphery();        // Убираем связи у периферии
-            //LinkPeriphery();          // Возвращаем по одной связи на периферию
+            UnlinkPeriphery();        // Убираем связи у периферии
+            LinkPeriphery();          // Возвращаем по одной связи на периферию
             InitSectors();            // Сиды созвездий (по индексу)
             Expansion();              // Расширение созвездий по графу
-            //RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
-            //AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
+            RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
+            AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
             ApplyLinks();               // Запись линков в StarSys
         }
 
@@ -68,7 +68,10 @@ namespace _Project.Scripts.Galaxy.Generation
             }
 
             for (int i = 0; i < count; i++)
-                _distanceFromCenter[i] = _distancesSorted[0][i].distance; // Дистанция от центра (индекс 0)
+            {
+                var entry = _distancesSorted[0][i];
+                _distanceFromCenter[entry.index] = entry.distance; // Дистанция от центра (индекс 0)
+            }
         }
 
         private static float Distance(int a, int b)
@@ -110,7 +113,7 @@ namespace _Project.Scripts.Galaxy.Generation
 
             for (int i = 1; i < _galaxy.Length; i++)
             {
-                if (_distanceFromCenter[i] > GalaxyRadius)
+                if (_distanceFromCenter[i] > PeripheryRadius)
                     RemoveAllConnections(i);
             }
         }
@@ -120,7 +123,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Для звёзд за радиусом возвращаем минимум одну связь, чтобы не остались изолированными.
             for (int i = 0; i < _distancesSorted[0].Length; i++)
             {
-                if (_distancesSorted[0][i].distance < GalaxyRadius)
+                if (_distancesSorted[0][i].distance < PeripheryRadius)
                     continue;
                 AddOnceForClear(_distancesSorted[0][i].index);
             }
@@ -137,7 +140,7 @@ namespace _Project.Scripts.Galaxy.Generation
                     AddConnection(id, idNeib);
                     break;
                 }
-                if (_distanceFromCenter[idNeib] <= GalaxyRadius)
+                if (_distanceFromCenter[idNeib] <= PeripheryRadius)
                 {
                     AddConnection(id, idNeib);
                     break;
