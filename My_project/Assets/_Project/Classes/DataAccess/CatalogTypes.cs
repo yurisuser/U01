@@ -44,6 +44,8 @@ namespace _Project.DataAccess
             bool stackable,
             int maxStack,
             int techLevel,
+            float powerUse,
+            float cpuUse,
             float damage,
             float ratePerSecond,
             float range)
@@ -57,6 +59,8 @@ namespace _Project.DataAccess
             Stackable = stackable;
             MaxStack = maxStack;
             TechLevel = techLevel;
+            PowerUse = powerUse;
+            CpuUse = cpuUse;
             Damage = damage;
             RatePerSecond = ratePerSecond;
             Range = range;
@@ -71,6 +75,8 @@ namespace _Project.DataAccess
         public bool Stackable { get; }
         public int MaxStack { get; }
         public int TechLevel { get; }
+        public float PowerUse { get; }
+        public float CpuUse { get; }
         public float Damage { get; }
         public float RatePerSecond { get; }
         public float Range { get; }
@@ -160,6 +166,8 @@ namespace _Project.DataAccess
             bool stackable,
             int maxStack,
             int techLevel,
+            float powerUse,
+            float cpuUse,
             float speed)
         {
             Id = id;
@@ -171,6 +179,8 @@ namespace _Project.DataAccess
             Stackable = stackable;
             MaxStack = maxStack;
             TechLevel = techLevel;
+            PowerUse = powerUse;
+            CpuUse = cpuUse;
             Speed = speed;
         }
 
@@ -183,6 +193,8 @@ namespace _Project.DataAccess
         public bool Stackable { get; }
         public int MaxStack { get; }
         public int TechLevel { get; }
+        public float PowerUse { get; }
+        public float CpuUse { get; }
         public float Speed { get; }
     }
 
@@ -198,6 +210,8 @@ namespace _Project.DataAccess
             bool stackable,
             int maxStack,
             int techLevel,
+            float powerUse,
+            float cpuUse,
             float radius)
         {
             Id = id;
@@ -209,6 +223,8 @@ namespace _Project.DataAccess
             Stackable = stackable;
             MaxStack = maxStack;
             TechLevel = techLevel;
+            PowerUse = powerUse;
+            CpuUse = cpuUse;
             Radius = radius;
         }
 
@@ -221,6 +237,8 @@ namespace _Project.DataAccess
         public bool Stackable { get; }
         public int MaxStack { get; }
         public int TechLevel { get; }
+        public float PowerUse { get; }
+        public float CpuUse { get; }
         public float Radius { get; }
     }
 
@@ -236,6 +254,8 @@ namespace _Project.DataAccess
             bool stackable,
             int maxStack,
             int techLevel,
+            float powerUse,
+            float cpuUse,
             float radius,
             float volume,
             float regen)
@@ -249,6 +269,8 @@ namespace _Project.DataAccess
             Stackable = stackable;
             MaxStack = maxStack;
             TechLevel = techLevel;
+            PowerUse = powerUse;
+            CpuUse = cpuUse;
             Radius = radius;
             Volume = volume;
             Regen = regen;
@@ -263,6 +285,8 @@ namespace _Project.DataAccess
         public bool Stackable { get; }
         public int MaxStack { get; }
         public int TechLevel { get; }
+        public float PowerUse { get; }
+        public float CpuUse { get; }
         public float Radius { get; }
         public float Volume { get; }
         public float Regen { get; }

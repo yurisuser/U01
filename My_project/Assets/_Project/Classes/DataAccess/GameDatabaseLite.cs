@@ -29,7 +29,7 @@ namespace _Project.DataAccess
             if (!forceReload && _weapons != null) return _weapons;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range FROM weapons ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range FROM weapons ORDER BY id";
 
             var list = new List<CatalogWeapon>();
             using (var reader = cmd.ExecuteReader())
@@ -45,10 +45,12 @@ namespace _Project.DataAccess
                     var stackable = reader.GetInt32(6) != 0;
                     var maxStack = reader.GetInt32(7);
                     var techLevel = reader.GetInt32(8);
-                    var damage = (float)reader.GetDouble(9);
-                    var ratePerSecond = (float)reader.GetDouble(10);
-                    var range = (float)reader.GetDouble(11);
-                    list.Add(new CatalogWeapon(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, damage, ratePerSecond, range));
+                    var powerUse = (float)reader.GetDouble(9);
+                    var cpuUse = (float)reader.GetDouble(10);
+                    var damage = (float)reader.GetDouble(11);
+                    var ratePerSecond = (float)reader.GetDouble(12);
+                    var range = (float)reader.GetDouble(13);
+                    list.Add(new CatalogWeapon(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, powerUse, cpuUse, damage, ratePerSecond, range));
                 }
             }
 
@@ -149,7 +151,7 @@ namespace _Project.DataAccess
             if (!forceReload && _engines != null) return _engines;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, speed FROM engines ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed FROM engines ORDER BY id";
 
             var list = new List<CatalogEngine>();
             using (var reader = cmd.ExecuteReader())
@@ -165,8 +167,10 @@ namespace _Project.DataAccess
                     var stackable = reader.GetInt32(6) != 0;
                     var maxStack = reader.GetInt32(7);
                     var techLevel = reader.GetInt32(8);
-                    var speed = (float)reader.GetDouble(9);
-                    list.Add(new CatalogEngine(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, speed));
+                    var powerUse = (float)reader.GetDouble(9);
+                    var cpuUse = (float)reader.GetDouble(10);
+                    var speed = (float)reader.GetDouble(11);
+                    list.Add(new CatalogEngine(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, powerUse, cpuUse, speed));
                 }
             }
 
@@ -180,7 +184,7 @@ namespace _Project.DataAccess
             if (!forceReload && _scanners != null) return _scanners;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius FROM scanners ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius FROM scanners ORDER BY id";
 
             var list = new List<CatalogScanner>();
             using (var reader = cmd.ExecuteReader())
@@ -196,8 +200,10 @@ namespace _Project.DataAccess
                     var stackable = reader.GetInt32(6) != 0;
                     var maxStack = reader.GetInt32(7);
                     var techLevel = reader.GetInt32(8);
-                    var radius = (float)reader.GetDouble(9);
-                    list.Add(new CatalogScanner(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, radius));
+                    var powerUse = (float)reader.GetDouble(9);
+                    var cpuUse = (float)reader.GetDouble(10);
+                    var radius = (float)reader.GetDouble(11);
+                    list.Add(new CatalogScanner(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, powerUse, cpuUse, radius));
                 }
             }
 
@@ -211,7 +217,7 @@ namespace _Project.DataAccess
             if (!forceReload && _shields != null) return _shields;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, radius, volume, regen FROM shields ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen FROM shields ORDER BY id";
 
             var list = new List<CatalogShield>();
             using (var reader = cmd.ExecuteReader())
@@ -227,10 +233,12 @@ namespace _Project.DataAccess
                     var stackable = reader.GetInt32(6) != 0;
                     var maxStack = reader.GetInt32(7);
                     var techLevel = reader.GetInt32(8);
-                    var radius = (float)reader.GetDouble(9);
-                    var volume = (float)reader.GetDouble(10);
-                    var regen = (float)reader.GetDouble(11);
-                    list.Add(new CatalogShield(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, radius, volume, regen));
+                    var powerUse = (float)reader.GetDouble(9);
+                    var cpuUse = (float)reader.GetDouble(10);
+                    var radius = (float)reader.GetDouble(11);
+                    var volume = (float)reader.GetDouble(12);
+                    var regen = (float)reader.GetDouble(13);
+                    list.Add(new CatalogShield(id, key, displayName, description, price, weight, stackable, maxStack, techLevel, powerUse, cpuUse, radius, volume, regen));
                 }
             }
 
