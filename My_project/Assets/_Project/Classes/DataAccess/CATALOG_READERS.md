@@ -9,6 +9,7 @@
 - Оркестратор даёт базовую карточку предмета по `ItemType + Id`.
 
 ## Ридеры
+- Папка: `Assets/_Project/Classes/DataAccess/Readers`
 - `WeaponCatalogReader`
 - `GoodsCatalogReader`
 - `QuestCatalogReader`
