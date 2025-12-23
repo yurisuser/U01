@@ -19,7 +19,6 @@ namespace _Project.Scripts.Ships
         public string PrefabKey;          // ключ префаба
         public float CurrentSpeed;        // текущая скорость (ед/сек)
         public bool IsActive;             // активен ли корабль в мире
-        public ShipEquipment Equipment;   // оборудование корабля (минимум: оружейные слоты)
         public ShipTaskState TaskState;   // задачи корабля
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
@@ -56,7 +55,6 @@ namespace _Project.Scripts.Ships
             IsActive = isActive;          // сохраняем активность
             PrefabSize = prefabSize;
             PrefabKey = prefabKey;
-            Equipment = default;          // инициализируется позже (в ShipCreator)
             TaskState = ShipTaskState.Default;
         }
     }

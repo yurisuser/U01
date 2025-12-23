@@ -29,8 +29,6 @@ namespace _Project.Scripts.Ships
                 catalog.PrefabSize,
                 catalog.PrefabName
             );
-
-            ship.Equipment.Init(catalog.WeaponSlots);
             return ship;
         }
 
