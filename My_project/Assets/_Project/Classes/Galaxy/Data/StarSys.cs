@@ -14,6 +14,8 @@ namespace _Project.Scripts.Galaxy.Data
     {
         public UID Uid;
         public int NameId;
+        public int[] links;
+        public int ConstellationId;
         public Vector3 GalaxyPosition;
         public Star Star;
         public PlanetSys[] PlanetSysArr;
