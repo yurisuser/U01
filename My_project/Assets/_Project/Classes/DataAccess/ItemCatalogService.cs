@@ -26,15 +26,6 @@ namespace _Project.DataAccess
                         return true;
                     }
                     break;
-                case ItemType.Ammo:
-                    if (AmmoCatalogReader.TryGet(id, out var ammo))
-                    {
-                        info = new CatalogItemInfo(
-                            ammo.Id, ammo.Key, ammo.DisplayName, ammo.Description,
-                            ammo.Price, ammo.Weight, ammo.Stackable, ammo.MaxStack);
-                        return true;
-                    }
-                    break;
                 case ItemType.Quest:
                     if (QuestCatalogReader.TryGet(id, out var quest))
                     {

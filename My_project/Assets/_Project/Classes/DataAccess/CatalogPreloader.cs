@@ -9,7 +9,6 @@ namespace _Project.DataAccess
         {
             GameDatabaseLite.GetWeapons(forceReload);
             GameDatabaseLite.GetGoods(forceReload);
-            GameDatabaseLite.GetAmmo(forceReload);
             GameDatabaseLite.GetQuest(forceReload);
             GameDatabaseLite.GetEngines(forceReload);
             GameDatabaseLite.GetScanners(forceReload);

@@ -16,7 +16,6 @@ namespace _Project.DataAccess
         private static string _fullPath;
         private static IReadOnlyList<CatalogWeapon> _weapons;
         private static IReadOnlyList<CatalogGoods> _goods;
-        private static IReadOnlyList<CatalogAmmo> _ammo;
         private static IReadOnlyList<CatalogQuest> _quest;
         private static IReadOnlyList<CatalogEngine> _engines;
         private static IReadOnlyList<CatalogScanner> _scanners;
@@ -84,35 +83,6 @@ namespace _Project.DataAccess
             }
 
             _goods = list;
-            return list;
-        }
-
-        /// <summary>Возвращает список боеприпасов из базы (с кешированием).</summary>
-        public static IReadOnlyList<CatalogAmmo> GetAmmo(bool forceReload = false)
-        {
-            if (!forceReload && _ammo != null) return _ammo;
-            using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack FROM ammo ORDER BY id";
-
-            var list = new List<CatalogAmmo>();
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var id = reader.GetInt32(0);
-                    var key = reader.GetString(1);
-                    var displayName = reader.GetString(2);
-                    var description = reader.GetString(3);
-                    var price = reader.GetInt32(4);
-                    var weight = (float)reader.GetDouble(5);
-                    var stackable = reader.GetInt32(6) != 0;
-                    var maxStack = reader.GetInt32(7);
-                    list.Add(new CatalogAmmo(id, key, displayName, description, price, weight, stackable, maxStack));
-                }
-            }
-
-            _ammo = list;
             return list;
         }
 
@@ -365,16 +335,6 @@ CREATE TABLE IF NOT EXISTS weapons (
     range REAL NOT NULL
 );
 CREATE TABLE IF NOT EXISTS goods (
-    id INTEGER PRIMARY KEY,
-    key TEXT NOT NULL UNIQUE,
-    display_name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    price INTEGER NOT NULL DEFAULT 0,
-    weight REAL NOT NULL DEFAULT 1,
-    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
-    max_stack INTEGER NOT NULL DEFAULT 1
-);
-CREATE TABLE IF NOT EXISTS ammo (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -708,9 +668,6 @@ INSERT OR IGNORE INTO weapons (id, key, display_name, description, price, weight
 
 INSERT OR IGNORE INTO goods (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_goods', 'Тестовый товар', 'Тестовый груз для проверки.', 10, 1, 1, 50);
-
-INSERT OR IGNORE INTO ammo (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
-    (1, 'test_ammo', 'Тестовые боеприпасы', 'Тестовые патроны для проверки.', 5, 0.2, 1, 200);
 
 INSERT OR IGNORE INTO quest (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_quest', 'Тестовый квестовый предмет', 'Квестовый предмет для проверки.', 0, 0.5, 1, 10);

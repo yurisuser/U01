@@ -10,7 +10,6 @@
 ## Типы (ItemType)
 - Weapon
 - Goods
-- Ammo
 - Quest
 - Engine
 - Scanner
@@ -20,7 +19,6 @@
 Профильные таблицы, каждая сама хранит имя/описание/цену и т.д.:
 - `weapons`
 - `goods`
-- `ammo`
 - `quest`
 - `engines`
 - `scanners`
@@ -48,7 +46,7 @@
  - `stackable` хранится как 0/1 (BOOLEAN в SQLite).
 
 ## Чтение из БД
-- Профильные ридеры: `Weapon/Goods/Ammo/Quest/Engine/Scanner/Shield` (каждый читает свою таблицу).
+- Профильные ридеры: `Weapon/Goods/Quest/Engine/Scanner/Shield` (каждый читает свою таблицу).
 - Оркестратор: `ItemCatalogService` даёт базовую информацию по `ItemStack` (без спец. полей).
 
 ## Как добавить новый тип

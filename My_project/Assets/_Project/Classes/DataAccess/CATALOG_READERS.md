@@ -4,14 +4,13 @@
 
 ## Базовая идея
 - Общей таблицы `items` нет.
-- Каждый тип хранится в своей таблице (weapons/goods/ammo/quest/engines/scanners/shields).
+- Каждый тип хранится в своей таблице (weapons/goods/quest/engines/scanners/shields).
 - Ридеры читают профильные таблицы и кешируют результаты.
 - Оркестратор даёт базовую карточку предмета по `ItemType + Id`.
 
 ## Ридеры
 - `WeaponCatalogReader`
 - `GoodsCatalogReader`
-- `AmmoCatalogReader`
 - `QuestCatalogReader`
 - `EngineCatalogReader`
 - `ScannerCatalogReader`
