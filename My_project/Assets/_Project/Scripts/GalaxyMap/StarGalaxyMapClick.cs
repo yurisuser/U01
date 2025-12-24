@@ -30,42 +30,60 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void Update()
         {
-            if (Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame)
-                TryClick(Mouse.current.position.ReadValue());
+            var mouse = Mouse.current;
+            if (mouse == null)
+                return;
 
-            if (Touchscreen.current != null)
-            {
-                var touch = Touchscreen.current.primaryTouch;
-                if (touch.press.wasReleasedThisFrame)
-                    TryClick(touch.position.ReadValue());
-            }
+            bool left = mouse.leftButton.wasPressedThisFrame;
+            bool right = mouse.rightButton.wasPressedThisFrame;
+            if (!left && !right)
+                return;
+
+            if (!cam)
+                return;
+
+            var ray = cam.ScreenPointToRay(mouse.position.ReadValue());
+            if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, ~0))
+                return;
+
+            if (hit.collider != _col && !hit.collider.transform.IsChildOf(transform))
+                return;
+
+            if (left)
+                OnLeftClick();
+            else if (right)
+                OnRightClick();
         }
 
-        private void TryClick(Vector2 screenPos)
+        private void OnLeftClick()
         {
-            var c = cam ? cam : Camera.main;
-            if (!c) return;
-
-            var ray = c.ScreenPointToRay(screenPos);
-            if (!Physics.Raycast(ray, out var hit, Mathf.Infinity, ~0)) return;
-
-            if (hit.collider == _col || hit.collider.transform.IsChildOf(transform))
+            if (logClick)
             {
-                if (logClick) Debug.Log($"[Star] {systemName}  {type}");
-
-                if (System.HasValue)
-                {
-                    var sys = System.Value;
-                    if (!GameBootstrap.GameState.SelectSystemByUid(sys.Uid))
-                        GameBootstrap.GameState.SelectSystemByIndex(0);
-                }
-                else
-                {
-                    GameBootstrap.GameState.ClearSelectedSystem();
-                }
-
-                SceneController.Load(SceneId.SystemMap);
+                int constellationId = System.HasValue ? System.Value.ConstellationId : -1;
+                Debug.Log($"[Star] {systemName} | ConstellationId={constellationId}");
             }
+
+            if (System.HasValue)
+            {
+                var sys = System.Value;
+                if (!GameBootstrap.GameState.SelectSystemByUid(sys.Uid))
+                    GameBootstrap.GameState.SelectSystemByIndex(0);
+            }
+            else
+            {
+                GameBootstrap.GameState.ClearSelectedSystem();
+            }
+
+            SceneController.Load(SceneId.SystemMap);
+        }
+
+        private void OnRightClick()
+        {
+            if (!logClick)
+                return;
+
+            int constellationId = System.HasValue ? System.Value.ConstellationId : -1;
+            Debug.Log($"[Star][ПКМ] {systemName} | ConstellationId={constellationId}");
         }
 
 #if UNITY_EDITOR
