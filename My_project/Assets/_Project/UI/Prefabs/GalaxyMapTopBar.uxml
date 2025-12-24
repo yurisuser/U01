@@ -1,0 +1,13 @@
+﻿<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/Styles/GalaxyMapTopBar.uss?fileID=7433441132597879392&amp;guid=43b7a34059174aa586c08117fa9e6515&amp;type=3" />
+    <ui:VisualElement name="GalaxyMapTopBar" class="GalaxyMapTopBar" style="position: absolute; top: 12px; left: 12px; right: 12px;">
+        <ui:Label name="TitleLabel" class="TopBarTitle" text="GALAXY MAP MODES" />
+        <ui:VisualElement name="ToggleRow" class="ToggleRow">
+            <ui:Toggle name="ModeToggle1" class="ModeToggle" text="Mode 1" toggle-on-label-click="true" />
+            <ui:Toggle name="ModeToggle2" class="ModeToggle" text="Mode 2" toggle-on-label-click="true" />
+            <ui:Toggle name="ModeToggle3" class="ModeToggle" text="Mode 3" toggle-on-label-click="true" />
+            <ui:Toggle name="ModeToggle4" class="ModeToggle" text="Mode 4" toggle-on-label-click="true" />
+            <ui:Toggle name="ModeToggle5" class="ModeToggle" text="Mode 5" toggle-on-label-click="true" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
