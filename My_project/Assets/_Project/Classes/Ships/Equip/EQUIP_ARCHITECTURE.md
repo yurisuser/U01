@@ -14,7 +14,7 @@
         - 100 — броня из душ инопланетян.
 
 ## Источник данных
-- Таблицы: `weapons`, `engines`, `scanners`, `shields`.
+- Таблицы: `eq-weapons`, `eq-engines`, `eq-scanners`, `eq-shields`.
 - У оборудования есть `tech_level` для фильтрации.
 
 ## EquipSet

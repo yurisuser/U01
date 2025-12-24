@@ -4,7 +4,7 @@
 
 ## Базовая идея
 - Общей таблицы `items` нет.
-- Каждый тип хранится в своей таблице (weapons/goods/quest/engines/scanners/shields).
+- Каждый тип хранится в своей таблице (eq-weapons/goods/quest/eq-engines/eq-scanners/eq-shields).
 - Ридеры читают профильные таблицы и кешируют результаты.
 - Оркестратор даёт базовую карточку предмета по `ItemType + Id`.
 
@@ -40,10 +40,10 @@
 - `stackable` хранится как 0/1 (BOOLEAN в SQLite).
 
 ## Спец‑поля
-- `weapons`: `tech_level`, `damage`, `rate_per_second`, `range`
-- `engines`: `tech_level`, `speed`
-- `scanners`: `tech_level`, `radius`
-- `shields`: `tech_level`, `radius`, `volume`, `regen`
+- `eq-weapons`: `tech_level`, `damage`, `rate_per_second`, `range`
+- `eq-engines`: `tech_level`, `speed`
+- `eq-scanners`: `tech_level`, `radius`
+- `eq-shields`: `tech_level`, `radius`, `volume`, `regen`
 
 ## Как добавить новый тип
 1) Создать таблицу в `GameDatabaseLite.CreateSchema`.

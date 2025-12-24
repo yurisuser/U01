@@ -28,7 +28,7 @@ namespace _Project.DataAccess
             if (!forceReload && _weapons != null) return _weapons;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range FROM weapons ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range FROM \"eq-weapons\" ORDER BY id";
 
             var list = new List<CatalogWeapon>();
             using (var reader = cmd.ExecuteReader())
@@ -121,7 +121,7 @@ namespace _Project.DataAccess
             if (!forceReload && _engines != null) return _engines;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed FROM engines ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed FROM \"eq-engines\" ORDER BY id";
 
             var list = new List<CatalogEngine>();
             using (var reader = cmd.ExecuteReader())
@@ -154,7 +154,7 @@ namespace _Project.DataAccess
             if (!forceReload && _scanners != null) return _scanners;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius FROM scanners ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius FROM \"eq-scanners\" ORDER BY id";
 
             var list = new List<CatalogScanner>();
             using (var reader = cmd.ExecuteReader())
@@ -187,7 +187,7 @@ namespace _Project.DataAccess
             if (!forceReload && _shields != null) return _shields;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen FROM shields ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen FROM \"eq-shields\" ORDER BY id";
 
             var list = new List<CatalogShield>();
             using (var reader = cmd.ExecuteReader())
@@ -284,6 +284,7 @@ namespace _Project.DataAccess
 
             using var connection = new SqliteConnection($"URI=file:{path}");
             connection.Open();
+            EnsureEquipmentTablesRenamed(connection);
             CreateSchema(connection);
             EnsureShipColumns(connection);
             EnsureWeaponsSchema(connection);
@@ -314,11 +315,44 @@ namespace _Project.DataAccess
             }
         }
 
+        private static void EnsureEquipmentTablesRenamed(IDbConnection connection)
+        {
+            RenameTableIfNeeded(connection, "weapons", "eq-weapons");
+            RenameTableIfNeeded(connection, "engines", "eq-engines");
+            RenameTableIfNeeded(connection, "scanners", "eq-scanners");
+            RenameTableIfNeeded(connection, "shields", "eq-shields");
+        }
+
+        private static void RenameTableIfNeeded(IDbConnection connection, string oldName, string newName)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=@name";
+            var param = cmd.CreateParameter();
+            param.ParameterName = "@name";
+            param.Value = oldName;
+            cmd.Parameters.Add(param);
+            var oldExists = cmd.ExecuteScalar() != null;
+
+            cmd.Parameters.Clear();
+            param = cmd.CreateParameter();
+            param.ParameterName = "@name";
+            param.Value = newName;
+            cmd.Parameters.Add(param);
+            var newExists = cmd.ExecuteScalar() != null;
+
+            if (!oldExists || newExists)
+                return;
+
+            cmd.Parameters.Clear();
+            cmd.CommandText = $"ALTER TABLE \"{oldName}\" RENAME TO \"{newName}\"";
+            cmd.ExecuteNonQuery();
+        }
+
         private static void CreateSchema(IDbConnection connection)
         {
             using var cmd = connection.CreateCommand();
             cmd.CommandText = @"
-CREATE TABLE IF NOT EXISTS weapons (
+CREATE TABLE IF NOT EXISTS ""eq-weapons"" (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -354,7 +388,7 @@ CREATE TABLE IF NOT EXISTS quest (
     stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1
 );
-CREATE TABLE IF NOT EXISTS engines (
+CREATE TABLE IF NOT EXISTS ""eq-engines"" (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -368,7 +402,7 @@ CREATE TABLE IF NOT EXISTS engines (
     cpu_use REAL NOT NULL DEFAULT 0,
     speed REAL NOT NULL DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS scanners (
+CREATE TABLE IF NOT EXISTS ""eq-scanners"" (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -382,7 +416,7 @@ CREATE TABLE IF NOT EXISTS scanners (
     cpu_use REAL NOT NULL DEFAULT 0,
     radius REAL NOT NULL DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS shields (
+CREATE TABLE IF NOT EXISTS ""eq-shields"" (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -492,7 +526,7 @@ CREATE TABLE IF NOT EXISTS ships (
             var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             using (var schemaCmd = connection.CreateCommand())
             {
-                schemaCmd.CommandText = "PRAGMA table_info(weapons)";
+                schemaCmd.CommandText = "PRAGMA table_info(\"eq-weapons\")";
                 using var reader = schemaCmd.ExecuteReader();
                 while (reader.Read())
                     existing.Add(reader.GetString(1));
@@ -508,7 +542,7 @@ CREATE TABLE IF NOT EXISTS ships (
                 cmd.Transaction = tx;
 
                 cmd.CommandText = @"
-CREATE TABLE weapons_new (
+CREATE TABLE ""eq-weapons_new"" (
     id INTEGER PRIMARY KEY,
     key TEXT NOT NULL UNIQUE,
     display_name TEXT NOT NULL,
@@ -530,9 +564,9 @@ CREATE TABLE weapons_new (
                 if (existing.Contains("item_id") && hasItems)
                 {
                     cmd.CommandText = @"
-INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
+INSERT INTO ""eq-weapons_new"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
 SELECT w.item_id, i.key, i.display_name, i.description, i.price, i.weight, i.stackable, i.max_stack, 1, w.damage, w.rate_per_second, w.range
-FROM weapons w
+FROM ""eq-weapons"" w
 JOIN items i ON i.id = w.item_id;";
                 }
                 else
@@ -547,16 +581,16 @@ JOIN items i ON i.id = w.item_id;";
                     var maxStackExpr = existing.Contains("max_stack") ? "max_stack" : "1";
 
                     cmd.CommandText = $@"
-INSERT INTO weapons_new (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
+INSERT INTO ""eq-weapons_new"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, damage, rate_per_second, range)
 SELECT {idExpr}, {keyExpr}, {nameExpr}, {descExpr}, {priceExpr}, {weightExpr}, {stackExpr}, {maxStackExpr}, 1, damage, rate_per_second, range
-FROM weapons;";
+FROM ""eq-weapons"";";
                 }
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "DROP TABLE weapons;";
+                cmd.CommandText = "DROP TABLE \"eq-weapons\";";
                 cmd.ExecuteNonQuery();
 
-                cmd.CommandText = "ALTER TABLE weapons_new RENAME TO weapons;";
+                cmd.CommandText = "ALTER TABLE \"eq-weapons_new\" RENAME TO \"eq-weapons\";";
                 cmd.ExecuteNonQuery();
 
                 tx.Commit();
@@ -566,64 +600,64 @@ FROM weapons;";
             using var alter = connection.CreateCommand();
             if (!existing.Contains("price"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN price INTEGER NOT NULL DEFAULT 0";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN price INTEGER NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("weight"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN weight REAL NOT NULL DEFAULT 1";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN weight REAL NOT NULL DEFAULT 1";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("stackable"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1))";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN stackable BOOLEAN NOT NULL DEFAULT 0 CHECK (stackable IN (0,1))";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("max_stack"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN max_stack INTEGER NOT NULL DEFAULT 1";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN max_stack INTEGER NOT NULL DEFAULT 1";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("tech_level"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN tech_level INTEGER NOT NULL DEFAULT 1";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN tech_level INTEGER NOT NULL DEFAULT 1";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("power_use"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN power_use REAL NOT NULL DEFAULT 0";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN power_use REAL NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
 
             if (!existing.Contains("cpu_use"))
             {
-                alter.CommandText = "ALTER TABLE weapons ADD COLUMN cpu_use REAL NOT NULL DEFAULT 0";
+                alter.CommandText = "ALTER TABLE \"eq-weapons\" ADD COLUMN cpu_use REAL NOT NULL DEFAULT 0";
                 alter.ExecuteNonQuery();
             }
         }
 
         private static void EnsureEquipmentColumns(IDbConnection connection)
         {
-            EnsureColumns(connection, "engines", new[]
+            EnsureColumns(connection, "\"eq-engines\"", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
                 ("power_use", "REAL NOT NULL DEFAULT 0"),
                 ("cpu_use", "REAL NOT NULL DEFAULT 0"),
                 ("speed", "REAL NOT NULL DEFAULT 0")
             });
-            EnsureColumns(connection, "scanners", new[]
+            EnsureColumns(connection, "\"eq-scanners\"", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
                 ("power_use", "REAL NOT NULL DEFAULT 0"),
                 ("cpu_use", "REAL NOT NULL DEFAULT 0"),
                 ("radius", "REAL NOT NULL DEFAULT 0")
             });
-            EnsureColumns(connection, "shields", new[]
+            EnsureColumns(connection, "\"eq-shields\"", new[]
             {
                 ("tech_level", "INTEGER NOT NULL DEFAULT 1"),
                 ("power_use", "REAL NOT NULL DEFAULT 0"),
@@ -662,7 +696,7 @@ FROM weapons;";
             cmd.Transaction = tx;
 
             cmd.CommandText = @"
-INSERT OR IGNORE INTO weapons (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range) VALUES
+INSERT OR IGNORE INTO ""eq-weapons"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range) VALUES
     (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 100, 1, 0, 1, 1, 5, 2, 12.0, 1.5, 50.0),
     (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 300, 1, 0, 1, 2, 8, 3, 35.0, 0.5, 120.0);
 
@@ -672,13 +706,13 @@ INSERT OR IGNORE INTO goods (id, key, display_name, description, price, weight, 
 INSERT OR IGNORE INTO quest (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_quest', 'Тестовый квестовый предмет', 'Квестовый предмет для проверки.', 0, 0.5, 1, 10);
 
-INSERT OR IGNORE INTO engines (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed) VALUES
+INSERT OR IGNORE INTO ""eq-engines"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, speed) VALUES
     (1, 'test_engine', 'Тестовый двигатель', 'Двигатель для проверки.', 200, 5, 0, 1, 1, 10, 4, 10.0);
 
-INSERT OR IGNORE INTO scanners (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius) VALUES
+INSERT OR IGNORE INTO ""eq-scanners"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius) VALUES
     (1, 'test_scanner', 'Тестовый сканер', 'Сканер для проверки.', 150, 2, 0, 1, 1, 3, 6, 100.0);
 
-INSERT OR IGNORE INTO shields (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen) VALUES
+INSERT OR IGNORE INTO ""eq-shields"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen) VALUES
     (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 7, 5, 25.0, 300.0, 5.0);
 
 INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, power, cpu, acceleration, prefab_size, prefab_name, weapon_slots, shield_slots, engine_slots) VALUES
