@@ -66,6 +66,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void OnStateChanged()
         {
+            if (_state != null && !_state.ShowHyperlinks)
+            {
+                ClearLines();
+                return;
+            }
+
             Render(_state?.Galaxy, clearBefore: true);
         }
 

@@ -11,6 +11,7 @@ namespace _Project.Scripts.Core.GameState
         private StarSys[] _galaxy = Array.Empty<StarSys>();
         private ERunMode _runMode = ERunMode.Paused;
         private readonly SelectedService _selectedService = new SelectedService();
+        private bool _showHyperlinks = true;
 
         public event Action StateChanged; // Уведомление для UI/логики о смене состояния.
 
@@ -21,6 +22,7 @@ namespace _Project.Scripts.Core.GameState
         public ERunMode RunMode => _runMode;
         public StarSys[] Galaxy => _galaxy;
         public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex;
+        public bool ShowHyperlinks => _showHyperlinks;
         /// <summary>Сервис выбора объекта.</summary>
         public SelectedService SelectedService => _selectedService;
 
@@ -42,6 +44,15 @@ namespace _Project.Scripts.Core.GameState
         {
             _galaxy = galaxy ?? Array.Empty<StarSys>();
             _selectedService.SelectedSystemService.OnGalaxySet(_galaxy);
+            NotifyChanged();
+        }
+
+        public void SetShowHyperlinks(bool show)
+        {
+            if (_showHyperlinks == show)
+                return;
+
+            _showHyperlinks = show;
             NotifyChanged();
         }
 
