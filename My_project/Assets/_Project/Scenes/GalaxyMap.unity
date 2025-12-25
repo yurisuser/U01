@@ -424,6 +424,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1443578715
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 569236450400836571, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3695153838410723144, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
+      propertyPath: m_Name
+      value: GalaxyMapTopBar
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
 --- !u!1 &1830487891
 GameObject:
   m_ObjectHideFlags: 0
@@ -486,6 +543,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.GalaxyMap.Runtime.ConstellationLinksRenderer
   lineMaterial: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   lineColor: {r: 0.4, g: 0.8, b: 1, a: 0.5}
+  constellationSaturation: 0.75
+  constellationValue: 0.9
+  constellationAlpha: 0.65
   lineWidthAtRefZoom: 0.1
   referenceOrthoSize: 60
   linksRoot: {fileID: 1830487893}
@@ -728,3 +788,4 @@ SceneRoots:
   - {fileID: 1830487893}
   - {fileID: 1978723898}
   - {fileID: 648835045}
+  - {fileID: 1443578715}
