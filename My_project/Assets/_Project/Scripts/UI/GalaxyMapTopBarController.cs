@@ -55,6 +55,10 @@ namespace _Project.Scripts.UI
             if (!isActiveAndEnabled)
                 return;
 
+            var doc = GetComponent<UIDocument>();
+            if (doc == null || doc.rootVisualElement == null)
+                return;
+
             if (!TryResolveElements())
                 return;
 
@@ -72,6 +76,8 @@ namespace _Project.Scripts.UI
             }
 
             _root = _doc.rootVisualElement;
+            if (_root == null)
+                return false;
             if (_root.childCount == 0 && _doc.visualTreeAsset != null)
             {
                 _root.Clear();
@@ -100,10 +106,8 @@ namespace _Project.Scripts.UI
 
         private void OnLinkClicked(ClickEvent evt)
         {
-            if (_state == null)
-                return;
-
-            _state.SetShowHyperlinks(!_state.ShowHyperlinks);
+            var settings = SettingsService.Instance;
+            settings.SetShowHyperlinks(!settings.ShowHyperlinks);
         }
 
         private void RefreshLinkVisual()

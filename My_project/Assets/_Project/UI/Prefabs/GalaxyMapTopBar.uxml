@@ -1,19 +1,27 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_Project/UI/Styles/GalaxyMapTopBar.uss?fileID=7433441132597879392&amp;guid=43b7a34059174aa586c08117fa9e6515&amp;type=3#GalaxyMapTopBar" />
-    <ui:VisualElement name="GalaxyMapTopBar" class="GalaxyMapTopBar" style="position: absolute; top: 0; left: 0; right: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-width: 0; border-right-width: 0; border-left-width: 0;">
-        <ui:Label name="TitleLabel" text="GALAXY MAP MODES" class="TopBarTitle" />
-        <ui:VisualElement name="ToggleRow" class="ToggleRow" style="-unity-text-align: upper-center; flex-direction: row-reverse; flex-shrink: 0; white-space: normal; justify-content: flex-end;">
-            <ui:VisualElement name="VisualElement1" style="flex-grow: 1; width: 100px; align-items: auto;">
-                <ui:Label text="Links" style="width: 100px; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: 100px;" />
+    <ui:VisualElement name="GalaxyMapTopBarWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-self: auto; align-content: flex-start; align-items: flex-end;">
+        <ui:VisualElement name="GalaxyMapTopBar" class="GalaxyMapTopBar" style="border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; border-top-width: 0; border-right-width: 0; border-left-width: 0; align-content: flex-start; width: 100%;">
+            <ui:Label name="TitleLabel" text="GALAXY MAP MODES" class="TopBarTitle" />
+            <ui:VisualElement name="ToggleRow" class="ToggleRow" style="-unity-text-align: upper-center; flex-direction: row-reverse; flex-shrink: 0; white-space: normal; justify-content: flex-end;">
+                <ui:VisualElement name="VisualElement1" style="flex-grow: 1; width: 100px; align-items: auto;">
+                    <ui:Label text="Links" style="width: 100px; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: 100px;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="VisualElement2" style="flex-grow: 1; width: 100px; max-width: 100px; align-self: flex-end;">
+                    <ui:Label text="Stellaris" selectable="true" focusable="true" style="width: 100px; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: 100px;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="VisualElement3" style="flex-grow: 1; width: 100px; max-width: 100px;">
+                    <ui:Label text="Unuse" double-click-selects-word="false" style="width: 100px; color: rgb(255, 255, 255);" />
+                </ui:VisualElement>
+                <ui:VisualElement name="VisualElement4" style="flex-grow: 1; width: 100px; align-self: flex-end; max-width: 100px;">
+                    <ui:Label text="Unuse" style="width: 100px; color: rgb(255, 255, 255);" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="VisualElement2" style="flex-grow: 1; width: 100px; max-width: 100px; align-self: flex-end;">
-                <ui:Label text="Stellaris" selectable="true" focusable="true" style="width: 100px; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: 100px;" />
-            </ui:VisualElement>
-            <ui:VisualElement name="VisualElement3" style="flex-grow: 1; width: 100px; max-width: 100px;">
-                <ui:Label text="Unuse" double-click-selects-word="false" style="width: 100px; color: rgb(255, 255, 255);" />
-            </ui:VisualElement>
-            <ui:VisualElement name="VisualElement4" style="flex-grow: 1; width: 100px; align-self: flex-end; max-width: 100px;">
-                <ui:Label text="Unuse" style="width: 100px; color: rgb(255, 255, 255);" />
+        </ui:VisualElement>
+        <ui:VisualElement name="StarInfoElement" style="flex-grow: 1; width: 300px; height: 300px; background-color: rgba(135, 206, 250, 0);">
+            <ui:VisualElement style="flex-grow: 1; margin-right: 20px;">
+                <ui:Label text="Label" name="StarName" style="font-size: 35px; -unity-text-align: upper-right; color: rgb(217, 217, 217); -unity-font-style: bold-and-italic; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-left-color: rgb(250, 188, 0); border-right-color: rgb(250, 188, 0); border-top-color: rgb(250, 188, 0); border-bottom-color: rgb(250, 188, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 2px; border-left-width: 0;" />
+                <ui:VisualElement style="flex-grow: 1;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

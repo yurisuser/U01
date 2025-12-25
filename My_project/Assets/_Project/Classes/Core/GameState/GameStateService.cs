@@ -17,6 +17,7 @@ namespace _Project.Scripts.Core.GameState
 
         public GameStateService()
         {
+            _showHyperlinks = SettingsService.Instance.ShowHyperlinks;
         }
 
         public ERunMode RunMode => _runMode;
@@ -47,7 +48,7 @@ namespace _Project.Scripts.Core.GameState
             NotifyChanged();
         }
 
-        public void SetShowHyperlinks(bool show)
+        internal void ApplyShowHyperlinks(bool show)
         {
             if (_showHyperlinks == show)
                 return;
