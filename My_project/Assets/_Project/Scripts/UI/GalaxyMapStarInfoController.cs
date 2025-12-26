@@ -1,5 +1,6 @@
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,9 +15,11 @@ namespace _Project.Scripts.UI
         private VisualElement _root;
         private VisualElement _starInfoElement;
         private Label _starNameLabel;
+        private Label _paramLabel;
+        private Label _valueLabel;
         private VisualElement _closer;
         private EventCallback<ClickEvent> _onCloserClick;
-
+        private StarSys starSys;
         private void OnEnable()
         {
             if (!TryResolveElements())
@@ -50,13 +53,13 @@ namespace _Project.Scripts.UI
             if (!TryResolveElements())
                 return;
 
-            if (!TryFindStarName(starUid, out var starName))
+            if (!TryFindStarSys(starUid))
             {
                 Hide();
                 return;
             }
 
-            _starNameLabel.text = starName;
+            SetDataToUI();
             _starInfoElement.style.display = DisplayStyle.Flex;
         }
 
@@ -95,6 +98,8 @@ namespace _Project.Scripts.UI
 
             _starInfoElement = _root.Q<VisualElement>("StarInfoElement");
             _starNameLabel = _root.Q<Label>("StarName");
+            _paramLabel = _root.Q<Label>("Param");
+            _valueLabel = _root.Q<Label>("Value");
             _closer = _root.Q<VisualElement>("Closer");
 
             return _starInfoElement != null && _starNameLabel != null;
@@ -111,12 +116,11 @@ namespace _Project.Scripts.UI
             ClearStarInfo();
         }
 
-        private bool TryFindStarName(UID starUid, out string starName)
+        private bool TryFindStarSys(UID starUid)
         {
             var galaxy = GameBootstrap.GameState.Galaxy;
             if (galaxy == null || galaxy.Length == 0)
             {
-                starName = string.Empty;
                 return false;
             }
 
@@ -125,12 +129,35 @@ namespace _Project.Scripts.UI
                 if (galaxy[i].Uid.Type != starUid.Type || galaxy[i].Uid.Id != starUid.Id)
                     continue;
 
-                starName = galaxy[i].Name;
-                return !string.IsNullOrWhiteSpace(starName);
+                starSys = galaxy[i];
+                return true;
             }
-
-            starName = string.Empty;
             return false;
+        }
+
+        private void SetDataToUI()
+        {
+            var starName = string.IsNullOrWhiteSpace(starSys.Name) ? "Unknown" : starSys.Name;
+            int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
+
+            _starNameLabel.text = starName;
+            if (_paramLabel == null || _valueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("star type:").Append('\n');
+            valueList.Append(starSys.Star.type).Append('\n');
+
+            paramList.Append("star size:").Append('\n');
+            valueList.Append(starSys.Star.size).Append('\n');
+
+            paramList.Append("planets:");
+            valueList.Append(planetsCount);
+
+            _paramLabel.text = paramList.ToString();
+            _valueLabel.text = valueList.ToString();
         }
     }
 }

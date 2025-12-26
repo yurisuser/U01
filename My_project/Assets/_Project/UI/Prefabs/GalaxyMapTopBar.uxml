@@ -35,7 +35,10 @@
                         <ui:Label text="state" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement style="flex-grow: 1;" />
+                <ui:VisualElement name="ParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: bold-and-italic;">
+                    <ui:Label text="Param&#10;" name="Param" style="align-items: auto; -unity-text-align: upper-right; -unity-font-style: bold;" />
+                    <ui:Label text="Value" name="Value" parse-escape-sequences="true" />
+                </ui:VisualElement>
                 <ui:VisualElement style="flex-grow: 1;" />
             </ui:VisualElement>
         </ui:VisualElement>
