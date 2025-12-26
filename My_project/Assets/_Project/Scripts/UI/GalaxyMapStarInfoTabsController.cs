@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Text;
+using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,6 +17,14 @@ namespace _Project.Scripts.UI
         private UIDocument _doc;
         private VisualElement _root;
         private VisualElement _tabsContainer;
+        private Label _starNameLabel;
+        private Label _constellationNameLabel;
+        private VisualElement _starParamValue;
+        private VisualElement _systemParamValue;
+        private Label _starParamLabel;
+        private Label _starValueLabel;
+        private Label _systemParamLabel;
+        private Label _systemValueLabel;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
         private readonly Dictionary<Label, Color> _inactiveColors = new Dictionary<Label, Color>();
 
@@ -59,6 +69,14 @@ namespace _Project.Scripts.UI
             }
 
             _tabsContainer = _root.Q<VisualElement>(tabsContainerName);
+            _starNameLabel = _root.Q<Label>("StarName");
+            _constellationNameLabel = _root.Q<Label>("ConstellationName");
+            _starParamValue = _root.Q<VisualElement>("StarParamValue") ?? _root.Q<VisualElement>("ParamValue");
+            _systemParamValue = _root.Q<VisualElement>("SystemParamValue");
+            _starParamLabel = _starParamValue?.Q<Label>("Param");
+            _starValueLabel = _starParamValue?.Q<Label>("Value");
+            _systemParamLabel = _systemParamValue?.Q<Label>("Param");
+            _systemValueLabel = _systemParamValue?.Q<Label>("Value");
             return _tabsContainer != null;
         }
 
@@ -128,6 +146,98 @@ namespace _Project.Scripts.UI
                     label.style.color = color;
                 }
             }
+
+            var activeLabel = activeTab?.Q<Label>();
+            UpdateParamPanels(activeLabel?.text);
+        }
+
+        public void ApplyStarInfo(StarSys starSys)
+        {
+            if (_root == null && !TryResolveElements())
+                return;
+
+            if (_starNameLabel == null || _starParamLabel == null || _starValueLabel == null)
+                TryResolveElements();
+
+            var starName = string.IsNullOrWhiteSpace(starSys.Name) ? "Unknown" : starSys.Name;
+            int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
+
+            if (_starNameLabel != null)
+                _starNameLabel.text = starName;
+            if (_constellationNameLabel != null)
+                _constellationNameLabel.text = "ConstellationName   ";
+
+            if (_starParamLabel == null || _starValueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("star type:").Append('\n');
+            valueList.Append(starSys.Star.type).Append('\n');
+
+            paramList.Append("star size:").Append('\n');
+            valueList.Append(starSys.Star.size).Append('\n');
+
+            paramList.Append("temperature:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.temperature, "0", "K", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("mass:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.mass, "0.0000", "solar", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("radius:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.radius, "0.0000", "solar", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("luminosity:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.luminosity, "0.0000", "Lsun", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("age:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.age, "0.0", "Gyr", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("metallicity:").Append('\n');
+            valueList.Append(FormatWithUnit(starSys.Star.metallicity, "0.00", string.Empty, treatZeroAsMissing: false)).Append('\n');
+
+            paramList.Append("stability:").Append('\n');
+            valueList.Append(FormatFloat(starSys.Star.stability, treatZeroAsMissing: false)).Append('\n');
+
+            _starParamLabel.text = paramList.ToString();
+            _starValueLabel.text = valueList.ToString();
+        }
+
+        private static string FormatFloat(float value, bool treatZeroAsMissing)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                return "no info";
+            if (treatZeroAsMissing && Mathf.Approximately(value, 0f))
+                return "no info";
+
+            return value.ToString("0.0000");
+        }
+
+        private static string FormatWithUnit(float value, string format, string unit, bool treatZeroAsMissing)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                return "no info";
+            if (treatZeroAsMissing && Mathf.Approximately(value, 0f))
+                return "no info";
+
+            var text = value.ToString(format);
+            return string.IsNullOrWhiteSpace(unit) ? text : $"{text} {unit}";
+        }
+
+        private void UpdateParamPanels(string activeLabelText)
+        {
+            var active = string.IsNullOrWhiteSpace(activeLabelText)
+                ? string.Empty
+                : activeLabelText.ToLowerInvariant();
+
+            bool showStar = active == "star";
+            bool showSystem = active == "system";
+
+            if (_starParamValue != null)
+                _starParamValue.style.display = showStar ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_systemParamValue != null)
+                _systemParamValue.style.display = showSystem ? DisplayStyle.Flex : DisplayStyle.None;
         }
     }
 }

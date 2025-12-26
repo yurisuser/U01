@@ -38,7 +38,11 @@
                         <ui:Label text="sub" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="ParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic;">
+                <ui:VisualElement name="StarParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic; font-size: 12px;">
+                    <ui:Label text="Param&#10;" name="Param" style="align-items: auto; -unity-text-align: upper-right; -unity-font-style: normal;" />
+                    <ui:Label text="Value" name="Value" parse-escape-sequences="true" />
+                </ui:VisualElement>
+                <ui:VisualElement name="SystemParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic; font-size: 12px;">
                     <ui:Label text="Param&#10;" name="Param" style="align-items: auto; -unity-text-align: upper-right; -unity-font-style: normal;" />
                     <ui:Label text="Value" name="Value" parse-escape-sequences="true" />
                 </ui:VisualElement>

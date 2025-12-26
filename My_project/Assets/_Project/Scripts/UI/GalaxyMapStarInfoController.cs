@@ -1,6 +1,5 @@
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,13 +13,10 @@ namespace _Project.Scripts.UI
         private UIDocument _doc;
         private VisualElement _root;
         private VisualElement _starInfoElement;
-        private Label _starNameLabel;
-        private Label _constellationName;
-        private Label _paramLabel;
-        private Label _valueLabel;
         private VisualElement _closer;
         private EventCallback<ClickEvent> _onCloserClick;
         private StarSys starSys;
+        private GalaxyMapStarInfoTabsController _tabsController;
         private void OnEnable()
         {
             if (!TryResolveElements())
@@ -98,13 +94,11 @@ namespace _Project.Scripts.UI
             }
 
             _starInfoElement = _root.Q<VisualElement>("StarInfoElement");
-            _starNameLabel = _root.Q<Label>("StarName");
-            _paramLabel = _root.Q<Label>("Param");
-            _valueLabel = _root.Q<Label>("Value");
             _closer = _root.Q<VisualElement>("Closer");
-            _constellationName =  _root.Q<Label>("ConstellationName");
+            if (_tabsController == null)
+                _tabsController = GetComponent<GalaxyMapStarInfoTabsController>();
 
-            return _starInfoElement != null && _starNameLabel != null;
+            return _starInfoElement != null;
         }
 
         private void OnDisable()
@@ -139,28 +133,8 @@ namespace _Project.Scripts.UI
 
         private void SetDataToUI()
         {
-            var starName = string.IsNullOrWhiteSpace(starSys.Name) ? "Unknown" : starSys.Name;
-            int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
-
-            _starNameLabel.text = starName;
-            _constellationName.text = "ConstellationName   ";
-            if (_paramLabel == null || _valueLabel == null)
-                return;
-
-            var paramList = new StringBuilder();
-            var valueList = new StringBuilder();
-
-            paramList.Append("star type:").Append('\n');
-            valueList.Append(starSys.Star.type).Append('\n');
-
-            paramList.Append("star size:").Append('\n');
-            valueList.Append(starSys.Star.size).Append('\n');
-
-            paramList.Append("planets:");
-            valueList.Append(planetsCount);
-
-            _paramLabel.text = paramList.ToString();
-            _valueLabel.text = valueList.ToString();
+            if (_tabsController != null)
+                _tabsController.ApplyStarInfo(starSys);
         }
     }
 }
