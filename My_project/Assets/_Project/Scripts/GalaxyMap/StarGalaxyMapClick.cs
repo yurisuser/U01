@@ -1,6 +1,7 @@
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core.Scene;
+using _Project.Scripts.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,12 +21,17 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [Header("����� (�᫨ ���� - ������ MainCamera)")]
         [SerializeField] private Camera cam;
 
+        [Header("UI (панель звезды)")]
+        [SerializeField] private GalaxyMapStarInfoController starInfoPanel;
+
         private Collider _col;
 
         private void Awake()
         {
             _col = GetComponent<Collider>();
             if (!cam) cam = Camera.main;
+            if (!starInfoPanel)
+                starInfoPanel = FindFirstObjectByType<GalaxyMapStarInfoController>();
         }
 
         private void Update()
@@ -79,6 +85,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void OnRightClick()
         {
+            if (System.HasValue)
+                starInfoPanel?.ShowStarInfo(System.Value.Uid);
+            else
+                starInfoPanel?.ClearStarInfo();
+
             if (!logClick)
                 return;
 
