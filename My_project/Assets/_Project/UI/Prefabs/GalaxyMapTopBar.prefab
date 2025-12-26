@@ -10,7 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 569236450400836571}
   - component: {fileID: 2721484593201038172}
+  - component: {fileID: 2885361994970379119}
   - component: {fileID: 4520747835706836828}
+  - component: {fileID: 5399759193109027799}
   m_Layer: 0
   m_Name: GalaxyMapTopBar
   m_TagString: Untagged
@@ -69,3 +71,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hideWhenEmpty: 1
+--- !u!114 &2885361994970379119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3695153838410723144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1220dba4b3a42a79b9e8730bd9bb2e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelBackground: {r: 0.07, g: 0.1, b: 0.16, a: 0.9}
+  linkOnColor: {r: 0.1, g: 0.85, b: 0.3, a: 1}
+  linkOffColor: {r: 1, g: 1, b: 1, a: 1}
+  linkDisabledColor: {r: 0.25, g: 0.25, b: 0.28, a: 0.6}
+--- !u!114 &5399759193109027799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3695153838410723144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 171e4ce995e645bb8f43741ab17add13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tabsContainerName: buttons
+  defaultTabLabel: star
+  activeColor: {r: 0.1, g: 0.85, b: 0.3, a: 1}
