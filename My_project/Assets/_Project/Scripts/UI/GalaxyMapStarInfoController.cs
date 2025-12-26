@@ -15,6 +15,7 @@ namespace _Project.Scripts.UI
         private VisualElement _root;
         private VisualElement _starInfoElement;
         private Label _starNameLabel;
+        private Label _constellationName;
         private Label _paramLabel;
         private Label _valueLabel;
         private VisualElement _closer;
@@ -101,6 +102,7 @@ namespace _Project.Scripts.UI
             _paramLabel = _root.Q<Label>("Param");
             _valueLabel = _root.Q<Label>("Value");
             _closer = _root.Q<VisualElement>("Closer");
+            _constellationName =  _root.Q<Label>("ConstellationName");
 
             return _starInfoElement != null && _starNameLabel != null;
         }
@@ -141,6 +143,7 @@ namespace _Project.Scripts.UI
             int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
 
             _starNameLabel.text = starName;
+            _constellationName.text = "ConstellationName   ";
             if (_paramLabel == null || _valueLabel == null)
                 return;
 
