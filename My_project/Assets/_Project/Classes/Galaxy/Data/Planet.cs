@@ -4,15 +4,15 @@ namespace _Project.Scripts.Galaxy.Data
     {
         public Core.UID Uid;
         public int NameId;         // ID записи в локализации
-        public float Mass;         // ���� (� �᫮���� ��.)
-        public EPlanetType Type;   // ��� ������� (������ ������, ��������, ���ﭠ� � �.�.)
-        public float Atmosphere;   // ���⭮��� �⬮���� (0 = ���, 1 = ������, >1 = ���⭥�)
-        public float Radius;       // ������ (� ������ ࠤ���� ��� �᫮���� ��.)
-        public float OrbitalDistance; // �����ﭨ� �� ������ (AU ��� �᫮��� ��.)
-        public float OrbitalPeriod;   // ��ਮ� ���饭�� (� ������ ����� ��� �᫮���� ��.)
-        public float Temperature;  // �।��� ⥬������ �����孮�� (K)
-        public float Gravity;      // �ࠢ���� �� �����孮�� (g)
-        public PlanetResource[] Resources;  // ����� ������ ����
+        public float Mass;
+        public EPlanetType Type;
+        public float Atmosphere;
+        public float Radius;
+        public float OrbitalDistance;
+        public float OrbitalPeriod;
+        public float Temperature;
+        public float Gravity;
+        public PlanetResource[] Resources;
 
         public string Name
         {

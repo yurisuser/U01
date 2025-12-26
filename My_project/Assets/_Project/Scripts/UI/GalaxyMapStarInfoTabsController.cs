@@ -202,6 +202,37 @@ namespace _Project.Scripts.UI
 
             _starParamLabel.text = paramList.ToString();
             _starValueLabel.text = valueList.ToString();
+
+            if (_systemParamLabel == null || _systemValueLabel == null)
+                return;
+
+            var systemParamList = new StringBuilder();
+            var systemValueList = new StringBuilder();
+            var planets = starSys.PlanetSysArr;
+
+            if (planets == null || planets.Length == 0)
+            {
+                systemParamList.Append("");
+                systemValueList.Append("no objects");
+            }
+            else
+            {
+                for (int i = 0; i < planets.Length; i++)
+                {
+                    systemParamList.Append(planets[i].Planet.Type).Append(':');
+                    var planetName = string.IsNullOrWhiteSpace(planets[i].Planet.Name) ? "no info" : planets[i].Planet.Name;
+                    systemValueList.Append(planetName);
+
+                    if (i < planets.Length - 1)
+                    {
+                        systemParamList.Append('\n');
+                        systemValueList.Append('\n');
+                    }
+                }
+            }
+
+            _systemParamLabel.text = systemParamList.ToString();
+            _systemValueLabel.text = systemValueList.ToString();
         }
 
         private static string FormatFloat(float value, bool treatZeroAsMissing)
