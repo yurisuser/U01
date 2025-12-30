@@ -28,6 +28,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         private readonly List<LineRenderer> _lines = new();
         private GameStateService _state;
         private Material _runtimeMaterial;
+        private StarSys[] _renderedGalaxy;
 
         private void Awake()
         {
@@ -68,11 +69,17 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         {
             if (_state != null && !_state.ShowHyperlinks)
             {
-                ClearLines();
+                SetLinesVisible(false);
                 return;
             }
 
-            Render(_state?.Galaxy, clearBefore: true);
+            if (_state == null)
+                return;
+
+            SetLinesVisible(true);
+
+            if (_renderedGalaxy != _state.Galaxy)
+                Render(_state.Galaxy, clearBefore: true);
         }
 
         public void Render(StarSys[] systems, bool clearBefore = true)
@@ -89,6 +96,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             var parent = linksRoot ? linksRoot : transform;
             var edgeSet = new HashSet<long>();
+
+            _renderedGalaxy = systems;
 
             for (int i = 0; i < systems.Length; i++)
             {
@@ -169,6 +178,19 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     Destroy(lr.gameObject);
             }
             _lines.Clear();
+            _renderedGalaxy = null;
+        }
+
+        private void SetLinesVisible(bool visible)
+        {
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                var lr = _lines[i];
+                if (!lr)
+                    continue;
+
+                lr.enabled = visible;
+            }
         }
 
         private void LateUpdate()
