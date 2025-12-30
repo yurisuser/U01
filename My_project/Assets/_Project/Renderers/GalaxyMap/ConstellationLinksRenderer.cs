@@ -18,6 +18,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private float constellationAlpha = 0.65f;
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
+        [SerializeField] private float interLinkWidthMultiplier = 2f;
+        [SerializeField] private float interLinkDotSpacing = 8f;
+        [SerializeField] private float interLinkDotLength = 2f;
 
         [Header("Render root")]
         [SerializeField] private Transform linksRoot;
@@ -27,10 +30,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private readonly List<LineRenderer> _lines = new();
         private readonly List<HyperlinkEdge> _lineEdges = new();
+        private readonly List<float> _lineWidthScales = new();
         private GameStateService _state;
         private Material _runtimeMaterial;
         private StarSys[] _renderedGalaxy;
         private bool _useHyperlinkColoring;
+        private Color[] _constellationColors;
 
         private void Awake()
         {
@@ -113,6 +118,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             _renderedGalaxy = systems;
             _useHyperlinkColoring = _state != null && _state.UseHyperlinkColoring;
+            BuildConstellationColors();
 
             for (int i = 0; i < systems.Length; i++)
             {
@@ -130,12 +136,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     if (!edgeSet.Add(key))
                         continue;
 
-                    var line = CreateLine(parent);
-                    line.SetPosition(0, systems[i].GalaxyPosition);
-                    line.SetPosition(1, systems[other].GalaxyPosition);
-                    _lineEdges.Add(new HyperlinkEdge(i, other));
-                    ApplyLineColor(line, i, other);
-                    _lines.Add(line);
+                    bool isInter = systems[i].ConstellationId != systems[other].ConstellationId;
+                    CreateLinkVisual(parent, systems[i].GalaxyPosition, systems[other].GalaxyPosition, i, other, isInter);
                 }
             }
         }
@@ -192,7 +194,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             }
             _lines.Clear();
             _lineEdges.Clear();
+            _lineWidthScales.Clear();
             _renderedGalaxy = null;
+            _constellationColors = null;
         }
 
         private void SetLinesVisible(bool visible)
@@ -221,7 +225,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 if (!lr)
                     continue;
 
-                lr.widthMultiplier = width;
+                float scale = i < _lineWidthScales.Count ? _lineWidthScales[i] : 1f;
+                lr.widthMultiplier = width * scale;
             }
         }
 
@@ -229,6 +234,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         {
             if (_renderedGalaxy == null || _lines.Count != _lineEdges.Count)
                 return;
+
+            if (_useHyperlinkColoring && _constellationColors == null)
+                BuildConstellationColors();
 
             for (int i = 0; i < _lines.Count; i++)
             {
@@ -267,6 +275,47 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             line.endColor = colorB;
         }
 
+        private void CreateLinkVisual(Transform parent, Vector3 aPos, Vector3 bPos, int aIndex, int bIndex, bool isInter)
+        {
+            if (!isInter)
+            {
+                var line = CreateLine(parent);
+                line.SetPosition(0, aPos);
+                line.SetPosition(1, bPos);
+                _lines.Add(line);
+                _lineEdges.Add(new HyperlinkEdge(aIndex, bIndex));
+                _lineWidthScales.Add(1f);
+                ApplyLineColor(line, aIndex, bIndex);
+                return;
+            }
+
+            float spacing = Mathf.Max(0.1f, interLinkDotSpacing);
+            float length = Mathf.Clamp(interLinkDotLength, 0.05f, spacing);
+            Vector3 dir = (bPos - aPos);
+            float dist = dir.magnitude;
+            if (dist <= 0.0001f)
+                return;
+
+            dir /= dist;
+            int dotCount = Mathf.Max(1, Mathf.FloorToInt(dist / spacing));
+
+            for (int i = 0; i < dotCount; i++)
+            {
+                Vector3 start = aPos + dir * (i * spacing);
+                Vector3 end = start + dir * length;
+                if (Vector3.Dot(end - bPos, dir) > 0f)
+                    end = bPos;
+
+                var line = CreateLine(parent);
+                line.SetPosition(0, start);
+                line.SetPosition(1, end);
+                _lines.Add(line);
+                _lineEdges.Add(new HyperlinkEdge(aIndex, bIndex));
+                _lineWidthScales.Add(interLinkWidthMultiplier);
+                ApplyLineColor(line, aIndex, bIndex);
+            }
+        }
+
         private static long GetEdgeKey(int a, int b)
         {
             int min = a < b ? a : b;
@@ -277,13 +326,18 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         // Цвет по id созвездия: стабильный, но визуально различимый.
         private Color GetConstellationColor(int constellationId)
         {
-            if (constellationId < 0)
+            if (constellationId <= 0)
                 return lineColor;
 
-            float hue = Hash01(constellationId);
-            var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
-            color.a = constellationAlpha;
-            return color;
+            if (_constellationColors == null || constellationId >= _constellationColors.Length)
+            {
+                float hue = Hash01(constellationId);
+                var fallback = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
+                fallback.a = constellationAlpha;
+                return fallback;
+            }
+
+            return _constellationColors[constellationId];
         }
 
         private static float Hash01(int seed)
@@ -300,6 +354,140 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 x ^= x >> 14;
                 return (x & 0xFFFFFFu) / 16777216f;
             }
+        }
+
+        private void BuildConstellationColors()
+        {
+            if (_renderedGalaxy == null || _renderedGalaxy.Length == 0)
+            {
+                _constellationColors = null;
+                return;
+            }
+
+            int maxId = 0;
+            for (int i = 0; i < _renderedGalaxy.Length; i++)
+            {
+                int cid = _renderedGalaxy[i].ConstellationId;
+                if (cid > maxId)
+                    maxId = cid;
+            }
+
+            if (maxId <= 0)
+            {
+                _constellationColors = null;
+                return;
+            }
+
+            var neighbors = new HashSet<int>[maxId + 1];
+            for (int i = 0; i <= maxId; i++)
+                neighbors[i] = new HashSet<int>();
+
+            for (int i = 0; i < _renderedGalaxy.Length; i++)
+            {
+                int cidA = _renderedGalaxy[i].ConstellationId;
+                if (cidA <= 0)
+                    continue;
+
+                var links = _renderedGalaxy[i].links;
+                if (links == null)
+                    continue;
+
+                for (int j = 0; j < links.Length; j++)
+                {
+                    int other = links[j];
+                    if (other < 0 || other >= _renderedGalaxy.Length)
+                        continue;
+
+                    int cidB = _renderedGalaxy[other].ConstellationId;
+                    if (cidB <= 0 || cidA == cidB)
+                        continue;
+
+                    neighbors[cidA].Add(cidB);
+                    neighbors[cidB].Add(cidA);
+                }
+            }
+
+            // Разные диапазоны оттенков для соседних созвездий.
+            float[] bandCenters = { 0.02f, 0.12f, 0.25f, 0.42f, 0.58f, 0.72f, 0.85f };
+            float bandJitter = 0.025f;
+            int bandCount = bandCenters.Length;
+
+            var constellationIds = new List<int>();
+            for (int i = 1; i <= maxId; i++)
+                if (neighbors[i].Count > 0 || HasConstellation(i))
+                    constellationIds.Add(i);
+
+            constellationIds.Sort((a, b) => neighbors[b].Count.CompareTo(neighbors[a].Count));
+
+            var bands = new int[maxId + 1];
+            for (int i = 0; i < bands.Length; i++)
+                bands[i] = -1;
+
+            for (int i = 0; i < constellationIds.Count; i++)
+            {
+                int cid = constellationIds[i];
+                var used = new bool[bandCount];
+                foreach (var n in neighbors[cid])
+                {
+                    int nb = bands[n];
+                    if (nb >= 0 && nb < bandCount)
+                        used[nb] = true;
+                }
+
+                int chosen = -1;
+                for (int b = 0; b < bandCount; b++)
+                {
+                    if (!used[b])
+                    {
+                        chosen = b;
+                        break;
+                    }
+                }
+
+                if (chosen < 0)
+                {
+                    int bestBand = 0;
+                    int bestConflicts = int.MaxValue;
+                    for (int b = 0; b < bandCount; b++)
+                    {
+                        int conflicts = 0;
+                        foreach (var n in neighbors[cid])
+                            if (bands[n] == b)
+                                conflicts++;
+                        if (conflicts < bestConflicts)
+                        {
+                            bestConflicts = conflicts;
+                            bestBand = b;
+                        }
+                    }
+                    chosen = bestBand;
+                }
+
+                bands[cid] = chosen;
+            }
+
+            _constellationColors = new Color[maxId + 1];
+            for (int i = 1; i <= maxId; i++)
+            {
+                int band = bands[i];
+                float hue = (band >= 0 && band < bandCount) ? bandCenters[band] : Hash01(i);
+                float jitter = (Hash01(i * 92821) - 0.5f) * 2f * bandJitter;
+                hue = Mathf.Repeat(hue + jitter + 1f, 1f);
+
+                var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
+                color.a = constellationAlpha;
+                _constellationColors[i] = color;
+            }
+        }
+
+        private bool HasConstellation(int id)
+        {
+            for (int i = 0; i < _renderedGalaxy.Length; i++)
+            {
+                if (_renderedGalaxy[i].ConstellationId == id)
+                    return true;
+            }
+            return false;
         }
     }
 }
