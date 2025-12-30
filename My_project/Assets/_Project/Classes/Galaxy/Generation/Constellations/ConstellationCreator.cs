@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using Delaunator;
 using UnityEngine;
@@ -7,10 +8,6 @@ namespace _Project.Scripts.Galaxy.Generation
 {
     public static class ConstellationCreator
     {
-        // Константы как в олде (Settings.Galaxy)
-        private const int ConstellationAmount = 30;
-        private const float PeripheryRadius = 480f;
-
         private static List<List<int>> _hypersList;
         private static Sector[] _sectorsArr;
         private static StarDistance[][] _distancesSorted;
@@ -113,7 +110,7 @@ namespace _Project.Scripts.Galaxy.Generation
 
             for (int i = 1; i < _galaxy.Length; i++)
             {
-                if (_distanceFromCenter[i] > PeripheryRadius)
+                if (_distanceFromCenter[i] > GalaxyConstants.PeripheryRadius)
                     RemoveAllConnections(i);
             }
         }
@@ -123,7 +120,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Для звёзд за радиусом возвращаем минимум одну связь, чтобы не остались изолированными.
             for (int i = 0; i < _distancesSorted[0].Length; i++)
             {
-                if (_distancesSorted[0][i].distance < PeripheryRadius)
+                if (_distancesSorted[0][i].distance < GalaxyConstants.PeripheryRadius)
                     continue;
                 AddOnceForClear(_distancesSorted[0][i].index);
             }
@@ -140,7 +137,7 @@ namespace _Project.Scripts.Galaxy.Generation
                     AddConnection(id, idNeib);
                     break;
                 }
-                if (_distanceFromCenter[idNeib] <= PeripheryRadius)
+                if (_distanceFromCenter[idNeib] <= GalaxyConstants.PeripheryRadius)
                 {
                     AddConnection(id, idNeib);
                     break;
@@ -151,7 +148,7 @@ namespace _Project.Scripts.Galaxy.Generation
         private static void InitSectors()
         {
             // Создаём созвездия по индексу: 1..ConstellationAmount-1.
-            _sectorsArr = new Sector[ConstellationAmount];
+            _sectorsArr = new Sector[GalaxyConstants.ConstellationAmount];
             for (int i = 1; i < _sectorsArr.Length; i++)
             {
                 if (i >= _galaxy.Length)

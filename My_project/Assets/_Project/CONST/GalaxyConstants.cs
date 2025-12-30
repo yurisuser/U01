@@ -4,6 +4,19 @@
         // --- Орбиты ---
         public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
 
+        // --- Генерация галактики ---
+        public const int StarCount                 = 1300; // количество звезд в галактике
+        public const float GalaxyRadius            = 500f;  // радиус галактики (условные единицы)
+        public const float GalaxyStarLayer         = 0f;    // слой расположения звезд по оси Z
+        public const float DensityArms             = 3f;    // коэффициент плотности спиральных рукавов
+        public const float WidthArms               = 60f;   // ширина спиральных рукавов
+        public const float MinStarInterval         = 3.5f;  // минимальная дистанция между звездами
+        public const float CentralBlackHoleIntervalK = 10f; // множитель дистанции рядом с ядром
+        public const int MaxAttemptsPerStar        = 64;    // максимум попыток подобрать позицию
+        // --- Генерация созвездий ---
+        public const int ConstellationAmount       = 45;    // количество созвездий
+        public const float PeripheryRadius         = 480f;  // радиус периферии для связей
+
         // --- Типы звёзд (вес) ---
         public const int StarRedWeight     = 10; // красные
         public const int StarOrangeWeight  = 10; // оранжевые
@@ -102,4 +115,3 @@
             {  1,  1,  2,  2,  2,  2,  2,  2,  1,  1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     }
 }
-

@@ -1,4 +1,5 @@
 using System;
+using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Simulation;
 using UnityEngine;
@@ -7,23 +8,13 @@ namespace _Project.Scripts.Galaxy.Generation
 {
     public static class GalaxyCreator
     {
-        // === Параметры генерации ===
-        private const int   StarCount                 = 1300;  // Количество звезд в галактике
-        private const float GalaxyRadius              = 500f;  // Радиус галактики (условные единицы)
-        private const float GalaxyStarLayer           = 0f;    // Слой расположения звезд по оси Z
-        private const float DensityArms               = 3f;    // Коэффициент плотности спиральных рукавов
-        private const float WidthArms                 = 60f;   // Ширина спиральных рукавов
-        private const float MinStarInterval           = 3.5f;  // Минимальная дистанция между звездами
-        private const float CentralBlackHoleIntervalK = 10f;   // Множитель дистанции рядом с ядром
-        private const int   MaxAttemptsPerStar        = 64;    // Максимум попыток подобрать позицию
-
         // Служебные значения
         private static float _lastRawX;
         private static float _lastRawY;
 
         public static StarSys[] Create()
         {
-            var galaxy = CreateSpiralGalaxy(StarCount, GalaxyStarLayer); // Создаем заготовку спиральной галактики
+            var galaxy = CreateSpiralGalaxy(GalaxyConstants.StarCount, GalaxyConstants.GalaxyStarLayer); // Создаем заготовку спиральной галактики
             LocalizationDatabase.PrepareStarNames(galaxy.Length);
             LocalizationDatabase.ResetDynamicValues();
 
@@ -121,9 +112,9 @@ namespace _Project.Scripts.Galaxy.Generation
                     index: i,
                     placed: arr,
                     sampleFunc: () => GenerateStarsNoGaussianDistr(zLayer),
-                    baseMinDist: MinStarInterval,
-                    centerExtraK: CentralBlackHoleIntervalK,
-                    maxAttempts: MaxAttemptsPerStar
+                    baseMinDist: GalaxyConstants.MinStarInterval,
+                    centerExtraK: GalaxyConstants.CentralBlackHoleIntervalK,
+                    maxAttempts: GalaxyConstants.MaxAttemptsPerStar
                 );
 
                 sys.GalaxyPosition = pos;
@@ -142,11 +133,11 @@ namespace _Project.Scripts.Galaxy.Generation
             float xSeed = UnityEngine.Random.Range(-1f, 1f);
             if (Mathf.Approximately(xSeed, 0f)) xSeed = 0.0001f;
 
-            float y = UnityEngine.Random.Range(-GalaxyRadius, GalaxyRadius);
+            float y = UnityEngine.Random.Range(-GalaxyConstants.GalaxyRadius, GalaxyConstants.GalaxyRadius);
 
             // Смещаем координату в зависимости от |xSeed|, чтобы избежать NaN и скученности точек
-            float xCore = Mathf.Pow(Mathf.Abs(xSeed), DensityArms) * GalaxyRadius
-                        + UnityEngine.Random.Range(-WidthArms, WidthArms);
+            float xCore = Mathf.Pow(Mathf.Abs(xSeed), GalaxyConstants.DensityArms) * GalaxyConstants.GalaxyRadius
+                        + UnityEngine.Random.Range(-GalaxyConstants.WidthArms, GalaxyConstants.WidthArms);
 
             float sign = UnityEngine.Random.value > 0.5f ? 1f : -1f;
             float x = xCore * sign;
@@ -169,13 +160,13 @@ namespace _Project.Scripts.Galaxy.Generation
             // Определяем, в какой рукав попадет точка
             radius *= (vec.x - vec.y) < 0f ? -1f : 1f;
 
-            float normalizedRadius = Mathf.Abs(radius) / GalaxyRadius;
+            float normalizedRadius = Mathf.Abs(radius) / GalaxyConstants.GalaxyRadius;
             float newAngle = angle + normalizedRadius * normalizedRadius * 4f;
 
             float x = Mathf.Cos(newAngle) * radius;
             float y = Mathf.Sin(newAngle) * radius;
 
-            return new Vector3(x, y, GalaxyStarLayer);
+            return new Vector3(x, y, GalaxyConstants.GalaxyStarLayer);
         }
 
         private static Vector3 PlaceWithMinDistance(int index, StarSys[] placed, Func<Vector3> sampleFunc, float baseMinDist, float centerExtraK, int maxAttempts)
