@@ -229,7 +229,7 @@ MonoBehaviour:
   maxX: 500
   minY: -500
   maxY: 500
-  minZoom: 100
+  minZoom: 35
   maxZoom: 1000
   zoomSpeed: 50
   dragDamp: 1

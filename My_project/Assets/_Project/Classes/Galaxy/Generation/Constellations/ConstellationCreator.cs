@@ -282,10 +282,10 @@ namespace _Project.Scripts.Galaxy.Generation
 
                 for (int k = 0; k < _sectorsArr[i].bestNeibourSectorMembersList.Count; k++)
                 {
-                    AddConnection(
-                        _sectorsArr[i].bestNeibourSectorMembersList[k].idOwnSys,
-                        _sectorsArr[i].bestNeibourSectorMembersList[k].idExternSys
-                    );
+                    var best = _sectorsArr[i].bestNeibourSectorMembersList[k];
+                    int own = best.idOwnSys2 != 0 ? best.idOwnSys2 : best.idOwnSys;
+                    int ext = best.idExternSys2 != 0 ? best.idExternSys2 : best.idExternSys;
+                    AddConnection(own, ext);
                 }
             }
         }
@@ -505,22 +505,43 @@ namespace _Project.Scripts.Galaxy.Generation
             public void AddBest(int idOwn, int idExtern, float distance)
             {
                 int oldIndex = bestNeibourSectorMembersList.FindIndex(x => x.idNeibourSector == _galaxy[idExtern].ConstellationId);
-                var addingBest = new BestNeibourSectorMember
-                {
-                    idNeibourSector = _galaxy[idExtern].ConstellationId,
-                    idOwnSys = idOwn,
-                    idExternSys = idExtern,
-                    distance = distance
-                };
                 if (oldIndex < 0)
                 {
-                    bestNeibourSectorMembersList.Add(addingBest);
+                    bestNeibourSectorMembersList.Add(new BestNeibourSectorMember
+                    {
+                        idNeibourSector = _galaxy[idExtern].ConstellationId,
+                        idOwnSys = idOwn,
+                        idExternSys = idExtern,
+                        distance = distance,
+                        idOwnSys2 = 0,
+                        idExternSys2 = 0,
+                        distance2 = float.MaxValue
+                    });
                     return;
                 }
-                if (bestNeibourSectorMembersList[oldIndex].distance > distance)
+                var entry = bestNeibourSectorMembersList[oldIndex];
+                if (entry.idOwnSys == idOwn && entry.idExternSys == idExtern)
+                    return;
+                if (entry.idOwnSys2 == idOwn && entry.idExternSys2 == idExtern)
+                    return;
+
+                if (distance < entry.distance)
                 {
-                    bestNeibourSectorMembersList[oldIndex] = addingBest;
+                    entry.idOwnSys2 = entry.idOwnSys;
+                    entry.idExternSys2 = entry.idExternSys;
+                    entry.distance2 = entry.distance;
+                    entry.idOwnSys = idOwn;
+                    entry.idExternSys = idExtern;
+                    entry.distance = distance;
                 }
+                else if (distance < entry.distance2)
+                {
+                    entry.idOwnSys2 = idOwn;
+                    entry.idExternSys2 = idExtern;
+                    entry.distance2 = distance;
+                }
+
+                bestNeibourSectorMembersList[oldIndex] = entry;
             }
         }
 
@@ -537,6 +558,9 @@ namespace _Project.Scripts.Galaxy.Generation
             public int idOwnSys;
             public int idExternSys;
             public float distance;
+            public int idOwnSys2;
+            public int idExternSys2;
+            public float distance2;
         }
 
         private struct StarDistance

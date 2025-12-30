@@ -19,8 +19,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
         [SerializeField] private float interLinkWidthMultiplier = 2f;
-        [SerializeField] private float interLinkDotSpacing = 8f;
-        [SerializeField] private float interLinkDotLength = 2f;
+        [SerializeField] private float interLinkDotRatio = 0.3f;
+        [SerializeField] private float interLinkGapRatio = 0.3f;
 
         [Header("Render root")]
         [SerializeField] private Transform linksRoot;
@@ -289,14 +289,18 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
             }
 
-            float spacing = Mathf.Max(0.1f, interLinkDotSpacing);
-            float length = Mathf.Clamp(interLinkDotLength, 0.05f, spacing);
             Vector3 dir = (bPos - aPos);
             float dist = dir.magnitude;
             if (dist <= 0.0001f)
                 return;
 
             dir /= dist;
+            float dotRatio = Mathf.Clamp01(interLinkDotRatio);
+            float gapRatio = Mathf.Clamp01(interLinkGapRatio);
+            float length = dist * dotRatio;
+            float gap = dist * gapRatio;
+            float spacing = Mathf.Max(0.05f, length + gap);
+            length = Mathf.Clamp(length, 0.05f, spacing);
             int dotCount = Mathf.Max(1, Mathf.FloorToInt(dist / spacing));
 
             for (int i = 0; i < dotCount; i++)
