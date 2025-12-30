@@ -18,9 +18,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private float constellationAlpha = 0.65f;
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
+        [SerializeField] private Color interLinkColor = new Color(1f, 1f, 1f, 0.85f);
         [SerializeField] private float interLinkWidthMultiplier = 2f;
-        [SerializeField] private float interLinkDotRatio = 0.3f;
-        [SerializeField] private float interLinkGapRatio = 0.3f;
+        [SerializeField] private int interLinkDotCount = 10;
 
         [Header("Render root")]
         [SerializeField] private Transform linksRoot;
@@ -245,14 +245,22 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     continue;
 
                 var edge = _lineEdges[i];
-                ApplyLineColor(lr, edge.A, edge.B);
+                bool isInter = _renderedGalaxy[edge.A].ConstellationId != _renderedGalaxy[edge.B].ConstellationId;
+                ApplyLineColor(lr, edge.A, edge.B, isInter);
             }
         }
 
-        private void ApplyLineColor(LineRenderer line, int a, int b)
+        private void ApplyLineColor(LineRenderer line, int a, int b, bool isInter)
         {
             if (line == null)
                 return;
+
+            if (isInter)
+            {
+                line.startColor = interLinkColor;
+                line.endColor = interLinkColor;
+                return;
+            }
 
             if (_renderedGalaxy == null || a < 0 || b < 0 || a >= _renderedGalaxy.Length || b >= _renderedGalaxy.Length)
             {
@@ -285,7 +293,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 _lines.Add(line);
                 _lineEdges.Add(new HyperlinkEdge(aIndex, bIndex));
                 _lineWidthScales.Add(1f);
-                ApplyLineColor(line, aIndex, bIndex);
+                    ApplyLineColor(line, aIndex, bIndex, false);
                 return;
             }
 
@@ -295,13 +303,15 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
 
             dir /= dist;
-            float dotRatio = Mathf.Clamp01(interLinkDotRatio);
-            float gapRatio = Mathf.Clamp01(interLinkGapRatio);
-            float length = dist * dotRatio;
-            float gap = dist * gapRatio;
-            float spacing = Mathf.Max(0.05f, length + gap);
-            length = Mathf.Clamp(length, 0.05f, spacing);
-            int dotCount = Mathf.Max(1, Mathf.FloorToInt(dist / spacing));
+            int dotCount = Mathf.Max(1, interLinkDotCount);
+            int gapCount = Mathf.Max(0, dotCount - 1);
+            float unit = dist / (dotCount + gapCount);
+            if (unit <= 0.0001f)
+                return;
+
+            float length = unit;
+            float gap = gapCount > 0 ? unit : 0f;
+            float spacing = length + gap;
 
             for (int i = 0; i < dotCount; i++)
             {
@@ -316,7 +326,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 _lines.Add(line);
                 _lineEdges.Add(new HyperlinkEdge(aIndex, bIndex));
                 _lineWidthScales.Add(interLinkWidthMultiplier);
-                ApplyLineColor(line, aIndex, bIndex);
+                ApplyLineColor(line, aIndex, bIndex, true);
             }
         }
 
