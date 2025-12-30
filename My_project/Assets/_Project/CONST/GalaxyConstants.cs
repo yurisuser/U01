@@ -15,6 +15,8 @@
         public const int MaxAttemptsPerStar        = 64;    // максимум попыток подобрать позицию
         // --- Генерация созвездий ---
         public const int ConstellationAmount       = 45;    // количество созвездий
+
+        public const int MaxConstellationLinks     = 3; //максимальное количество связей у одной звезды
         public const float PeripheryRadius         = 480f;  // радиус периферии для связей
 
         // --- Типы звёзд (вес) ---

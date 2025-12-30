@@ -36,7 +36,9 @@ namespace _Project.Scripts.Galaxy.Generation
             Expansion();              // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
             AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
-            ApplyLinks();               // Запись линков в StarSys
+            SetMaxLinksLimit();       // Убираем лишние межзвездные связи
+            LinkUnlinked();           // соединяем разорванные созвездия
+            ApplyLinks();             // Запись линков в StarSys
         }
 
         public static HyperlinkEdge[] BuildHyperlinkEdges(StarSys[] galaxy)
@@ -284,6 +286,144 @@ namespace _Project.Scripts.Galaxy.Generation
                         _sectorsArr[i].bestNeibourSectorMembersList[k].idOwnSys,
                         _sectorsArr[i].bestNeibourSectorMembersList[k].idExternSys
                     );
+                }
+            }
+        }
+
+        private static void SetMaxLinksLimit()
+        {
+            int maxLinks = GalaxyConstants.MaxConstellationLinks;
+            if (maxLinks <= 0 || _hypersList == null)
+                return;
+
+            bool changed;
+            do
+            {
+                changed = false;
+                for (int i = 0; i < _hypersList.Count; i++)
+                {
+                    while (_hypersList[i].Count > maxLinks)
+                    {
+                        int removeId = -1;
+                        int bestDegree = -1;
+
+                        for (int j = 0; j < _hypersList[i].Count; j++)
+                        {
+                            int neighborId = _hypersList[i][j];
+                            int degree = _hypersList[neighborId].Count;
+                            if (degree > bestDegree)
+                            {
+                                bestDegree = degree;
+                                removeId = neighborId;
+                            }
+                        }
+
+                        if (removeId < 0)
+                            break;
+
+                        RemoveConnection(i, removeId);
+                        changed = true;
+                    }
+                }
+            } while (changed);
+        }
+
+        private static void LinkUnlinked()
+        {
+            if (_galaxy == null || _hypersList == null)
+                return;
+
+            var byConstellation = new Dictionary<int, List<int>>();
+            for (int i = 0; i < _galaxy.Length; i++)
+            {
+                int cid = _galaxy[i].ConstellationId;
+                if (cid <= 0)
+                    continue;
+
+                if (!byConstellation.TryGetValue(cid, out var list))
+                {
+                    list = new List<int>();
+                    byConstellation.Add(cid, list);
+                }
+                list.Add(i);
+            }
+
+            foreach (var entry in byConstellation)
+            {
+                int cid = entry.Key;
+                var nodes = entry.Value;
+                if (nodes.Count < 2)
+                    continue;
+
+                while (true)
+                {
+                    var components = new List<List<int>>();
+                    var visited = new HashSet<int>();
+
+                    for (int i = 0; i < nodes.Count; i++)
+                    {
+                        int start = nodes[i];
+                        if (visited.Contains(start))
+                            continue;
+
+                        var comp = new List<int>();
+                        var queue = new Queue<int>();
+                        queue.Enqueue(start);
+                        visited.Add(start);
+
+                        while (queue.Count > 0)
+                        {
+                            int cur = queue.Dequeue();
+                            comp.Add(cur);
+
+                            var neigh = _hypersList[cur];
+                            for (int n = 0; n < neigh.Count; n++)
+                            {
+                                int next = neigh[n];
+                                if (_galaxy[next].ConstellationId != cid)
+                                    continue;
+                                if (visited.Add(next))
+                                    queue.Enqueue(next);
+                            }
+                        }
+
+                        components.Add(comp);
+                    }
+
+                    if (components.Count <= 1)
+                        break;
+
+                    float bestDist = float.MaxValue;
+                    int bestA = -1;
+                    int bestB = -1;
+
+                    for (int a = 0; a < components.Count; a++)
+                    {
+                        for (int b = a + 1; b < components.Count; b++)
+                        {
+                            var compA = components[a];
+                            var compB = components[b];
+
+                            for (int i = 0; i < compA.Count; i++)
+                            {
+                                for (int j = 0; j < compB.Count; j++)
+                                {
+                                    float dist = Distance(compA[i], compB[j]);
+                                    if (dist < bestDist)
+                                    {
+                                        bestDist = dist;
+                                        bestA = compA[i];
+                                        bestB = compB[j];
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (bestA < 0 || bestB < 0)
+                        break;
+
+                    AddConnection(bestA, bestB);
                 }
             }
         }
