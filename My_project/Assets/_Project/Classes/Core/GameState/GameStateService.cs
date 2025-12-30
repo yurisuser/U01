@@ -14,12 +14,14 @@ namespace _Project.Scripts.Core.GameState
         private ERunMode _runMode = ERunMode.Paused;
         private readonly SelectedService _selectedService = new SelectedService();
         private bool _showHyperlinks = true;
+        private bool _useHyperlinkColoring = true;
 
         public event Action StateChanged; // Уведомление для UI/логики о смене состояния.
 
         public GameStateService()
         {
             _showHyperlinks = SettingsService.Instance.ShowHyperlinks;
+            _useHyperlinkColoring = SettingsService.Instance.UseHyperlinkColoring;
         }
 
         public ERunMode RunMode => _runMode;
@@ -27,6 +29,7 @@ namespace _Project.Scripts.Core.GameState
         public HyperlinkEdge[] HyperlinkEdges => _hyperlinkEdges;
         public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex;
         public bool ShowHyperlinks => _showHyperlinks;
+        public bool UseHyperlinkColoring => _useHyperlinkColoring;
         /// <summary>Сервис выбора объекта.</summary>
         public SelectedService SelectedService => _selectedService;
 
@@ -58,6 +61,15 @@ namespace _Project.Scripts.Core.GameState
                 return;
 
             _showHyperlinks = show;
+            NotifyChanged();
+        }
+
+        internal void ApplyUseHyperlinkColoring(bool use)
+        {
+            if (_useHyperlinkColoring == use)
+                return;
+
+            _useHyperlinkColoring = use;
             NotifyChanged();
         }
 

@@ -6,9 +6,11 @@ namespace _Project.Scripts.Core
     public sealed class SettingsService
     {
         private const string ShowHyperlinksKey = "Settings_ShowHyperlinks";
+        private const string UseHyperlinkColoringKey = "Settings_UseHyperlinkColoring";
         private static SettingsService _instance;
 
         private bool _showHyperlinks;
+        private bool _useHyperlinkColoring;
 
         public static SettingsService Instance
         {
@@ -24,9 +26,11 @@ namespace _Project.Scripts.Core
         private SettingsService()
         {
             _showHyperlinks = PlayerPrefs.GetInt(ShowHyperlinksKey, 1) == 1;
+            _useHyperlinkColoring = PlayerPrefs.GetInt(UseHyperlinkColoringKey, 1) == 1;
         }
 
         public bool ShowHyperlinks => _showHyperlinks;
+        public bool UseHyperlinkColoring => _useHyperlinkColoring;
 
         public void SetShowHyperlinks(bool show)
         {
@@ -40,6 +44,20 @@ namespace _Project.Scripts.Core
             var gameState = GameBootstrap.GameState;
             if (gameState != null)
                 gameState.ApplyShowHyperlinks(show);
+        }
+
+        public void SetUseHyperlinkColoring(bool use)
+        {
+            if (_useHyperlinkColoring == use)
+                return;
+
+            _useHyperlinkColoring = use;
+            PlayerPrefs.SetInt(UseHyperlinkColoringKey, use ? 1 : 0);
+            PlayerPrefs.Save();
+
+            var gameState = GameBootstrap.GameState;
+            if (gameState != null)
+                gameState.ApplyUseHyperlinkColoring(use);
         }
     }
 }

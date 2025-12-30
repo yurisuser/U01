@@ -26,9 +26,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private Camera targetCamera;
 
         private readonly List<LineRenderer> _lines = new();
+        private readonly List<HyperlinkEdge> _lineEdges = new();
         private GameStateService _state;
         private Material _runtimeMaterial;
         private StarSys[] _renderedGalaxy;
+        private bool _useHyperlinkColoring;
 
         private void Awake()
         {
@@ -70,6 +72,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_state != null && !_state.ShowHyperlinks)
             {
                 SetLinesVisible(false);
+                _useHyperlinkColoring = _state.UseHyperlinkColoring;
                 return;
             }
 
@@ -78,8 +81,19 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             SetLinesVisible(true);
 
+            bool newColoring = _state.UseHyperlinkColoring;
             if (_renderedGalaxy != _state.Galaxy)
+            {
+                _useHyperlinkColoring = newColoring;
                 Render(_state.Galaxy, clearBefore: true);
+                return;
+            }
+
+            if (_useHyperlinkColoring != newColoring)
+            {
+                _useHyperlinkColoring = newColoring;
+                ApplyLineColors();
+            }
         }
 
         public void Render(StarSys[] systems, bool clearBefore = true)
@@ -98,6 +112,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             var edgeSet = new HashSet<long>();
 
             _renderedGalaxy = systems;
+            _useHyperlinkColoring = _state != null && _state.UseHyperlinkColoring;
 
             for (int i = 0; i < systems.Length; i++)
             {
@@ -118,10 +133,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     var line = CreateLine(parent);
                     line.SetPosition(0, systems[i].GalaxyPosition);
                     line.SetPosition(1, systems[other].GalaxyPosition);
-                    var colorA = GetConstellationColor(systems[i].ConstellationId);
-                    var colorB = GetConstellationColor(systems[other].ConstellationId);
-                    line.startColor = colorA;
-                    line.endColor = colorB;
+                    _lineEdges.Add(new HyperlinkEdge(i, other));
+                    ApplyLineColor(line, i, other);
                     _lines.Add(line);
                 }
             }
@@ -178,6 +191,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     Destroy(lr.gameObject);
             }
             _lines.Clear();
+            _lineEdges.Clear();
             _renderedGalaxy = null;
         }
 
@@ -209,6 +223,48 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
                 lr.widthMultiplier = width;
             }
+        }
+
+        private void ApplyLineColors()
+        {
+            if (_renderedGalaxy == null || _lines.Count != _lineEdges.Count)
+                return;
+
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                var lr = _lines[i];
+                if (!lr)
+                    continue;
+
+                var edge = _lineEdges[i];
+                ApplyLineColor(lr, edge.A, edge.B);
+            }
+        }
+
+        private void ApplyLineColor(LineRenderer line, int a, int b)
+        {
+            if (line == null)
+                return;
+
+            if (_renderedGalaxy == null || a < 0 || b < 0 || a >= _renderedGalaxy.Length || b >= _renderedGalaxy.Length)
+            {
+                line.startColor = lineColor;
+                line.endColor = lineColor;
+                return;
+            }
+
+            if (!_useHyperlinkColoring)
+            {
+                var white = new Color(1f, 1f, 1f, constellationAlpha);
+                line.startColor = white;
+                line.endColor = white;
+                return;
+            }
+
+            var colorA = GetConstellationColor(_renderedGalaxy[a].ConstellationId);
+            var colorB = GetConstellationColor(_renderedGalaxy[b].ConstellationId);
+            line.startColor = colorA;
+            line.endColor = colorB;
         }
 
         private static long GetEdgeKey(int a, int b)

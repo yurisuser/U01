@@ -10,18 +10,23 @@ namespace _Project.Scripts.UI
     {
         [Header("Colors")]
         [SerializeField] private Color panelBackground = new Color(0.07f, 0.10f, 0.16f, 0.90f);
-        [SerializeField] private Color linkOnColor = new Color(0.20f, 0.45f, 0.70f, 0.95f);
-        [SerializeField] private Color linkOffColor = new Color(0.12f, 0.15f, 0.20f, 0.90f);
+        [SerializeField] private Color linkOnColor = new Color(0.10f, 0.85f, 0.10f, 0.95f);
+        [SerializeField] private Color linkOffColor = new Color(1f, 1f, 1f, 0.95f);
         [SerializeField] private Color linkDisabledColor = new Color(0.25f, 0.25f, 0.28f, 0.6f);
+        [SerializeField] private Color stellarisOnColor = new Color(0.10f, 0.85f, 0.10f, 0.95f);
+        [SerializeField] private Color stellarisOffColor = new Color(1f, 1f, 1f, 0.95f);
 
         private UIDocument _doc;
         private VisualElement _root;
         private VisualElement _panel;
         private VisualElement _linkButton;
         private Label _linkLabel;
+        private VisualElement _stellarisButton;
+        private Label _stellarisLabel;
         private GameStateService _state;
 
         private EventCallback<ClickEvent> _onClick;
+        private EventCallback<ClickEvent> _onStellarisClick;
 
         private void OnEnable()
         {
@@ -36,8 +41,13 @@ namespace _Project.Scripts.UI
             _linkButton?.UnregisterCallback(_onClick);
             _linkButton?.RegisterCallback(_onClick);
 
+            _onStellarisClick = OnStellarisClicked;
+            _stellarisButton?.UnregisterCallback(_onStellarisClick);
+            _stellarisButton?.RegisterCallback(_onStellarisClick);
+
             ApplyPanelBackground();
             RefreshLinkVisual();
+            RefreshStellarisVisual();
         }
 
         private void OnDisable()
@@ -48,6 +58,8 @@ namespace _Project.Scripts.UI
 
             if (_linkButton != null && _onClick != null)
                 _linkButton.UnregisterCallback(_onClick);
+            if (_stellarisButton != null && _onStellarisClick != null)
+                _stellarisButton.UnregisterCallback(_onStellarisClick);
         }
 
         private void OnValidate()
@@ -64,6 +76,7 @@ namespace _Project.Scripts.UI
 
             ApplyPanelBackground();
             RefreshLinkVisual();
+            RefreshStellarisVisual();
         }
 
         private bool TryResolveElements()
@@ -87,8 +100,10 @@ namespace _Project.Scripts.UI
             _panel = _root.Q<VisualElement>("GalaxyMapTopBar");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
+            _stellarisButton = _root.Q<VisualElement>("VisualElement2");
+            _stellarisLabel = _stellarisButton?.Q<Label>();
 
-            return _panel != null && _linkButton != null;
+            return _panel != null && _linkButton != null && _stellarisButton != null;
         }
 
         private void ApplyPanelBackground()
@@ -102,12 +117,19 @@ namespace _Project.Scripts.UI
         private void OnStateChanged()
         {
             RefreshLinkVisual();
+            RefreshStellarisVisual();
         }
 
         private void OnLinkClicked(ClickEvent evt)
         {
             var settings = SettingsService.Instance;
             settings.SetShowHyperlinks(!settings.ShowHyperlinks);
+        }
+
+        private void OnStellarisClicked(ClickEvent evt)
+        {
+            var settings = SettingsService.Instance;
+            settings.SetUseHyperlinkColoring(!settings.UseHyperlinkColoring);
         }
 
         private void RefreshLinkVisual()
@@ -124,6 +146,22 @@ namespace _Project.Scripts.UI
 
             if (_linkLabel != null)
                 _linkLabel.style.color = _state.ShowHyperlinks ? linkOnColor : linkOffColor;
+        }
+
+        private void RefreshStellarisVisual()
+        {
+            if (_stellarisButton == null)
+                return;
+
+            if (_state == null)
+            {
+                if (_stellarisLabel != null)
+                    _stellarisLabel.style.color = linkDisabledColor;
+                return;
+            }
+
+            if (_stellarisLabel != null)
+                _stellarisLabel.style.color = _state.UseHyperlinkColoring ? linkOnColor : linkOffColor;
         }
     }
 }

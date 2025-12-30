@@ -14,7 +14,7 @@ namespace _Project.Scripts.Galaxy.Generation
         private static float[] _distanceFromCenter;
         private static StarSys[] _galaxy;
 
-        // Оркестратор: запускает стадии генерации и связывает их между собой.
+        // Оркестратор: запускает стадии генерации и связывает их между собой
         public static void Generate(StarSys[] galaxy)
         {
             if (galaxy == null || galaxy.Length == 0)
