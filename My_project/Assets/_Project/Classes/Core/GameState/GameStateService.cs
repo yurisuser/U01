@@ -1,6 +1,7 @@
 using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Galaxy.Generation;
 using _Project.Scripts.Core.GameState.GameStateMembers;
 
 namespace _Project.Scripts.Core.GameState
@@ -9,6 +10,7 @@ namespace _Project.Scripts.Core.GameState
     public sealed class GameStateService
     {
         private StarSys[] _galaxy = Array.Empty<StarSys>();
+        private HyperlinkEdge[] _hyperlinkEdges = Array.Empty<HyperlinkEdge>();
         private ERunMode _runMode = ERunMode.Paused;
         private readonly SelectedService _selectedService = new SelectedService();
         private bool _showHyperlinks = true;
@@ -22,6 +24,7 @@ namespace _Project.Scripts.Core.GameState
 
         public ERunMode RunMode => _runMode;
         public StarSys[] Galaxy => _galaxy;
+        public HyperlinkEdge[] HyperlinkEdges => _hyperlinkEdges;
         public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex;
         public bool ShowHyperlinks => _showHyperlinks;
         /// <summary>Сервис выбора объекта.</summary>
@@ -45,6 +48,7 @@ namespace _Project.Scripts.Core.GameState
         {
             _galaxy = galaxy ?? Array.Empty<StarSys>();
             _selectedService.SelectedSystemService.OnGalaxySet(_galaxy);
+            _hyperlinkEdges = ConstellationCreator.BuildHyperlinkEdges(_galaxy);
             NotifyChanged();
         }
 

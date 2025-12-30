@@ -39,6 +39,37 @@ namespace _Project.Scripts.Galaxy.Generation
             ApplyLinks();               // Запись линков в StarSys
         }
 
+        public static HyperlinkEdge[] BuildHyperlinkEdges(StarSys[] galaxy)
+        {
+            if (galaxy == null || galaxy.Length == 0)
+                return System.Array.Empty<HyperlinkEdge>();
+
+            var edges = new List<HyperlinkEdge>();
+            var edgeSet = new HashSet<long>();
+
+            for (int i = 0; i < galaxy.Length; i++)
+            {
+                var links = galaxy[i].links;
+                if (links == null || links.Length == 0)
+                    continue;
+
+                for (int j = 0; j < links.Length; j++)
+                {
+                    int other = links[j];
+                    if (other < 0 || other >= galaxy.Length)
+                        continue;
+
+                    long key = GetEdgeKey(i, other);
+                    if (!edgeSet.Add(key))
+                        continue;
+
+                    edges.Add(new HyperlinkEdge(i, other));
+                }
+            }
+
+            return edges.ToArray();
+        }
+
         private static void BuildDistancesSorted()
         {
             // Для каждой звезды строим список всех расстояний до остальных, сортируем по близости.
@@ -315,6 +346,13 @@ namespace _Project.Scripts.Galaxy.Generation
                 ref var sys = ref _galaxy[i];
                 sys.links = _hypersList[i].ToArray();
             }
+        }
+
+        private static long GetEdgeKey(int a, int b)
+        {
+            int min = a < b ? a : b;
+            int max = a < b ? b : a;
+            return ((long)min << 32) | (uint)max;
         }
 
         private class Sector
