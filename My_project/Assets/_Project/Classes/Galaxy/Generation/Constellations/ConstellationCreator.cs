@@ -39,23 +39,6 @@ namespace _Project.Scripts.Galaxy.Generation
             SetMaxLinksLimit();       // Убираем лишние межзвездные связи
             LinkUnlinked();           // соединяем разорванные созвездия
             ApplyLinks();             // Запись линков в StarSys
-            LogConstellationCount();
-        }
-
-        private static void LogConstellationCount()
-        {
-            if (_galaxy == null || _galaxy.Length == 0)
-                return;
-
-            var ids = new HashSet<int>();
-            for (int i = 0; i < _galaxy.Length; i++)
-            {
-                int cid = _galaxy[i].ConstellationId;
-                if (cid > 0)
-                    ids.Add(cid);
-            }
-
-            Debug.Log($"[ConstellationCreator] Созвездий: {ids.Count}");
         }
 
         public static HyperlinkEdge[] BuildHyperlinkEdges(StarSys[] galaxy)

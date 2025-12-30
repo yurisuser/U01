@@ -5,19 +5,19 @@
         public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
 
         // --- Генерация галактики ---
-        public const int StarCount                 = 1300; // количество звезд в галактике
-        public const float GalaxyRadius            = 500f;  // радиус галактики (условные единицы)
+        public const int StarCount                 = 1500; // количество звезд в галактике
+        public const float GalaxyRadius            = 600f;  // радиус галактики (условные единицы)
         public const float GalaxyStarLayer         = 0f;    // слой расположения звезд по оси Z
-        public const float DensityArms             = 3f;    // коэффициент плотности спиральных рукавов
-        public const float WidthArms               = 60f;   // ширина спиральных рукавов
-        public const float MinStarInterval         = 3.5f;  // минимальная дистанция между звездами
-        public const float CentralBlackHoleIntervalK = 10f; // множитель дистанции рядом с ядром
+        public const float DensityArms             = 2.5f;    // коэффициент плотности спиральных рукавов
+        public const float WidthArms               = 80f;   // ширина спиральных рукавов
+        public const float MinStarInterval         = 5f;  // минимальная дистанция между звездами
+        public const float CentralBlackHoleIntervalK = 8f; // множитель дистанции рядом с ядром
         public const int MaxAttemptsPerStar        = 64;    // максимум попыток подобрать позицию
         // --- Генерация созвездий ---
-        public const int ConstellationAmount       = 70;    // количество созвездий
+        public const int ConstellationAmount       = 90;    // количество созвездий
 
         public const int MaxConstellationLinks     = 3; //максимальное количество связей у одной звезды
-        public const float PeripheryRadius         = 480f;  // радиус периферии для связей
+        public const float PeripheryRadius         = 550f;  // радиус периферии для связей
 
         // --- Типы звёзд (вес) ---
         public const int StarRedWeight     = 10; // красные
