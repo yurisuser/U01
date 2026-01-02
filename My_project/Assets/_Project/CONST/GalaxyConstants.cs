@@ -25,7 +25,8 @@
         {0f, 0.1f, -0.25f, -0.35f, 0.1f, 0.3f, -0.15f, 0.4f, 0f, -0.4f};
 
         public const int MaxConstellationLinks     = 3; //максимальное количество связей у одной звезды
-        public const float PeripheryRadius         = 550f;  // радиус периферии для связей
+        public const float PeripheryRadius         = 550f;  // радиус периферии по twisted координатам
+        public const float PeripheryLine           = 500f;  // значение переферии по no-twisted координатам по +X
 
         // --- Типы звёзд (вес) ---
         public const int StarRedWeight     = 10; // красные

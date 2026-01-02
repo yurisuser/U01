@@ -79,6 +79,10 @@ namespace _Project.Scripts.Galaxy.Generation
             return edges.ToArray();
         }
 
+        // Доступ к рассчитанным границам для отладочного рендера.
+        public static int[] GetSectorsRows() => SectorsRows;
+        public static float[][] GetSectorRowsSegments() => SectorRowsSegments;
+
         private static void BuildDistancesSorted()
         {
             // Для каждой звезды строим список всех расстояний до остальных, сортируем по близости.
@@ -145,12 +149,13 @@ namespace _Project.Scripts.Galaxy.Generation
 
         private static void UnlinkPeriphery()
         {
-            // Полностью отрезаем центр и периферийные звёзды за радиусом.
+            // Полностью отрезаем центр и периферийные звёзды по OldX и радиусу.
             RemoveAllConnections(0); // Центральная чёрная дыра
 
             for (int i = 1; i < _galaxy.Length; i++)
             {
-                if (_distanceFromCenter[i] > GalaxyConstants.PeripheryRadius)
+                if (_galaxy[i].OldX > GalaxyConstants.PeripheryLine
+                    && _distanceFromCenter[i] > GalaxyConstants.PeripheryRadius)
                     RemoveAllConnections(i);
             }
         }
@@ -299,6 +304,8 @@ namespace _Project.Scripts.Galaxy.Generation
                 return;
             if (SectorsRows.Length == 0 || SectorRowsSegments.Length == 0)
                 return;
+            if (_hypersList == null)
+                return;
 
             var sectorsPerRow = GalaxyConstants.ConstellationSectors;
             if (sectorsPerRow == null || sectorsPerRow.Length == 0)
@@ -323,6 +330,9 @@ namespace _Project.Scripts.Galaxy.Generation
 
             for (int i = 1; i < _galaxy.Length; i++)
             {
+                if (_hypersList[i].Count == 0)
+                    continue;
+
                 var pos = _galaxy[i].GalaxyPosition;
                 float radius = Mathf.Sqrt(pos.x * pos.x + pos.y * pos.y);
                 if (radius < innerRadius)

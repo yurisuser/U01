@@ -100,7 +100,8 @@ namespace _Project.Scripts.Galaxy.Generation
                 State = new LocalSysRuntimeContext(),
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
-                OldY = 0f
+                OldY = 0f,
+                DistanceToCenter = 0f
             };
             // Размещаем остальные системы
             for (int i = 1; i < count; i++)
@@ -119,6 +120,7 @@ namespace _Project.Scripts.Galaxy.Generation
                 sys.GalaxyPosition = pos;
                 sys.OldX = _lastRawX;
                 sys.OldY = _lastRawY;
+                sys.DistanceToCenter = Mathf.Sqrt(sys.OldX * sys.OldX + sys.OldY * sys.OldY);
 
                 arr[i] = sys;
             }
@@ -135,7 +137,10 @@ namespace _Project.Scripts.Galaxy.Generation
             float y = UnityEngine.Random.Range(-GalaxyConstants.GalaxyRadius, GalaxyConstants.GalaxyRadius);
 
             // Смещаем координату в зависимости от |xSeed|, чтобы избежать NaN и скученности точек
-            float xCore = Mathf.Pow(Mathf.Abs(xSeed), GalaxyConstants.DensityArms) * GalaxyConstants.GalaxyRadius
+            float baseRange = GalaxyConstants.GalaxyRadius - GalaxyConstants.WidthArms;
+            if (baseRange < 0f)
+                baseRange = 0f;
+            float xCore = Mathf.Pow(Mathf.Abs(xSeed), GalaxyConstants.DensityArms) * baseRange
                         + UnityEngine.Random.Range(-GalaxyConstants.WidthArms, GalaxyConstants.WidthArms);
 
             float sign = UnityEngine.Random.value > 0.5f ? 1f : -1f;

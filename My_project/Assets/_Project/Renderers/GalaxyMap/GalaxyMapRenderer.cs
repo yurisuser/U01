@@ -27,6 +27,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [Header("Spawn root transform")]
         [SerializeField] private Transform starsRoot;
 
+        [Header("Debug gizmos")]
+        [SerializeField] private bool drawConstellationGizmos = true;
+        [SerializeField] private Color rowsColor = new Color(1f, 1f, 1f, 0.15f);
+        [SerializeField] private Color segmentsColor = new Color(0.2f, 1f, 0.2f, 0.2f);
+        [SerializeField] private Color coreColor = new Color(1f, 0.2f, 0.2f, 0.2f);
+
         private readonly List<GameObject> _spawned = new();
         private GameStateService _state;
 
@@ -57,6 +63,43 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_state != null)
                 _state.StateChanged -= OnStateChanged;
             _state = null;
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!drawConstellationGizmos)
+                return;
+
+            var rows = _Project.Scripts.Galaxy.Generation.ConstellationCreator.GetSectorsRows();
+            var segments = _Project.Scripts.Galaxy.Generation.ConstellationCreator.GetSectorRowsSegments();
+            if (rows == null || segments == null || rows.Length == 0 || segments.Length == 0)
+                return;
+
+            float innerRadius = _Project.Scripts.Const.GalaxyConstants.MinStarInterval
+                                * _Project.Scripts.Const.GalaxyConstants.CentralBlackHoleIntervalK;
+
+            Vector3 center = transform.position;
+            DrawCircle(center, innerRadius, coreColor);
+
+            for (int i = 0; i < rows.Length; i++)
+            {
+                float outerRadius = rows[i];
+                DrawCircle(center, outerRadius, rowsColor);
+
+                float startRadius = (i == 0) ? innerRadius : rows[i - 1];
+                if (i >= segments.Length || segments[i] == null || segments[i].Length == 0)
+                    continue;
+
+                var angles = segments[i];
+                for (int s = 0; s < angles.Length; s++)
+                {
+                    float a = angles[s];
+                    var from = center + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * startRadius;
+                    var to = center + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * outerRadius;
+                    Gizmos.color = segmentsColor;
+                    Gizmos.DrawLine(from, to);
+                }
+            }
         }
 
         private void OnStateChanged()
@@ -143,5 +186,23 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 EStarSize.Supergiant => supergiantMul,
                 _ => normalMul
             };
+
+        private static void DrawCircle(Vector3 center, float radius, Color color)
+        {
+            if (radius <= 0f)
+                return;
+
+            Gizmos.color = color;
+            const int steps = 128;
+            float step = Mathf.PI * 2f / steps;
+            Vector3 prev = center + new Vector3(radius, 0f, 0f);
+            for (int i = 1; i <= steps; i++)
+            {
+                float a = step * i;
+                Vector3 next = center + new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f);
+                Gizmos.DrawLine(prev, next);
+                prev = next;
+            }
+        }
     }
 }

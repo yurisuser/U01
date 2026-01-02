@@ -160,6 +160,7 @@ namespace _Project.Scripts.UI
                 TryResolveElements();
 
             var starName = string.IsNullOrWhiteSpace(starSys.Name) ? "Unknown" : starSys.Name;
+            starName = $"{starName} (х: {starSys.OldX:F1} / у: {starSys.OldY:F1} / хн: {starSys.GalaxyPosition.x:F1} / ун: {starSys.GalaxyPosition.y:F1} / r: {starSys.DistanceToCenter:F1})";
             int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
 
             if (_starNameLabel != null)

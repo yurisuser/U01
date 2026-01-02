@@ -25,6 +25,7 @@ namespace _Project.Scripts.Galaxy.Data
         public int[] PlanetOrbits;
         public float OldX;
         public float OldY;
+        public float DistanceToCenter;
 
         public string Name
         {
