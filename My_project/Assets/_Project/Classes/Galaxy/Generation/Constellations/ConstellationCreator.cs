@@ -13,6 +13,8 @@ namespace _Project.Scripts.Galaxy.Generation
         private static StarDistance[][] _distancesSorted;
         private static float[] _distanceFromCenter;
         private static StarSys[] _galaxy;
+        private static int[] SectorsRows; //внешние радиусы окружностей, определяющие радиальные границы секторов
+        private static int[] SectorRowsSegments; //Пороги секторов в окружностях
 
         // Оркестратор: запускает стадии генерации и связывает их между собой
         public static void Generate(StarSys[] galaxy)
@@ -28,17 +30,18 @@ namespace _Project.Scripts.Galaxy.Generation
                 sys.ConstellationId = 0;
             }
 
-            BuildDistancesSorted();   // Предподготовка расстояний для быстрых выборок
-            CreateHypers();           // Делоне-граф по позициям звёзд
-            UnlinkPeriphery();        // Убираем связи у периферии
-            LinkPeriphery();          // Возвращаем по одной связи на периферию
-            Initconstellations();     // Сиды созвездий (по индексу)
-            Expansion();              // Расширение созвездий по графу
+            BuildDistancesSorted();     // Предподготовка расстояний для быстрых выборок
+            CreateHypers();             // Делоне-граф по позициям звёзд
+            UnlinkPeriphery();          // Убираем связи у периферии
+            LinkPeriphery();            // Возвращаем по одной связи на периферию
+            InitConstellations();       // Сиды созвездий (по индексу)
+            InitSectorsRows();          //Расчет диапазонов секторов  
+            Expansion();                // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
             AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
-            SetMaxLinksLimit();       // Убираем лишние межзвездные связи
-            LinkUnlinked();           // соединяем разорванные созвездия
-            ApplyLinks();             // Запись линков в StarSys
+            SetMaxLinksLimit();         // Убираем лишние межзвездные связи
+            LinkUnlinked();             // соединяем разорванные созвездия
+            ApplyLinks();               // Запись линков в StarSys
         }
 
         public static HyperlinkEdge[] BuildHyperlinkEdges(StarSys[] galaxy)
@@ -178,7 +181,7 @@ namespace _Project.Scripts.Galaxy.Generation
             }
         }
 
-        private static void Initconstellations()
+        private static void InitConstellations()
         {
             // Создаём созвездия по индексу: 1..ConstellationAmount-1.
             _sectorsArr = new Sector[GalaxyConstants.ConstellationAmount];
@@ -203,6 +206,13 @@ namespace _Project.Scripts.Galaxy.Generation
                 sector.members.Add(member);
                 _sectorsArr[i] = sector;
             }
+        }
+
+        private static void InitSectorsRows()
+        {
+            //ToDo произведи расчет секторов от конца неиспользуемой зоны черной дыры CentralBlackHoleIntervalK  до ГалаксиРадиус  
+            // с учетом весов  в ConstellationRows из констант. 
+            //Результат помести в SectorsRows текущего класса. Округление до инт.
         }
 
         private static void Expansion()
