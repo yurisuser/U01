@@ -140,7 +140,12 @@ namespace _Project.Scripts.Galaxy.Generation
             float baseRange = GalaxyConstants.GalaxyRadius - GalaxyConstants.WidthArms;
             if (baseRange < 0f)
                 baseRange = 0f;
-            float xCore = Mathf.Pow(Mathf.Abs(xSeed), GalaxyConstants.DensityArms) * baseRange
+            float baseX = Mathf.Abs(xSeed) * GalaxyConstants.GalaxyRadius;
+            float radius = Mathf.Sqrt(baseX * baseX + y * y);
+            float startFalloff = GalaxyConstants.PeripheryRadius * GalaxyConstants.DensityFalloffStartK;
+            float t = Mathf.Clamp01(1f - ((radius - startFalloff) / (GalaxyConstants.PeripheryRadius - startFalloff)));
+            float densityK = Mathf.Lerp(1f, GalaxyConstants.DensityArms, t);
+            float xCore = Mathf.Pow(Mathf.Abs(xSeed), densityK) * baseRange
                         + UnityEngine.Random.Range(-GalaxyConstants.WidthArms, GalaxyConstants.WidthArms);
 
             float sign = UnityEngine.Random.value > 0.5f ? 1f : -1f;
@@ -154,6 +159,7 @@ namespace _Project.Scripts.Galaxy.Generation
         
         private static Vector3 TwistCoordinates(Vector3 vec)
         {
+            //return vec;
             // Защищаемся от деления на ноль при проекции на ось X
             float xSafe = Mathf.Abs(vec.x) < 1e-4f ? (vec.x >= 0f ? 1e-4f : -1e-4f) : vec.x;
 

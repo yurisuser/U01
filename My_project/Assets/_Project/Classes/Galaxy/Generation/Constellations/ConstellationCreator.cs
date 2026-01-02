@@ -33,7 +33,7 @@ namespace _Project.Scripts.Galaxy.Generation
             BuildDistancesSorted();     // Предподготовка расстояний для быстрых выборок
             CreateHypers();             // Делоне-граф по позициям звёзд
             UnlinkPeriphery();          // Убираем связи у периферии
-            LinkPeriphery();            // Возвращаем по одной связи на периферию
+            //LinkPeriphery();            // Возвращаем по одной связи на периферию
             //InitConstellations();       // Сиды созвездий (по индексу)
             //----------------- Новый тип построения созвездий - по секторам
             InitSectorsRows();          //Расчет диапазонов секторов  
