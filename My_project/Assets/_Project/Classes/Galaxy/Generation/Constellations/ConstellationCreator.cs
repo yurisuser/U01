@@ -32,7 +32,7 @@ namespace _Project.Scripts.Galaxy.Generation
             CreateHypers();           // Делоне-граф по позициям звёзд
             UnlinkPeriphery();        // Убираем связи у периферии
             LinkPeriphery();          // Возвращаем по одной связи на периферию
-            InitSectors();            // Сиды созвездий (по индексу)
+            Initconstellations();     // Сиды созвездий (по индексу)
             Expansion();              // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
             AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
@@ -178,7 +178,7 @@ namespace _Project.Scripts.Galaxy.Generation
             }
         }
 
-        private static void InitSectors()
+        private static void Initconstellations()
         {
             // Создаём созвездия по индексу: 1..ConstellationAmount-1.
             _sectorsArr = new Sector[GalaxyConstants.ConstellationAmount];
