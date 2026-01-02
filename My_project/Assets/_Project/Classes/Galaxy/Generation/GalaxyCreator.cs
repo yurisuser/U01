@@ -146,11 +146,9 @@ namespace _Project.Scripts.Galaxy.Generation
 
             return TwistCoordinates(new Vector3(x, y, zLayer));
         }
-
-        // Идея: Atan(y/x) плюс плавное растягивание для формирования рукавов
+        
         private static Vector3 TwistCoordinates(Vector3 vec)
         {
-            return vec;// Удалить после отладки
             // Защищаемся от деления на ноль при проекции на ось X
             float xSafe = Mathf.Abs(vec.x) < 1e-4f ? (vec.x >= 0f ? 1e-4f : -1e-4f) : vec.x;
 

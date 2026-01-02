@@ -14,7 +14,7 @@ namespace _Project.Scripts.Galaxy.Generation
         private static float[] _distanceFromCenter;
         private static StarSys[] _galaxy;
         private static int[] SectorsRows; //внешние радиусы окружностей, определяющие радиальные границы секторов
-        private static int[] SectorRowsSegments; //Пороги секторов в окружностях
+        private static float[][] SectorRowsSegments; //Границы сегментов в радианах для каждого слоя
 
         // Оркестратор: запускает стадии генерации и связывает их между собой
         public static void Generate(StarSys[] galaxy)
@@ -34,11 +34,15 @@ namespace _Project.Scripts.Galaxy.Generation
             CreateHypers();             // Делоне-граф по позициям звёзд
             UnlinkPeriphery();          // Убираем связи у периферии
             LinkPeriphery();            // Возвращаем по одной связи на периферию
-            InitConstellations();       // Сиды созвездий (по индексу)
+            //InitConstellations();       // Сиды созвездий (по индексу)
+            //----------------- Новый тип построения созвездий - по секторам
             InitSectorsRows();          //Расчет диапазонов секторов  
-            Expansion();                // Расширение созвездий по графу
+            InitRowsSegments();         //Расчет левой границы каждого сектора внутри сегмента
+            ExpansionBySegment();       //Расширение созвездий по сегментам
+            //-----------------
+            //Expansion();                // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
-            AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
+            //AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
             SetMaxLinksLimit();         // Убираем лишние межзвездные связи
             LinkUnlinked();             // соединяем разорванные созвездия
             ApplyLinks();               // Запись линков в StarSys
@@ -210,9 +214,179 @@ namespace _Project.Scripts.Galaxy.Generation
 
         private static void InitSectorsRows()
         {
-            //ToDo произведи расчет секторов от конца неиспользуемой зоны черной дыры CentralBlackHoleIntervalK  до ГалаксиРадиус  
-            // с учетом весов  в ConstellationRows из констант. 
-            //Результат помести в SectorsRows текущего класса. Округление до инт.
+            var weights = GalaxyConstants.ConstellationRows;
+            if (weights == null || weights.Length == 0)
+            {
+                SectorsRows = System.Array.Empty<int>();
+                return;
+            }
+
+            float totalWeight = 0f;
+            for (int i = 0; i < weights.Length; i++)
+                totalWeight += weights[i];
+
+            if (totalWeight <= 0f)
+            {
+                SectorsRows = System.Array.Empty<int>();
+                return;
+            }
+
+            float innerRadius = GalaxyConstants.MinStarInterval * GalaxyConstants.CentralBlackHoleIntervalK;
+            float maxRadius = GalaxyConstants.GalaxyRadius;
+            if (maxRadius < innerRadius)
+                maxRadius = innerRadius;
+
+            float range = maxRadius - innerRadius;
+            SectorsRows = new int[weights.Length];
+
+            float acc = 0f;
+            for (int i = 0; i < weights.Length; i++)
+            {
+                acc += weights[i];
+                float border = innerRadius + range * (acc / totalWeight);
+                SectorsRows[i] = Mathf.RoundToInt(border);
+            }
+        }
+
+        private static void InitRowsSegments()
+        {
+            var rows = GalaxyConstants.ConstellationRows;
+            var sectors = GalaxyConstants.ConstellationSectors;
+            var offsets = GalaxyConstants.ConstellationSectorsOffset;
+
+            if (rows == null || sectors == null || offsets == null)
+            {
+                SectorRowsSegments = System.Array.Empty<float[]>();
+                return;
+            }
+
+            if (rows.Length != sectors.Length || rows.Length != offsets.Length)
+            {
+                SectorRowsSegments = System.Array.Empty<float[]>();
+                return;
+            }
+
+            SectorRowsSegments = new float[rows.Length][];
+            float fullCircle = Mathf.PI * 2f;
+
+            for (int i = 0; i < rows.Length; i++)
+            {
+                int segmentsCount = Mathf.Max(1, sectors[i]);
+                float step = fullCircle / segmentsCount;
+                // Смещение задано по часовой стрелке, поэтому инвертируем знак для CCW.
+                float offsetCcw = -offsets[i];
+
+                var borders = new float[segmentsCount];
+                for (int s = 0; s < segmentsCount; s++)
+                {
+                    float angle = offsetCcw + step * s;
+                    angle %= fullCircle;
+                    if (angle < 0f)
+                        angle += fullCircle;
+                    borders[s] = angle;
+                }
+
+                System.Array.Sort(borders);
+                SectorRowsSegments[i] = borders;
+            }
+        }
+
+        private static void ExpansionBySegment()
+        {
+            if (_galaxy == null || _galaxy.Length == 0)
+                return;
+            if (SectorsRows == null || SectorRowsSegments == null)
+                return;
+            if (SectorsRows.Length == 0 || SectorRowsSegments.Length == 0)
+                return;
+
+            var sectorsPerRow = GalaxyConstants.ConstellationSectors;
+            if (sectorsPerRow == null || sectorsPerRow.Length == 0)
+                return;
+
+            int rowsCount = Mathf.Min(SectorsRows.Length, SectorRowsSegments.Length);
+            rowsCount = Mathf.Min(rowsCount, sectorsPerRow.Length);
+            if (rowsCount <= 0)
+                return;
+
+            _sectorsArr = new Sector[GalaxyConstants.ConstellationAmount];
+            var rowBaseId = new int[rowsCount];
+            int baseId = 1;
+            for (int r = 0; r < rowsCount; r++)
+            {
+                rowBaseId[r] = baseId;
+                baseId += Mathf.Max(1, sectorsPerRow[r]);
+            }
+
+            float innerRadius = GalaxyConstants.MinStarInterval * GalaxyConstants.CentralBlackHoleIntervalK;
+            float fullCircle = Mathf.PI * 2f;
+
+            for (int i = 1; i < _galaxy.Length; i++)
+            {
+                var pos = _galaxy[i].GalaxyPosition;
+                float radius = Mathf.Sqrt(pos.x * pos.x + pos.y * pos.y);
+                if (radius < innerRadius)
+                    continue;
+
+                int rowIndex = rowsCount - 1;
+                for (int r = 0; r < rowsCount; r++)
+                {
+                    if (radius <= SectorsRows[r])
+                    {
+                        rowIndex = r;
+                        break;
+                    }
+                }
+
+                var borders = SectorRowsSegments[rowIndex];
+                if (borders == null || borders.Length == 0)
+                    continue;
+
+                float angle = Mathf.Atan2(pos.y, pos.x);
+                if (angle < 0f)
+                    angle += fullCircle;
+
+                int segmentIndex = borders.Length - 1;
+                if (angle < borders[0])
+                {
+                    segmentIndex = borders.Length - 1;
+                }
+                else
+                {
+                    for (int s = 1; s < borders.Length; s++)
+                    {
+                        if (angle < borders[s])
+                        {
+                            segmentIndex = s - 1;
+                            break;
+                        }
+                    }
+                }
+
+                _galaxy[i].ConstellationId = rowBaseId[rowIndex] + segmentIndex;
+                int cid = _galaxy[i].ConstellationId;
+                if (cid > 0 && cid < _sectorsArr.Length)
+                {
+                    var sector = _sectorsArr[cid];
+                    if (sector == null)
+                    {
+                        sector = new Sector
+                        {
+                            id = cid,
+                            isOpen = true,
+                            members = new List<MemberSector>()
+                        };
+                        _sectorsArr[cid] = sector;
+                    }
+
+                    sector.members.Add(new MemberSector
+                    {
+                        idSector = cid,
+                        idSystem = i,
+                        isOpen = false
+                    });
+                }
+            }
         }
 
         private static void Expansion()

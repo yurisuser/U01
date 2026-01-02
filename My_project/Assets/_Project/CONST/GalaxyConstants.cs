@@ -17,12 +17,12 @@
 
         // --- Генерация созвездий ---
         public const int ConstellationAmount       = 90;    // количество созвездий
-        public static readonly int[] ConstellationRows =    // количество слоев и вес глубины слоя по Х
-        {10, 10, 10, 10, 10, 10, 10, 10, 10, 10}; // от макс плотности к мин!!!
-        public static readonly int[]  ConstellationSectors =  // количество сегментов в каждом слое
+        public static readonly int[] ConstellationRows =    // количество слоев и вес глубины слоя от цетра галактики
+        {5, 5, 6, 6, 7, 7, 8, 9, 10, 10}; 
+        public static readonly int[]  ConstellationSectors =  // количество радиальных сегментов в каждом слое
         {6, 6, 6, 6, 5, 5, 5, 5, 5, 5};
-        public static readonly float[]  ConstellationSectorsOfset =  // смещение от базы на ширину сектора
-        {0f, 0.1f, -0,25f, -0.35f, 0.1f, 0.3f, -0.15f, 0.4f, 0f, -0.4f};
+        public static readonly float[]  ConstellationSectorsOffset =  // смещение 0 по часовой стрелке в рад
+        {0f, 0.1f, -0.25f, -0.35f, 0.1f, 0.3f, -0.15f, 0.4f, 0f, -0.4f};
 
         public const int MaxConstellationLinks     = 3; //максимальное количество связей у одной звезды
         public const float PeripheryRadius         = 550f;  // радиус периферии для связей

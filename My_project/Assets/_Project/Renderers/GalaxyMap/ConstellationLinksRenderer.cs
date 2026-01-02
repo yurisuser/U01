@@ -421,6 +421,29 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 }
             }
 
+            bool hasAnyNeighbors = false;
+            for (int i = 1; i <= maxId; i++)
+            {
+                if (neighbors[i].Count > 0)
+                {
+                    hasAnyNeighbors = true;
+                    break;
+                }
+            }
+
+            if (!hasAnyNeighbors)
+            {
+                _constellationColors = new Color[maxId + 1];
+                for (int i = 1; i <= maxId; i++)
+                {
+                    float hue = Hash01(i);
+                    var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
+                    color.a = constellationAlpha;
+                    _constellationColors[i] = color;
+                }
+                return;
+            }
+
             // Разные диапазоны оттенков для соседних созвездий.
             float[] bandCenters = { 0.02f, 0.12f, 0.25f, 0.42f, 0.58f, 0.72f, 0.85f };
             float bandJitter = 0.025f;
