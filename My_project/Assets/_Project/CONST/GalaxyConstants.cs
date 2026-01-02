@@ -18,9 +18,9 @@
         // --- Генерация созвездий ---
         public const int ConstellationAmount       = 90;    // количество созвездий
         public static readonly int[] ConstellationRows =    // количество слоев и вес глубины слоя от цетра галактики
-        {5, 5, 6, 6, 7, 7, 8, 9, 10, 10}; 
+        {7, 7, 8, 8, 9, 9, 9, 9, 9, 8}; 
         public static readonly int[]  ConstellationSectors =  // количество радиальных сегментов в каждом слое
-        {6, 6, 6, 6, 5, 5, 5, 5, 5, 5};
+        {4, 4, 5, 5, 5, 6, 6, 7, 8, 8};
         public static readonly float[]  ConstellationSectorsOffset =  // смещение 0 по часовой стрелке в рад
         {0f, 0.1f, -0.25f, -0.35f, 0.1f, 0.3f, -0.15f, 0.4f, 0f, -0.4f};
 

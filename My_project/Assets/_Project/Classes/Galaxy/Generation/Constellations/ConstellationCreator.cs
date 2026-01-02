@@ -232,7 +232,7 @@ namespace _Project.Scripts.Galaxy.Generation
             }
 
             float innerRadius = GalaxyConstants.MinStarInterval * GalaxyConstants.CentralBlackHoleIntervalK;
-            float maxRadius = GalaxyConstants.GalaxyRadius;
+            float maxRadius = GalaxyConstants.PeripheryRadius;
             if (maxRadius < innerRadius)
                 maxRadius = innerRadius;
 
