@@ -4,6 +4,9 @@ using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Prefabs; // prefab catalog access
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace _Project.Scripts.GalaxyMap.Runtime
 {
@@ -32,6 +35,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private Color rowsColor = new Color(1f, 1f, 1f, 0.15f);
         [SerializeField] private Color segmentsColor = new Color(0.2f, 1f, 0.2f, 0.2f);
         [SerializeField] private Color coreColor = new Color(1f, 0.2f, 0.2f, 0.2f);
+        [SerializeField] private bool drawConstellationIds = true;
+        [SerializeField] private Color constellationIdColor = new Color(1f, 0.9f, 0.4f, 0.9f);
+        [SerializeField] private int constellationIdFontSize = 12;
 
         private readonly List<GameObject> _spawned = new();
         private GameStateService _state;
@@ -100,6 +106,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     Gizmos.DrawLine(from, to);
                 }
             }
+
+#if UNITY_EDITOR
+            if (drawConstellationIds)
+                DrawConstellationIds(center, innerRadius, rows, segments);
+#endif
         }
 
         private void OnStateChanged()
@@ -204,5 +215,60 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 prev = next;
             }
         }
+
+#if UNITY_EDITOR
+        private void DrawConstellationIds(Vector3 center, float innerRadius, int[] rows, float[][] segments)
+        {
+            if (rows == null || segments == null || rows.Length == 0 || segments.Length == 0)
+                return;
+
+            var sectorsPerRow = _Project.Scripts.Const.GalaxyConstants.ConstellationSectors;
+            if (sectorsPerRow == null || sectorsPerRow.Length == 0)
+                return;
+
+            int rowsCount = Mathf.Min(rows.Length, segments.Length);
+            rowsCount = Mathf.Min(rowsCount, sectorsPerRow.Length);
+            if (rowsCount <= 0)
+                return;
+
+            var style = new GUIStyle
+            {
+                fontSize = Mathf.Max(1, constellationIdFontSize),
+                normal = new GUIStyleState { textColor = constellationIdColor }
+            };
+
+            int idBase = 1;
+            const float fullCircle = Mathf.PI * 2f;
+
+            for (int r = 0; r < rowsCount; r++)
+            {
+                float outerRadius = rows[r];
+                float startRadius = (r == 0) ? innerRadius : rows[r - 1];
+                float midRadius = (startRadius + outerRadius) * 0.5f;
+
+                var angles = segments[r];
+                if (angles == null || angles.Length == 0)
+                    continue;
+
+                int segCount = Mathf.Max(1, sectorsPerRow[r]);
+                for (int s = 0; s < segCount; s++)
+                {
+                    float a0 = angles[s % angles.Length];
+                    float a1 = angles[(s + 1) % angles.Length];
+                    if (a1 <= a0)
+                        a1 += fullCircle;
+                    float midAngle = (a0 + a1) * 0.5f;
+                    if (midAngle >= fullCircle)
+                        midAngle -= fullCircle;
+
+                    int cid = idBase + s;
+                    var pos = center + new Vector3(Mathf.Cos(midAngle), Mathf.Sin(midAngle), 0f) * midRadius;
+                    Handles.Label(pos, cid.ToString(), style);
+                }
+
+                idBase += segCount;
+            }
+        }
+#endif
     }
 }
