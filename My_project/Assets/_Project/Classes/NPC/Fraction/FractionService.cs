@@ -42,7 +42,7 @@ namespace _Project.Scripts.NPC.Fraction
 
             var result = new Fraction[list.Count];
             for (int i = 0; i < list.Count; i++)
-                result[i] = new Fraction(list[i].Id, list[i].Name, list[i].HomeSector);
+                result[i] = new Fraction(list[i].Id, list[i].Name, list[i].HomeSector, list[i].Color);
 
             return result;
         }

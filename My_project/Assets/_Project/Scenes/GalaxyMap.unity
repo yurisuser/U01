@@ -553,6 +553,7 @@ MonoBehaviour:
   constellationSaturation: 0.75
   constellationValue: 0.9
   constellationAlpha: 0.65
+  emptyConstellationColor: {r: 0.002669984, g: 0.08921947, b: 0.18867922, a: 0.827451}
   lineWidthAtRefZoom: 0.1
   referenceOrthoSize: 60
   interLinkColor: {r: 1, g: 1, b: 1, a: 0.85}

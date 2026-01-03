@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.NPC.Fraction;
 using UnityEngine;
 
 namespace _Project.Scripts.GalaxyMap.Runtime
@@ -16,6 +17,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private float constellationSaturation = 0.75f;
         [SerializeField] private float constellationValue = 0.9f;
         [SerializeField] private float constellationAlpha = 0.65f;
+        [SerializeField] private Color emptyConstellationColor = new Color(0.6f, 0.85f, 1f, 0.65f);
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
         [SerializeField] private Color interLinkColor = new Color(1f, 1f, 1f, 0.85f);
@@ -392,139 +394,46 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
             }
 
-            var neighbors = new HashSet<int>[maxId + 1];
-            for (int i = 0; i <= maxId; i++)
-                neighbors[i] = new HashSet<int>();
+            _constellationColors = new Color[maxId + 1];
+            var hasOwnerColor = new bool[maxId + 1];
+            var emptyColor = emptyConstellationColor;
+            emptyColor.a = constellationAlpha;
+
+            for (int i = 1; i <= maxId; i++)
+            {
+                _constellationColors[i] = emptyColor;
+            }
 
             for (int i = 0; i < _renderedGalaxy.Length; i++)
             {
-                int cidA = _renderedGalaxy[i].ConstellationId;
-                if (cidA <= 0)
+                int cid = _renderedGalaxy[i].ConstellationId;
+                if (cid <= 0 || cid >= _constellationColors.Length || hasOwnerColor[cid])
                     continue;
 
-                var links = _renderedGalaxy[i].links;
-                if (links == null)
+                var owner = _renderedGalaxy[i].OwnerFrac;
+                if (owner.Id <= 0)
                     continue;
 
-                for (int j = 0; j < links.Length; j++)
+                if (TryGetFractionColor(owner, out var ownerColor))
                 {
-                    int other = links[j];
-                    if (other < 0 || other >= _renderedGalaxy.Length)
-                        continue;
-
-                    int cidB = _renderedGalaxy[other].ConstellationId;
-                    if (cidB <= 0 || cidA == cidB)
-                        continue;
-
-                    neighbors[cidA].Add(cidB);
-                    neighbors[cidB].Add(cidA);
+                    ownerColor.a = constellationAlpha;
+                    _constellationColors[cid] = ownerColor;
+                    hasOwnerColor[cid] = true;
                 }
-            }
-
-            bool hasAnyNeighbors = false;
-            for (int i = 1; i <= maxId; i++)
-            {
-                if (neighbors[i].Count > 0)
-                {
-                    hasAnyNeighbors = true;
-                    break;
-                }
-            }
-
-            if (!hasAnyNeighbors)
-            {
-                _constellationColors = new Color[maxId + 1];
-                for (int i = 1; i <= maxId; i++)
-                {
-                    float hue = Hash01(i);
-                    var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
-                    color.a = constellationAlpha;
-                    _constellationColors[i] = color;
-                }
-                return;
-            }
-
-            // Разные диапазоны оттенков для соседних созвездий.
-            float[] bandCenters = { 0.02f, 0.12f, 0.25f, 0.42f, 0.58f, 0.72f, 0.85f };
-            float bandJitter = 0.025f;
-            int bandCount = bandCenters.Length;
-
-            var constellationIds = new List<int>();
-            for (int i = 1; i <= maxId; i++)
-                if (neighbors[i].Count > 0 || HasConstellation(i))
-                    constellationIds.Add(i);
-
-            constellationIds.Sort((a, b) => neighbors[b].Count.CompareTo(neighbors[a].Count));
-
-            var bands = new int[maxId + 1];
-            for (int i = 0; i < bands.Length; i++)
-                bands[i] = -1;
-
-            for (int i = 0; i < constellationIds.Count; i++)
-            {
-                int cid = constellationIds[i];
-                var used = new bool[bandCount];
-                foreach (var n in neighbors[cid])
-                {
-                    int nb = bands[n];
-                    if (nb >= 0 && nb < bandCount)
-                        used[nb] = true;
-                }
-
-                int chosen = -1;
-                for (int b = 0; b < bandCount; b++)
-                {
-                    if (!used[b])
-                    {
-                        chosen = b;
-                        break;
-                    }
-                }
-
-                if (chosen < 0)
-                {
-                    int bestBand = 0;
-                    int bestConflicts = int.MaxValue;
-                    for (int b = 0; b < bandCount; b++)
-                    {
-                        int conflicts = 0;
-                        foreach (var n in neighbors[cid])
-                            if (bands[n] == b)
-                                conflicts++;
-                        if (conflicts < bestConflicts)
-                        {
-                            bestConflicts = conflicts;
-                            bestBand = b;
-                        }
-                    }
-                    chosen = bestBand;
-                }
-
-                bands[cid] = chosen;
-            }
-
-            _constellationColors = new Color[maxId + 1];
-            for (int i = 1; i <= maxId; i++)
-            {
-                int band = bands[i];
-                float hue = (band >= 0 && band < bandCount) ? bandCenters[band] : Hash01(i);
-                float jitter = (Hash01(i * 92821) - 0.5f) * 2f * bandJitter;
-                hue = Mathf.Repeat(hue + jitter + 1f, 1f);
-
-                var color = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
-                color.a = constellationAlpha;
-                _constellationColors[i] = color;
             }
         }
 
-        private bool HasConstellation(int id)
+        private static bool TryGetFractionColor(in Fraction fraction, out Color color)
         {
-            for (int i = 0; i < _renderedGalaxy.Length; i++)
-            {
-                if (_renderedGalaxy[i].ConstellationId == id)
-                    return true;
-            }
-            return false;
+            color = default;
+            if (string.IsNullOrWhiteSpace(fraction.Color))
+                return false;
+
+            if (!ColorUtility.TryParseHtmlString(fraction.Color, out var parsed))
+                return false;
+
+            color = parsed;
+            return true;
         }
     }
 }
