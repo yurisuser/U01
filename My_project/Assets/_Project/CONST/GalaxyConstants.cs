@@ -7,23 +7,23 @@
         // --- Генерация галактики ---
         // Рукава галактики изначально генерируются в вертикальном направлении соосно Y !!!!!!!
         public const int StarCount                 = 1500; // количество звезд в галактике
-        public const float GalaxyRadius            = 600f;  // радиус галактики (условные единицы)
+        public const float GalaxyRadius            = 500f;  // радиус галактики (условные единицы)
         public const float GalaxyStarLayer         = 0f;    // слой расположения звезд по оси Z
-        public const float DensityArms             = 4.0f;  // коэффициент плотности спиральных рукавов
-        public const float DensityFalloffStartK    = 0.4f;  // доля радиуса, с которой начинается спад влияния DensityArms
-        public const float WidthArms               = 80f;  // ширина спиральных рукавов
+        public const float DensityArms             = 2.5f;  // коэффициент плотности спиральных рукавов
+        public const float WidthArms               = 100f;  // ширина спиральных рукавов
+        public const float LengthArms              = 450;    //длина выраженного рукава
         public const float MinStarInterval         = 5f;    // минимальная дистанция между звездами
-        public const float CentralBlackHoleIntervalK = 8f;  // множитель дистанции рядом с ядром
+        public const float CentralBlackHoleIntervalK = 4f;  // множитель дистанции рядом с ядром CentralBlackHoleIntervalK*MinStarInterval
         public const int MaxAttemptsPerStar        = 64;    // максимум попыток подобрать позицию
 
         // --- Генерация созвездий ---
         public const int ConstellationAmount       = 90;    // количество созвездий
         public static readonly int[] ConstellationRows =    // количество слоев и вес глубины слоя от цетра галактики
-        {5, 6, 8, 10, 12, 14}; 
+        {4, 7, 8, 10, 12, 14}; 
         public static readonly int[]  ConstellationSectors =  // количество радиальных сегментов в каждом слое
-        {4, 5, 6, 7, 8, 9};
+        {5, 7, 9, 11, 12, 15};
         public static readonly float[]  ConstellationSectorsOffset =  // смещение 0 по часовой стрелке в рад
-        {0f, 0.1f, -0.25f, 0.3f, 0f, -0.4f};
+        {0.3f, -0.1f, -0.25f, 0.3f, 0f, -0.4f};
 
         public const int MaxConstellationLinks     = 3; //максимальное количество связей у одной звезды
         public const float PeripheryRadius         = 550f;  // радиус периферии по twisted координатам

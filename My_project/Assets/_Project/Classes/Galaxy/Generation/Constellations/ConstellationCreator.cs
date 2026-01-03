@@ -154,9 +154,7 @@ namespace _Project.Scripts.Galaxy.Generation
 
             for (int i = 1; i < _galaxy.Length; i++)
             {
-                if (_galaxy[i].OldX > GalaxyConstants.PeripheryLine
-                    && _distanceFromCenter[i] > GalaxyConstants.PeripheryRadius)
-                    RemoveAllConnections(i);
+                if (_distanceFromCenter[i] > GalaxyConstants.PeripheryRadius) RemoveAllConnections(i);
             }
         }
 
@@ -165,8 +163,7 @@ namespace _Project.Scripts.Galaxy.Generation
             // Для звёзд за радиусом возвращаем минимум одну связь, чтобы не остались изолированными.
             for (int i = 0; i < _distancesSorted[0].Length; i++)
             {
-                if (_distancesSorted[0][i].distance < GalaxyConstants.PeripheryRadius)
-                    continue;
+                if (_distancesSorted[0][i].distance < GalaxyConstants.PeripheryRadius) continue;
                 AddOnceForClear(_distancesSorted[0][i].index);
             }
         }

@@ -100,8 +100,7 @@ namespace _Project.Scripts.Galaxy.Generation
                 State = new LocalSysRuntimeContext(),
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
-                OldY = 0f,
-                DistanceToCenter = 0f
+                OldY = 0f
             };
             // Размещаем остальные системы
             for (int i = 1; i < count; i++)
@@ -120,7 +119,6 @@ namespace _Project.Scripts.Galaxy.Generation
                 sys.GalaxyPosition = pos;
                 sys.OldX = _lastRawX;
                 sys.OldY = _lastRawY;
-                sys.DistanceToCenter = Mathf.Sqrt(sys.OldX * sys.OldX + sys.OldY * sys.OldY);
 
                 arr[i] = sys;
             }
@@ -135,18 +133,21 @@ namespace _Project.Scripts.Galaxy.Generation
             if (Mathf.Approximately(xSeed, 0f)) xSeed = 0.0001f;
 
             float y = UnityEngine.Random.Range(-GalaxyConstants.GalaxyRadius, GalaxyConstants.GalaxyRadius);
-
+            float RelativeArmsWidth = 0f;
+            if (Mathf.Abs(y) > GalaxyConstants.LengthArms)
+            {
+                RelativeArmsWidth = y;
+            }
+            else
+            {
+                //ToDo При У=0 RelativeArmsWidth=GalaxyConstants.WidthArms, при у=GalaxyConstants.PeripheryRadius RelativeArmsWidth=0
+                float t = Mathf.Clamp01(Mathf.Abs(y) / GalaxyConstants.LengthArms);
+                RelativeArmsWidth = Mathf.Lerp(GalaxyConstants.WidthArms, 0f, t);
+            }
             // Смещаем координату в зависимости от |xSeed|, чтобы избежать NaN и скученности точек
-            float baseRange = GalaxyConstants.GalaxyRadius - GalaxyConstants.WidthArms;
-            if (baseRange < 0f)
-                baseRange = 0f;
-            float baseX = Mathf.Abs(xSeed) * GalaxyConstants.GalaxyRadius;
-            float radius = Mathf.Sqrt(baseX * baseX + y * y);
-            float startFalloff = GalaxyConstants.PeripheryRadius * GalaxyConstants.DensityFalloffStartK;
-            float t = Mathf.Clamp01(1f - ((radius - startFalloff) / (GalaxyConstants.PeripheryRadius - startFalloff)));
-            float densityK = Mathf.Lerp(1f, GalaxyConstants.DensityArms, t);
-            float xCore = Mathf.Pow(Mathf.Abs(xSeed), densityK) * baseRange
-                        + UnityEngine.Random.Range(-GalaxyConstants.WidthArms, GalaxyConstants.WidthArms);
+            float xCore = //Рукава собственно
+            Mathf.Pow(Mathf.Abs(xSeed), GalaxyConstants.DensityArms) * GalaxyConstants.GalaxyRadius
+                        + UnityEngine.Random.Range(-RelativeArmsWidth, RelativeArmsWidth);
 
             float sign = UnityEngine.Random.value > 0.5f ? 1f : -1f;
             float x = xCore * sign;
@@ -156,10 +157,11 @@ namespace _Project.Scripts.Galaxy.Generation
 
             return TwistCoordinates(new Vector3(x, y, zLayer));
         }
-        
+
+        // Идея: Atan(y/x) плюс плавное растягивание для формирования рукавов
         private static Vector3 TwistCoordinates(Vector3 vec)
         {
-            //return vec;
+            //return vec;// Удалить после отладки
             // Защищаемся от деления на ноль при проекции на ось X
             float xSafe = Mathf.Abs(vec.x) < 1e-4f ? (vec.x >= 0f ? 1e-4f : -1e-4f) : vec.x;
 
@@ -189,6 +191,8 @@ namespace _Project.Scripts.Galaxy.Generation
 
                 // Пропускаем кандидатов с нечисловыми координатами
                 if (!IsFinite(candidate.x) || !IsFinite(candidate.y)) continue;
+                // Пропускаем кандидатов за радиусом галактики
+                //if (Vector3.Distance(candidate, Vector3.zero) > GalaxyConstants.GalaxyRadius) continue;
 
                 bool ok = true;
                 for (int j = 0; j < index; j++)
