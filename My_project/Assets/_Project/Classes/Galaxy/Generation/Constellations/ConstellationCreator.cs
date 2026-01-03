@@ -42,7 +42,7 @@ namespace _Project.Scripts.Galaxy.Generation
             //-----------------
             //Expansion();                // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
-            //AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
+            AddIntersectorConnection(); // Добавляем лучшие мосты между созвездиями
             SetMaxLinksLimit();         // Убираем лишние межзвездные связи
             LinkUnlinked();             // соединяем разорванные созвездия
             ApplyLinks();               // Запись линков в StarSys
@@ -501,6 +501,7 @@ namespace _Project.Scripts.Galaxy.Generation
                         for (int j = 0; j < _hypersList[i].Count; j++)
                         {
                             int neighborId = _hypersList[i][j];
+                            if (_galaxy[i].ConstellationId != _galaxy[neighborId].ConstellationId) continue; // если созвездия разные - игнор
                             int degree = _hypersList[neighborId].Count;
                             if (degree > bestDegree)
                             {
@@ -509,9 +510,8 @@ namespace _Project.Scripts.Galaxy.Generation
                             }
                         }
 
-                        if (removeId < 0)
-                            break;
-
+                        if (removeId < 0) break;
+                        if (_galaxy[i].ConstellationId != _galaxy[removeId].ConstellationId) break; // со второй стороны - если созвездия разные - игнор
                         RemoveConnection(i, removeId);
                         changed = true;
                     }
