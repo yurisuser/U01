@@ -1,5 +1,6 @@
 using UnityEngine;
 using _Project.Scripts.Core;
+using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.NPC.Individ;
 using _Project.Scripts.Simulation;
 
@@ -16,6 +17,7 @@ namespace _Project.Scripts.Galaxy.Data
         public int NameId;
         public int[] links;
         public int ConstellationId;
+        public Fraction OwnerFrac;
         public Vector3 GalaxyPosition;
         public Star Star;
         public PlanetSys[] PlanetSysArr;

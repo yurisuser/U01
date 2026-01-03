@@ -1,6 +1,8 @@
 using System;
 using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.NPC.Fraction;
+using _Project.Scripts.NPC.Fraction.Create;
 using _Project.Scripts.Simulation;
 using UnityEngine;
 
@@ -86,6 +88,10 @@ namespace _Project.Scripts.Galaxy.Generation
 
             // Генерация созвездий и гиперпереходов после создания всех систем.
             ConstellationCreator.Generate(galaxy);
+
+            var fractions = FractionService.GetAll();
+            for (int i = 0; i < fractions.Count; i++)
+                FractionSpawner.SpawnForFraction(galaxy, fractions[i]);
 
             return galaxy;
         }
