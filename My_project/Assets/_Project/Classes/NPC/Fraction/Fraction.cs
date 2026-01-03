@@ -2,13 +2,15 @@
 {
     public struct Fraction
     {
-        public readonly EFraction Id;
+        public readonly int Id;
         public readonly string Name;
+        public readonly int HomeSector;
         
-        public Fraction(EFraction id, string name)
+        public Fraction(int id, string name, int homeSector = 0)
         {
             Id = id;
             Name = name;
+            HomeSector = homeSector;
         }
     }
 }

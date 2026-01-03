@@ -71,13 +71,13 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
 
         private static Ship SpawnShip()
         {
-            var fractions = Fractions.All;
+            var fractions = FractionService.GetAll();
             Fraction fraction;
-            if (fractions == null || fractions.Length == 0)
-                fraction = new Fraction(EFraction.fraction1, "Default");
+            if (fractions == null || fractions.Count == 0)
+                fraction = new Fraction(0, "Default");
             else
             {
-                int fracIndex = Random.Range(0, fractions.Length);
+                int fracIndex = Random.Range(0, fractions.Count);
                 fraction = fractions[fracIndex];
             }
 

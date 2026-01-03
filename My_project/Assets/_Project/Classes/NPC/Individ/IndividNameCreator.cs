@@ -5,18 +5,11 @@ namespace _Project.Scripts.NPC.Individ
 {
     public static class IndividNameCreator
     {
-        public static string Create(UID uid, EFraction fraction)
+        public static string Create(UID uid, int fractionId)
         {
-            string prefix = fraction switch
-            {
-                EFraction.fraction1 => "Human",
-                EFraction.fraction2 => "Hive",
-                EFraction.fraction3 => "Machine",
-                EFraction.fraction4 => "Nomad",
-                EFraction.fraction5 => "Architect",
-                EFraction.fraction6 => "Symbiont",
-                _ => "Unknown"
-            };
+            string prefix = FractionService.TryGetNameById(fractionId, out var name)
+                ? name
+                : $"Faction{fractionId}";
             return $"{prefix}#{uid:000000}";
         }
     }

@@ -1,21 +1,20 @@
 ﻿using _Project.Scripts.Core;
-using _Project.Scripts.NPC.Fraction;
 using Random = UnityEngine.Random;
 
 namespace _Project.Scripts.NPC.Individ
 {
     public static class IndividCreator
     {
-        public static Individ Create(EFraction fraction, ECurrentRole role = ECurrentRole.Free)
+        public static Individ Create(int fractionId, ECurrentRole role = ECurrentRole.Free)
         {
             UID uid = UIDService.Create(EntityType.Individ);                                      // уникальный идентификатор
-            string name = IndividNameCreator.Create(uid, fraction);    // имя на основе UID и фракции
+            string name = IndividNameCreator.Create(uid, fractionId);  // имя на основе UID и фракции
             var s = GenerateInnateSkills();                           // базовые характеристики
 
             return new Individ(
                 uid,               // уникальный идентификатор
                 name,             // имя индивида
-                fraction,         // фракция
+                fractionId,       // фракция
                 role,             // текущая роль
                 s.intellect,      // интеллект 0.0–1.0
                 s.perception,     // восприятие 0.0–1.0

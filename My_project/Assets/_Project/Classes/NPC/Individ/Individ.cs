@@ -1,6 +1,5 @@
 ﻿using System;
 using _Project.Scripts.Core;
-using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.Scripts.NPC.Individ
 {
@@ -8,7 +7,7 @@ namespace _Project.Scripts.NPC.Individ
     {
         public readonly UID Id;
         public readonly String Name;
-        public readonly EFraction Frac;        
+        public readonly int FractionId;        
         public readonly float Intellect;
         public readonly float Perception;
         public readonly float Willpower;
@@ -19,7 +18,7 @@ namespace _Project.Scripts.NPC.Individ
         public Individ(
             UID id,              // уникальный идентификатор
             string name,          // имя индивида
-            EFraction frac,       // фракция
+            int fractionId,       // фракция
             ECurrentRole role,    // текущая роль
             float intellect,      // интеллект 0.0–1.0
             float perception,     // восприятие 0.0–1.0
@@ -29,7 +28,7 @@ namespace _Project.Scripts.NPC.Individ
         {
             Id = id;                    // фиксируем UID
             Name = name;                // фиксируем имя
-            Frac = frac;                // фиксируем фракцию
+            FractionId = fractionId;    // фиксируем фракцию
             CurrentRole = role;         // задаём текущую роль
 
             Intellect = intellect;      // задаём интеллект

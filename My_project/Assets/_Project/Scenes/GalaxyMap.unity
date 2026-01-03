@@ -514,6 +514,13 @@ MonoBehaviour:
   catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
   defaultPrefab: {fileID: 8821415415572447739, guid: 00f12f58fc973b74391fe5f18aa106cb, type: 3}
   starsRoot: {fileID: 1830487893}
+  drawConstellationGizmos: 1
+  rowsColor: {r: 1, g: 1, b: 1, a: 0.15}
+  segmentsColor: {r: 0.2, g: 1, b: 0.2, a: 0.2}
+  coreColor: {r: 1, g: 0.2, b: 0.2, a: 0.2}
+  drawConstellationIds: 1
+  constellationIdColor: {r: 1, g: 0.9, b: 0.4, a: 0.9}
+  constellationIdFontSize: 30
 --- !u!4 &1830487893
 Transform:
   m_ObjectHideFlags: 0
@@ -548,6 +555,9 @@ MonoBehaviour:
   constellationAlpha: 0.65
   lineWidthAtRefZoom: 0.1
   referenceOrthoSize: 60
+  interLinkColor: {r: 1, g: 1, b: 1, a: 0.85}
+  interLinkWidthMultiplier: 2
+  interLinkDotCount: 10
   linksRoot: {fileID: 1830487893}
   targetCamera: {fileID: 447649533}
 --- !u!1 &1866142961

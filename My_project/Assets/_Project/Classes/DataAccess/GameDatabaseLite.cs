@@ -21,6 +21,7 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogScanner> _scanners;
         private static IReadOnlyList<CatalogShield> _shields;
         private static IReadOnlyList<CatalogShip> _ships;
+        private static IReadOnlyList<CatalogFraction> _fractions;
 
         /// <summary>Возвращает список оружия из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogWeapon> GetWeapons(bool forceReload = false)
@@ -248,6 +249,35 @@ namespace _Project.DataAccess
             return list;
         }
 
+        /// <summary>Возвращает список фракций из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogFraction> GetFractions(bool forceReload = false)
+        {
+            if (!forceReload && _fractions != null) return _fractions;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, name, bio, politic, color, home_sector, symbol, description FROM f_fractions ORDER BY id";
+
+            var list = new List<CatalogFraction>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var name = reader.GetString(1);
+                    var bio = reader.GetString(2);
+                    var politic = reader.GetString(3);
+                    var color = reader.GetString(4);
+                    var homeSector = reader.GetInt32(5);
+                    var symbol = reader.GetString(6);
+                    var description = reader.GetString(7);
+                    list.Add(new CatalogFraction(id, name, bio, politic, color, homeSector, symbol, description));
+                }
+            }
+
+            _fractions = list;
+            return list;
+        }
+
         private static IDbConnection OpenConnection()
         {
             var path = ResolvePath();
@@ -448,6 +478,16 @@ CREATE TABLE IF NOT EXISTS ships (
     weapon_slots INTEGER NOT NULL,
     shield_slots INTEGER NOT NULL DEFAULT 0,
     engine_slots INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS f_fractions (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    bio TEXT NOT NULL,
+    politic TEXT NOT NULL,
+    color TEXT NOT NULL,
+    home_sector INTEGER NOT NULL DEFAULT 0,
+    symbol TEXT NOT NULL,
+    description TEXT NOT NULL
 );
 ";
             cmd.ExecuteNonQuery();
