@@ -82,6 +82,13 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_systemIndex < 0 || _systemIndex >= systems.Length)
                 return;
 
+            bool coloringOn = _state.UseHyperlinkColoring || _state.UseFractionColoring;
+            if (!coloringOn)
+            {
+                ClearRendererOverrides();
+                return;
+            }
+
             bool useFractionColoring = _state.UseFractionColoring;
             if (_links)
             {
@@ -146,6 +153,21 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 _mpb.SetColor("_Color", color);
                 _mpb.SetColor("_EmissionColor", new Color(color.r, color.g, color.b, 1f));
                 r.SetPropertyBlock(_mpb);
+            }
+        }
+
+        private void ClearRendererOverrides()
+        {
+            if (renderers == null || renderers.Length == 0)
+                return;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (!r)
+                    continue;
+
+                r.SetPropertyBlock(null);
             }
         }
 

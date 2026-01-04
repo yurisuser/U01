@@ -382,7 +382,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         private Color GetConstellationColor(int constellationId)
         {
             if (constellationId <= 0)
-                return lineColor;
+            {
+                var empty = emptyConstellationColor;
+                empty.a = constellationAlpha;
+                return empty;
+            }
 
             if (_constellationColors == null || constellationId >= _constellationColors.Length)
             {

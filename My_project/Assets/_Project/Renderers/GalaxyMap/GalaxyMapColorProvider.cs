@@ -133,7 +133,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             Color emptyConstellationColor)
         {
             if (constellationId <= 0)
-                return defaultColor;
+            {
+                var empty = emptyConstellationColor;
+                empty.a = constellationAlpha;
+                return empty;
+            }
 
             if (constellationColors == null || constellationId >= constellationColors.Length)
             {
