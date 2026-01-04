@@ -104,6 +104,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_useHyperlinkColoring != newColoring || _useFractionColoring != newFractions)
             {
                 _useHyperlinkColoring = newColoring;
+                if (_useFractionColoring != newFractions)
+                    _constellationColors = null;
                 _useFractionColoring = newFractions;
                 ApplyLineColors();
             }
@@ -266,12 +268,6 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             if (isInter)
             {
-                if (_useFractionColoring && TryGetFractionLinkColors(a, b, out var interA, out var interB))
-                {
-                    line.startColor = interA;
-                    line.endColor = interB;
-                    return;
-                }
                 line.startColor = interLinkColor;
                 line.endColor = interLinkColor;
                 return;
