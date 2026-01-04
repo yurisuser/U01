@@ -70,6 +70,11 @@ namespace _Project.Scripts.Galaxy.Generation
             return BuildStar(forcedType, size);
         }
 
+        public static Star Create(EStarType forcedType, EStarSize forcedSize)
+        {
+            return BuildStar(forcedType, forcedSize);
+        }
+
         // === внутренние методы ===
         private static Star BuildStar(EStarType type, EStarSize size)
         {

@@ -18,6 +18,7 @@ namespace _Project.Scripts.Galaxy.Data
         public int[] links;
         public int ConstellationId;
         public Fraction OwnerFrac;
+        public string CustomName;
         public Vector3 GalaxyPosition;
         public Star Star;
         public PlanetSys[] PlanetSysArr;
@@ -33,6 +34,9 @@ namespace _Project.Scripts.Galaxy.Data
         {
             get
             {
+                if (!string.IsNullOrWhiteSpace(CustomName))
+                    return CustomName;
+
                 if (NameId < 0)
                     return string.Empty;
 

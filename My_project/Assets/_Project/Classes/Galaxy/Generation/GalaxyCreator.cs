@@ -28,15 +28,14 @@ namespace _Project.Scripts.Galaxy.Generation
                 {
                     // В центре оставляем исходную систему
                     //
-                    // Возможный вариант ядра: черная дыра без планет
-                    //var starBh = new Star { type = EStarType.Black, size = EStarSize.Supergiant }; // size пока не используется
-                    //int[] noPlanets = Array.Empty<int>();
-                    //galaxy[i] = StarSysCreator.Create(galaxy[i], starBh, noPlanets);
-                    var coreStar = sysData.Star;
+                    // Ядро: гигантская чёрная дыра без планет.
+                    var coreStar = StarCreator.Create(EStarType.Black, EStarSize.Supergiant);
                     coreStar.NameId = i;
                     coreStar.OldX = sysData.OldX;
                     coreStar.OldY = sysData.OldY;
-                    sysData.Star = coreStar;
+                    sysData.NameId = i;
+                    sysData.CustomName = GalaxyConstants.CentralBlackHoleName;
+                    sysData = StarSysCreator.Create(sysData, coreStar, Array.Empty<PlanetSys>(), Array.Empty<int>());
                     continue;
                 }
 

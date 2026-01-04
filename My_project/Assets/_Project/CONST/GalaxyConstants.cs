@@ -15,6 +15,7 @@
         public const float MinStarInterval         = 5f;    // минимальная дистанция между звездами
         public const float CentralBlackHoleIntervalK = 4f;  // множитель дистанции рядом с ядром CentralBlackHoleIntervalK*MinStarInterval
         public const int MaxAttemptsPerStar        = 64;    // максимум попыток подобрать позицию
+        public const string CentralBlackHoleName = "Void*";
 
         // --- Генерация созвездий ---
         public const int ConstellationAmount       = 90;    // количество созвездий

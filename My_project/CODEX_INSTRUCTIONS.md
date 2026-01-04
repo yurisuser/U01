@@ -8,6 +8,8 @@ CODEX_INSTRUCTIONS.md
 - Я ищу `CODEX_INSTRUCTIONS.md` в корне и читаю его перед командами.
 - Если файл перенесён или переименован, сообщи новый путь в начале чата.
 - Самое важное держи в начале секций; пиши кратко.
+- Все новые доки должны быть явно перечислены здесь и обязательны к прочтению при чтении `CODEX_INSTRUCTIONS.md`.
+- Если я создаю новый док, я сам добавляю его в список ниже и считаю обязательным к прочтению при чтении `CODEX_INSTRUCTIONS.md`.
 
 ## Обязательно
 - <span style="color:red; font-size:24px; font-weight:bold;">Проект прежде удовольствия клиента. Клиент не всегда прав — все решения проверяем.</span>
@@ -39,3 +41,12 @@ CODEX_INSTRUCTIONS.md
 
 ## Бэклог / напоминания
 - TODO: отложенные действия, о которых нужно помнить.
+
+## Документы (обязательны к прочтению)
+- `Docs/decisions.md`
+- `Docs/eq_rename.sql`
+- `Docs/Textes/AI Struct.md`
+- `Docs/Textes/Dev.md`
+- `Docs/Textes/Egosoft.txt`
+- `Docs/Textes/idea.txt`
+- `Docs/Textes/Jump Drive.txt`
