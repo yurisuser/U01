@@ -165,7 +165,7 @@ namespace _Project.Scripts.UI
             if (_starNameLabel != null)
                 _starNameLabel.text = starName;
             if (_constellationNameLabel != null)
-                _constellationNameLabel.text = "ConstellationName   ";
+                _constellationNameLabel.text = starSys.ConstellationId > 0 ? starSys.ConstellationId.ToString() : "no info";
 
             if (_starParamLabel == null || _starValueLabel == null)
                 return;
