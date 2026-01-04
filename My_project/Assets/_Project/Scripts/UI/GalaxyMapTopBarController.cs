@@ -21,12 +21,12 @@ namespace _Project.Scripts.UI
         private VisualElement _panel;
         private VisualElement _linkButton;
         private Label _linkLabel;
-        private VisualElement _stellarisButton;
-        private Label _stellarisLabel;
+        private VisualElement _fractionsButton;
+        private Label _fractionsLabel;
         private GameStateService _state;
 
         private EventCallback<ClickEvent> _onClick;
-        private EventCallback<ClickEvent> _onStellarisClick;
+        private EventCallback<ClickEvent> _onFractionsClick;
 
         private void OnEnable()
         {
@@ -41,13 +41,13 @@ namespace _Project.Scripts.UI
             _linkButton?.UnregisterCallback(_onClick);
             _linkButton?.RegisterCallback(_onClick);
 
-            _onStellarisClick = OnStellarisClicked;
-            _stellarisButton?.UnregisterCallback(_onStellarisClick);
-            _stellarisButton?.RegisterCallback(_onStellarisClick);
+            _onFractionsClick = OnFractionsClicked;
+            _fractionsButton?.UnregisterCallback(_onFractionsClick);
+            _fractionsButton?.RegisterCallback(_onFractionsClick);
 
             ApplyPanelBackground();
             RefreshLinkVisual();
-            RefreshStellarisVisual();
+            RefreshFractionsVisual();
         }
 
         private void OnDisable()
@@ -58,8 +58,8 @@ namespace _Project.Scripts.UI
 
             if (_linkButton != null && _onClick != null)
                 _linkButton.UnregisterCallback(_onClick);
-            if (_stellarisButton != null && _onStellarisClick != null)
-                _stellarisButton.UnregisterCallback(_onStellarisClick);
+            if (_fractionsButton != null && _onFractionsClick != null)
+                _fractionsButton.UnregisterCallback(_onFractionsClick);
         }
 
         private void OnValidate()
@@ -76,7 +76,7 @@ namespace _Project.Scripts.UI
 
             ApplyPanelBackground();
             RefreshLinkVisual();
-            RefreshStellarisVisual();
+            RefreshFractionsVisual();
         }
 
         private bool TryResolveElements()
@@ -100,10 +100,10 @@ namespace _Project.Scripts.UI
             _panel = _root.Q<VisualElement>("GalaxyMapTopBar");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
-            _stellarisButton = _root.Q<VisualElement>("VisualElement2");
-            _stellarisLabel = _stellarisButton?.Q<Label>();
+            _fractionsButton = _root.Q<VisualElement>("VisualElement2");
+            _fractionsLabel = _fractionsButton?.Q<Label>();
 
-            return _panel != null && _linkButton != null && _stellarisButton != null;
+            return _panel != null && _linkButton != null && _fractionsButton != null;
         }
 
         private void ApplyPanelBackground()
@@ -117,7 +117,7 @@ namespace _Project.Scripts.UI
         private void OnStateChanged()
         {
             RefreshLinkVisual();
-            RefreshStellarisVisual();
+            RefreshFractionsVisual();
         }
 
         private void OnLinkClicked(ClickEvent evt)
@@ -126,10 +126,10 @@ namespace _Project.Scripts.UI
             settings.SetShowHyperlinks(!settings.ShowHyperlinks);
         }
 
-        private void OnStellarisClicked(ClickEvent evt)
+        private void OnFractionsClicked(ClickEvent evt)
         {
             var settings = SettingsService.Instance;
-            settings.SetUseHyperlinkColoring(!settings.UseHyperlinkColoring);
+            settings.SetUseFractionColoring(!settings.UseFractionColoring);
         }
 
         private void RefreshLinkVisual()
@@ -148,20 +148,20 @@ namespace _Project.Scripts.UI
                 _linkLabel.style.color = _state.ShowHyperlinks ? linkOnColor : linkOffColor;
         }
 
-        private void RefreshStellarisVisual()
+        private void RefreshFractionsVisual()
         {
-            if (_stellarisButton == null)
+            if (_fractionsButton == null)
                 return;
 
             if (_state == null)
             {
-                if (_stellarisLabel != null)
-                    _stellarisLabel.style.color = linkDisabledColor;
+                if (_fractionsLabel != null)
+                    _fractionsLabel.style.color = linkDisabledColor;
                 return;
             }
 
-            if (_stellarisLabel != null)
-                _stellarisLabel.style.color = _state.UseHyperlinkColoring ? linkOnColor : linkOffColor;
+            if (_fractionsLabel != null)
+                _fractionsLabel.style.color = _state.UseFractionColoring ? linkOnColor : linkOffColor;
         }
     }
 }

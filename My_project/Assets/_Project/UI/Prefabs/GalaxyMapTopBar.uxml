@@ -7,7 +7,7 @@
                     <ui:Label text="Links" name="Label" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; align-self: auto; align-content: auto; align-items: auto;" />
                 </ui:VisualElement>
                 <ui:VisualElement name="VisualElement2" style="flex-grow: 1; margin-left: 10px; margin-right: 10px; align-content: auto; align-items: flex-end;">
-                    <ui:Label text="Constellations" selectable="true" focusable="true" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; min-width: auto; align-items: auto; align-content: auto;" />
+                    <ui:Label text="Fractions" selectable="true" focusable="true" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; min-width: auto; align-items: auto; align-content: auto;" />
                 </ui:VisualElement>
                 <ui:VisualElement name="VisualElement3" style="flex-grow: 1; align-items: flex-end; align-content: auto;">
                     <ui:Label text="Fractions" double-click-selects-word="false" style="width: auto; color: rgb(255, 255, 255); margin-top: 0; margin-right: 10px; margin-bottom: 0; margin-left: 10px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; align-items: auto; align-content: auto;" />

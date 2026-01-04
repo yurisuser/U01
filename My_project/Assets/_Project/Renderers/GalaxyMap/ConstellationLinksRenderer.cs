@@ -38,6 +38,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         private Material _runtimeMaterial;
         private StarSys[] _renderedGalaxy;
         private bool _useHyperlinkColoring;
+        private bool _useFractionColoring;
         private Color[] _constellationColors;
 
         private void Awake()
@@ -81,6 +82,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 SetLinesVisible(false);
                 _useHyperlinkColoring = _state.UseHyperlinkColoring;
+                _useFractionColoring = _state.UseFractionColoring;
                 return;
             }
 
@@ -90,16 +92,19 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             SetLinesVisible(true);
 
             bool newColoring = _state.UseHyperlinkColoring;
+            bool newFractions = _state.UseFractionColoring;
             if (_renderedGalaxy != _state.Galaxy)
             {
                 _useHyperlinkColoring = newColoring;
+                _useFractionColoring = newFractions;
                 Render(_state.Galaxy, clearBefore: true);
                 return;
             }
 
-            if (_useHyperlinkColoring != newColoring)
+            if (_useHyperlinkColoring != newColoring || _useFractionColoring != newFractions)
             {
                 _useHyperlinkColoring = newColoring;
+                _useFractionColoring = newFractions;
                 ApplyLineColors();
             }
         }
@@ -121,6 +126,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             _renderedGalaxy = systems;
             _useHyperlinkColoring = _state != null && _state.UseHyperlinkColoring;
+            _useFractionColoring = _state != null && _state.UseFractionColoring;
             BuildConstellationColors();
 
             for (int i = 0; i < systems.Length; i++)
@@ -272,7 +278,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
             }
 
-            if (!_useHyperlinkColoring)
+            if (!_useHyperlinkColoring && !_useFractionColoring)
             {
                 var flat = noColoringLinkColor;
                 line.startColor = flat;
@@ -415,7 +421,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 if (owner.Id <= 0)
                     continue;
 
-                if (TryGetFractionColor(owner, out var ownerColor))
+                if (_useFractionColoring && TryGetFractionColor(owner, out var ownerColor))
                 {
                     ownerColor.a = constellationAlpha;
                     _constellationColors[cid] = ownerColor;

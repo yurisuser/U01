@@ -16,6 +16,7 @@ namespace _Project.Scripts.Core.GameState
         private readonly SelectedService _selectedService = new SelectedService();
         private bool _showHyperlinks = true;
         private bool _useHyperlinkColoring = true;
+        private bool _useFractionColoring = true;
 
         public event Action StateChanged; // Уведомление для UI/логики о смене состояния.
 
@@ -23,6 +24,7 @@ namespace _Project.Scripts.Core.GameState
         {
             _showHyperlinks = SettingsService.Instance.ShowHyperlinks;
             _useHyperlinkColoring = SettingsService.Instance.UseHyperlinkColoring;
+            _useFractionColoring = SettingsService.Instance.UseFractionColoring;
         }
 
         public ERunMode RunMode => _runMode;
@@ -32,6 +34,7 @@ namespace _Project.Scripts.Core.GameState
         public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex;
         public bool ShowHyperlinks => _showHyperlinks;
         public bool UseHyperlinkColoring => _useHyperlinkColoring;
+        public bool UseFractionColoring => _useFractionColoring;
         /// <summary>Сервис выбора объекта.</summary>
         public SelectedService SelectedService => _selectedService;
 
@@ -77,6 +80,15 @@ namespace _Project.Scripts.Core.GameState
                 return;
 
             _useHyperlinkColoring = use;
+            NotifyChanged();
+        }
+
+        internal void ApplyUseFractionColoring(bool use)
+        {
+            if (_useFractionColoring == use)
+                return;
+
+            _useFractionColoring = use;
             NotifyChanged();
         }
 
