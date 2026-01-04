@@ -18,6 +18,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private float constellationValue = 0.9f;
         [SerializeField] private float constellationAlpha = 0.65f;
         [SerializeField] private Color emptyConstellationColor = new Color(0.6f, 0.85f, 1f, 0.65f);
+        [SerializeField] private Color noColoringLinkColor = new Color(1f, 1f, 1f, 0.85f);
         [SerializeField] private float lineWidthAtRefZoom = 0.08f;
         [SerializeField] private float referenceOrthoSize = 60f;
         [SerializeField] private Color interLinkColor = new Color(1f, 1f, 1f, 0.85f);
@@ -273,9 +274,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             if (!_useHyperlinkColoring)
             {
-                var white = new Color(1f, 1f, 1f, constellationAlpha);
-                line.startColor = white;
-                line.endColor = white;
+                var flat = noColoringLinkColor;
+                line.startColor = flat;
+                line.endColor = flat;
                 return;
             }
 
