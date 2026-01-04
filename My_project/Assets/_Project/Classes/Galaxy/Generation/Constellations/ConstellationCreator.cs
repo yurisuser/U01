@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _Project.Scripts.Core;
 using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using Delaunator;
@@ -39,6 +40,8 @@ namespace _Project.Scripts.Galaxy.Generation
             InitSectorsRows();          //Расчет диапазонов секторов  
             InitRowsSegments();         //Расчет левой границы каждого сектора внутри сегмента
             ExpansionBySegment();       //Расширение созвездий по сегментам
+            var constellationList = BuildConstellationList();
+            GameBootstrap.GameState.SetConstellationList(constellationList);
             //-----------------
             //Expansion();                // Расширение созвездий по графу
             RemoveInterSectorConnection(); // Убираем межсозвездные связи и фиксируем лучшие мосты
@@ -394,6 +397,46 @@ namespace _Project.Scripts.Galaxy.Generation
                     });
                 }
             }
+        }
+
+        private static int[][] BuildConstellationList()
+        {
+            if (_galaxy == null || _galaxy.Length == 0)
+                return System.Array.Empty<int[]>();
+
+            int maxId = 0;
+            for (int i = 0; i < _galaxy.Length; i++)
+            {
+                int cid = _galaxy[i].ConstellationId;
+                if (cid > maxId)
+                    maxId = cid;
+            }
+
+            if (maxId <= 0)
+                return System.Array.Empty<int[]>();
+
+            var buckets = new List<int>[maxId + 1];
+            for (int i = 0; i < _galaxy.Length; i++)
+            {
+                int cid = _galaxy[i].ConstellationId;
+                if (cid <= 0)
+                    continue;
+
+                var list = buckets[cid];
+                if (list == null)
+                {
+                    list = new List<int>();
+                    buckets[cid] = list;
+                }
+
+                list.Add(i);
+            }
+
+            var result = new int[maxId + 1][];
+            for (int i = 0; i < result.Length; i++)
+                result[i] = buckets[i] == null ? System.Array.Empty<int>() : buckets[i].ToArray();
+
+            return result;
         }
 
         private static void Expansion()

@@ -11,6 +11,7 @@ namespace _Project.Scripts.Core.GameState
     {
         private StarSys[] _galaxy = Array.Empty<StarSys>();
         private HyperlinkEdge[] _hyperlinkEdges = Array.Empty<HyperlinkEdge>();
+        private int[][] _constellationList = Array.Empty<int[]>();
         private ERunMode _runMode = ERunMode.Paused;
         private readonly SelectedService _selectedService = new SelectedService();
         private bool _showHyperlinks = true;
@@ -27,6 +28,7 @@ namespace _Project.Scripts.Core.GameState
         public ERunMode RunMode => _runMode;
         public StarSys[] Galaxy => _galaxy;
         public HyperlinkEdge[] HyperlinkEdges => _hyperlinkEdges;
+        public int[][] ConstellationList => _constellationList;
         public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex;
         public bool ShowHyperlinks => _showHyperlinks;
         public bool UseHyperlinkColoring => _useHyperlinkColoring;
@@ -53,6 +55,11 @@ namespace _Project.Scripts.Core.GameState
             _selectedService.SelectedSystemService.OnGalaxySet(_galaxy);
             _hyperlinkEdges = ConstellationCreator.BuildHyperlinkEdges(_galaxy);
             NotifyChanged();
+        }
+
+        internal void SetConstellationList(int[][] list)
+        {
+            _constellationList = list ?? Array.Empty<int[]>();
         }
 
         internal void ApplyShowHyperlinks(bool show)
