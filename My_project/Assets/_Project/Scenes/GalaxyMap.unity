@@ -554,6 +554,7 @@ MonoBehaviour:
   constellationValue: 0.9
   constellationAlpha: 0.65
   emptyConstellationColor: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 0.39215687}
+  noColoringLinkColor: {r: 0.3764706, g: 0.3764706, b: 0.3764706, a: 0.39215687}
   lineWidthAtRefZoom: 0.1
   referenceOrthoSize: 60
   interLinkColor: {r: 0.38039216, g: 0.38039216, b: 0.38039216, a: 0.39215687}

@@ -16,8 +16,8 @@
         public const float PlanetRadiusToUnits = 0.6f;
 
         // Масштаб префабов по радиусу: реальный радиус * PrefabScale.
-        public const float StarPrefabScale = 12f;
-        public const float PlanetPrefabScale = 1f;
+        public const float StarPrefabScale = 30f;
+        public const float PlanetPrefabScale = 3f;
         public const float MoonPrefabScale = 1f;
 
         // Базовые масштабы орбит на системной карте.

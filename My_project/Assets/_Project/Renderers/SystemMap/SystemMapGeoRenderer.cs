@@ -227,8 +227,7 @@ namespace _Project.Scripts.SystemMap
                     moonSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, moon.Uid, ESelectedObjectType.Moon);
                 float moonScale = Mathf.Max(
                     0.0001f,
-                    moon.Radius
-                    * StarSysemConstants.MoonPrefabScale
+                    StarSysemConstants.MoonPrefabScale
                     * _moonScaleOverride);
                 moonGo.transform.localScale = moonGo.transform.localScale * moonScale;
             }
