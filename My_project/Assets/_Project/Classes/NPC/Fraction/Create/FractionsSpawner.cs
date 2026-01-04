@@ -2,9 +2,16 @@ using _Project.Scripts.Galaxy.Data;
 
 namespace _Project.Scripts.NPC.Fraction.Create
 {
-    public static class FractionSpawner
+    public static class FractionsSpawner
     {
-        public static void SpawnForFraction(StarSys[] galaxy, Fraction fraction)
+        public static void SpawnAll(StarSys[] galaxy)
+        {
+            var fractions = FractionService.GetAll();
+            for (int i = 0; i < fractions.Count; i++)
+                SpawnForFraction(galaxy, fractions[i]);
+        }
+
+        private static void SpawnForFraction(StarSys[] galaxy, Fraction fraction)
         {
             if (galaxy == null || galaxy.Length == 0)
                 return;
