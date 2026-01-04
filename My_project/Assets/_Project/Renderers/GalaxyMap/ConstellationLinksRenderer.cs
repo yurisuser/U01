@@ -266,6 +266,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             if (isInter)
             {
+                if (_useFractionColoring && TryGetFractionLinkColors(a, b, out var interA, out var interB))
+                {
+                    line.startColor = interA;
+                    line.endColor = interB;
+                    return;
+                }
                 line.startColor = interLinkColor;
                 line.endColor = interLinkColor;
                 return;
@@ -286,10 +292,25 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
             }
 
-            var colorA = GetConstellationColor(_renderedGalaxy[a].ConstellationId);
-            var colorB = GetConstellationColor(_renderedGalaxy[b].ConstellationId);
-            line.startColor = colorA;
-            line.endColor = colorB;
+            if (_useFractionColoring && TryGetFractionLinkColors(a, b, out var fracA, out var fracB))
+            {
+                line.startColor = fracA;
+                line.endColor = fracB;
+                return;
+            }
+
+            if (_useHyperlinkColoring)
+            {
+                var colorA = GetConstellationColor(_renderedGalaxy[a].ConstellationId);
+                var colorB = GetConstellationColor(_renderedGalaxy[b].ConstellationId);
+                line.startColor = colorA;
+                line.endColor = colorB;
+                return;
+            }
+
+            var fallback = noColoringLinkColor;
+            line.startColor = fallback;
+            line.endColor = fallback;
         }
 
         private void CreateLinkVisual(Transform parent, Vector3 aPos, Vector3 bPos, int aIndex, int bIndex, bool isInter)
@@ -439,6 +460,43 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (!ColorUtility.TryParseHtmlString(fraction.Color, out var parsed))
                 return false;
 
+            color = parsed;
+            return true;
+        }
+
+        private bool TryGetFractionLinkColors(int a, int b, out Color colorA, out Color colorB)
+        {
+            colorA = default;
+            colorB = default;
+
+            bool hasA = TryGetSystemFractionColor(a, out var aColor);
+            bool hasB = TryGetSystemFractionColor(b, out var bColor);
+
+            if (!hasA && !hasB)
+                return false;
+
+            colorA = hasA ? aColor : bColor;
+            colorB = hasB ? bColor : aColor;
+            return true;
+        }
+
+        private bool TryGetSystemFractionColor(int systemIndex, out Color color)
+        {
+            color = default;
+            if (!_useFractionColoring || _renderedGalaxy == null)
+                return false;
+
+            if (systemIndex < 0 || systemIndex >= _renderedGalaxy.Length)
+                return false;
+
+            var owner = _renderedGalaxy[systemIndex].OwnerFrac;
+            if (owner.Id <= 0)
+                return false;
+
+            if (!TryGetFractionColor(owner, out var parsed))
+                return false;
+
+            parsed.a = constellationAlpha;
             color = parsed;
             return true;
         }

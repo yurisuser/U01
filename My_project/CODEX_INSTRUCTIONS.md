@@ -42,11 +42,4 @@ CODEX_INSTRUCTIONS.md
 ## Бэклог / напоминания
 - TODO: отложенные действия, о которых нужно помнить.
 
-## Документы (обязательны к прочтению)
-- `Docs/decisions.md`
-- `Docs/eq_rename.sql`
-- `Docs/Textes/AI Struct.md`
-- `Docs/Textes/Dev.md`
-- `Docs/Textes/Egosoft.txt`
-- `Docs/Textes/idea.txt`
-- `Docs/Textes/Jump Drive.txt`
+
