@@ -23,15 +23,8 @@ namespace _Project.Scripts.SystemMap
 
         [Header("Orbit geometry")]
         private int segments = 128;
-         private float orbitUnitPlanet = 10f;
-        private float orbitUnitMoon = 1.5f;
 
         [Header("Base scale factors")]
-        private float baseStarScale = 10f;
-        private float basePlanetScale = 1.5f;
-        private float baseMoonScale = 0.2f;
-        private float basePlanetOrbitScale = 1f;
-        private float baseMoonOrbitScale = 1f;
 
         [Header("Line width settings")]
         [SerializeField] private float lineWidthAtRefZoom = 0.015f;
@@ -117,8 +110,8 @@ namespace _Project.Scripts.SystemMap
             if (starSelectable != null)
                 starSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, system.Star.Uid, ESelectedObjectType.Star);
 
-            var scale = Mathf.Max(0.0001f, baseStarScale * _starScaleOverride);
-            starGo.transform.localScale = starGo.transform.localScale * scale;
+            float scale = StarSysemConstants.StarPrefabScale * Mathf.Max(0.0001f, _starScaleOverride);
+            starGo.transform.localScale = starGo.transform.localScale * Mathf.Max(0.0001f, scale);
         }
 
         private void DrawDeadZones()
@@ -127,7 +120,7 @@ namespace _Project.Scripts.SystemMap
                 return;
 
             float orbitUnit = _Project.Scripts.Galaxy.Config.OrbitMath.PlanetOrbitIndexToUnits(1);
-            float innerRadius = Mathf.Max(0f, Const.SimulationConsts.InnerDeadZoneOrbits * orbitUnit);
+            float innerRadius = Mathf.Max(0f, StarSysemConstants.InnerDeadZoneOrbits * orbitUnit);
             if (innerRadius <= 0f)
                 return;
 
@@ -148,8 +141,8 @@ namespace _Project.Scripts.SystemMap
 
                 float orbitRadius =
                     Mathf.Max(0, planetSys.OrbitIndex) *
-                    orbitUnitPlanet *
-                    Mathf.Max(0.0001f, basePlanetOrbitScale * _planetOrbitScaleOverride);
+                    StarSysemConstants.PlanetOrbitUnit *
+                    Mathf.Max(0.0001f, StarSysemConstants.PlanetOrbitScale * _planetOrbitScaleOverride);
 
                 float angle = planetSys.OrbitPosition;
                 Vector3 planetPos = new(Mathf.Cos(angle) * orbitRadius, Mathf.Sin(angle) * orbitRadius, 0f);
@@ -169,7 +162,10 @@ namespace _Project.Scripts.SystemMap
                     var planetSelectable = planetGo.GetComponent<SelectableData>();
                     if (planetSelectable != null)
                         planetSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, planetSys.Planet.Uid, ESelectedObjectType.Planet);
-                    var planetScale = Mathf.Max(0.0001f, basePlanetScale * _planetScaleOverride);
+                    float planetScale = Mathf.Max(
+                        0.0001f,
+                        StarSysemConstants.PlanetPrefabScale
+                        * _planetScaleOverride);
                     planetGo.transform.localScale = planetGo.transform.localScale * planetScale;
                 }
 
@@ -204,8 +200,8 @@ namespace _Project.Scripts.SystemMap
 
                 float orbitRadius =
                     orbitIndex *
-                    orbitUnitMoon *
-                    Mathf.Max(0.0001f, baseMoonOrbitScale * _moonOrbitScaleOverride);
+                    StarSysemConstants.MoonOrbitUnit *
+                    Mathf.Max(0.0001f, StarSysemConstants.MoonOrbitScale * _moonOrbitScaleOverride);
 
                 var moonOrbit = CreateCircle(orbitRoot, Vector3.zero, orbitRadius, moonOrbitColor);
                 _allOrbitLines.Add(moonOrbit);
@@ -229,7 +225,11 @@ namespace _Project.Scripts.SystemMap
                 var moonSelectable = moonGo.GetComponent<SelectableData>();
                 if (moonSelectable != null)
                     moonSelectable.SetData(GameBootstrap.GameState.SelectedSystemIndex, moon.Uid, ESelectedObjectType.Moon);
-                var moonScale = Mathf.Max(0.0001f, baseMoonScale * _moonScaleOverride);
+                float moonScale = Mathf.Max(
+                    0.0001f,
+                    moon.Radius
+                    * StarSysemConstants.MoonPrefabScale
+                    * _moonScaleOverride);
                 moonGo.transform.localScale = moonGo.transform.localScale * moonScale;
             }
         }

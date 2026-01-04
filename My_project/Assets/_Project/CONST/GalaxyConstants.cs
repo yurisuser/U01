@@ -1,9 +1,6 @@
 ﻿namespace _Project.Scripts.Const
 {
     public static class GalaxyConstants {
-        // --- Орбиты ---
-        public const int OrbitSlots  = 20; // количество орбит вокруг звезды/планеты
-
         // --- Генерация галактики ---
         // Рукава галактики изначально генерируются в вертикальном направлении соосно Y !!!!!!!
         public const int StarCount                 = 1500; // количество звезд в галактике

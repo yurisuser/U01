@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Core;
 using UnityEngine;
@@ -8,29 +9,6 @@ namespace _Project.Scripts.Galaxy.Generation
 {
     public static class PlanetSysCreator
     {
-        // ===================== ТЮНИНГ =====================
-        // Перевод «индекса орбиты» планеты в сценовые юниты.
-        // Если у тебя уже есть своя функция масштаба — просто подставь её.
-        private const float OrbitUnitPlanet = 10f; // юнитов сцены на 1 «клетку» орбиты планеты
-
-        // Перевод «индекса орбиты» луны в сценовые юниты относительно ПЛАНЕТЫ.
-        private const float OrbitUnitMoon   = 1.6f; // радиус внешней лунной орбиты = lastMoonIndex * этот множитель
-
-        // Перевод радиуса планеты (в земных радиусах) в сценовые юниты её визуала.
-        private const float PlanetRadiusToUnits = 0.6f;
-
-        // Базовая минимальная угловая дистанция (радианы) «против прилипания»,
-        // добавляется к расчётной ширине от габаритов систем.
-        private const float MinAngularGapBase = 0.10f; // ≈ 5.7°
-
-        // Шаг подбора угла (золотой угол, чтобы не «резонировать» с кратными делениями круга)
-        private const float GoldenAngleRad = 2.39996322972865332f; // 360° * (φ - 1)^2
-
-        // Сколько попыток смещения угла делаем, если рядом уже занято
-        private const int MaxAngleAttempts = 64;
-
-        // ==================================================
-
         // Для контроля соседства: накапливаем выставленные углы по каждой звезде.
         // Ключ — UID звезды (Star.UID); значение — список уже назначенных «угол+масштабы».
         private static readonly Dictionary<int, List<PlacedPlanet>> PlacedByStar = new();
@@ -52,9 +30,9 @@ namespace _Project.Scripts.Galaxy.Generation
             float orbitRadius = OrbitIndexToUnits(planetOrbitIndex);
 
             // 2) Считаем внешний габарит планетной системы: визуальный радиус планеты + «самая дальняя» лунная орбита
-            float planetVisual = Mathf.Max(0f, planet.Radius) * PlanetRadiusToUnits;
+            float planetVisual = Mathf.Max(0f, planet.Radius) * StarSysemConstants.PlanetRadiusToUnits;
             int farMoonIndex = (moonOrbits != null && moonOrbits.Length > 0) ? moonOrbits[moonOrbits.Length - 1] : 0;
-            float farMoonOrbit = farMoonIndex * OrbitUnitMoon;
+            float farMoonOrbit = farMoonIndex * StarSysemConstants.MoonOrbitUnit;
             float envelope = planetVisual + farMoonOrbit;
 
             // 3) Подбираем угол с учётом уже расставленных планет у этой звезды
@@ -79,7 +57,7 @@ namespace _Project.Scripts.Galaxy.Generation
         private static float OrbitIndexToUnits(int orbitIndex)
         {
             // Можно усложнить (например, экспонентой), но линейный масштаб обычно достаточно удобен для карты.
-            return Mathf.Max(0, orbitIndex) * OrbitUnitPlanet;
+            return Mathf.Max(0, orbitIndex) * StarSysemConstants.PlanetOrbitUnit;
         }
 
         private static float PickAngleDeterministicAndSafe(UID starId, int orbitIndex, float orbitR, float envelope)
@@ -93,7 +71,7 @@ namespace _Project.Scripts.Galaxy.Generation
             if (!PlacedByStar.TryGetValue(starId.Id, out var placed) || placed.Count == 0)
                 return angle;
 
-            for (int attempt = 0; attempt < MaxAngleAttempts; attempt++, angle += GoldenAngleRad)
+            for (int attempt = 0; attempt < StarSysemConstants.MaxAngleAttempts; attempt++, angle += StarSysemConstants.GoldenAngleRad)
             {
                 bool ok = true;
                 for (int i = 0; i < placed.Count; i++)
@@ -131,7 +109,7 @@ namespace _Project.Scripts.Galaxy.Generation
         {
             float e1 = env1 / Mathf.Max(r1, 0.0001f);
             float e2 = env2 / Mathf.Max(r2, 0.0001f);
-            return MinAngularGapBase + 0.5f * (e1 + e2);
+            return StarSysemConstants.MinAngularGapBase + 0.5f * (e1 + e2);
         }
 
         private static float AngularDelta(float a, float b)
