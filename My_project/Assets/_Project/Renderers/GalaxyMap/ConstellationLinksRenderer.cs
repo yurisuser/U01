@@ -37,6 +37,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         private GameStateService _state;
         private Material _runtimeMaterial;
         private StarSys[] _renderedGalaxy;
+        private bool _lastShowHyperlinks = true;
         private bool _useHyperlinkColoring;
         private bool _useFractionColoring;
         private Color[] _constellationColors;
@@ -74,6 +75,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_state != null)
             {
                 _state.StateChanged += OnStateChanged;
+                _lastShowHyperlinks = _state.ShowHyperlinks;
                 OnStateChanged();
             }
         }
@@ -98,6 +100,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 SetLinesVisible(false);
                 _useHyperlinkColoring = _state.UseHyperlinkColoring;
                 _useFractionColoring = _state.UseFractionColoring;
+                _lastShowHyperlinks = _state.ShowHyperlinks;
                 return;
             }
 
@@ -105,7 +108,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
 
             SetLinesVisible(true);
-
+            bool showChanged = _lastShowHyperlinks != _state.ShowHyperlinks;
+            _lastShowHyperlinks = _state.ShowHyperlinks;
             bool newColoring = _state.UseHyperlinkColoring;
             bool newFractions = _state.UseFractionColoring;
             if (_renderedGalaxy != _state.Galaxy)
@@ -116,7 +120,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return;
             }
 
-            if (_useHyperlinkColoring != newColoring || _useFractionColoring != newFractions)
+            if (_useHyperlinkColoring != newColoring || _useFractionColoring != newFractions || showChanged)
             {
                 _useHyperlinkColoring = newColoring;
                 if (_useFractionColoring != newFractions)
