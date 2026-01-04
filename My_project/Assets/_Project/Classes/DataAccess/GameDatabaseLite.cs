@@ -22,6 +22,7 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogShield> _shields;
         private static IReadOnlyList<CatalogShip> _ships;
         private static IReadOnlyList<CatalogFraction> _fractions;
+        private static IReadOnlyList<CatalogConstellationName> _constellationNames;
 
         /// <summary>Возвращает список оружия из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogWeapon> GetWeapons(bool forceReload = false)
@@ -255,7 +256,7 @@ namespace _Project.DataAccess
             if (!forceReload && _fractions != null) return _fractions;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, bio, politic, color, home_sector, symbol, description FROM f_fractions ORDER BY id";
+            cmd.CommandText = "SELECT id, name, bio, politic, color, home_sector, home_constellation_id, symbol, description FROM f_fractions ORDER BY id";
 
             var list = new List<CatalogFraction>();
             using (var reader = cmd.ExecuteReader())
@@ -268,13 +269,37 @@ namespace _Project.DataAccess
                     var politic = reader.GetString(3);
                     var color = reader.GetString(4);
                     var homeSector = reader.GetInt32(5);
-                    var symbol = reader.GetString(6);
-                    var description = reader.GetString(7);
-                    list.Add(new CatalogFraction(id, name, bio, politic, color, homeSector, symbol, description));
+                    var homeConstellationId = reader.GetInt32(6);
+                    var symbol = reader.GetString(7);
+                    var description = reader.GetString(8);
+                    list.Add(new CatalogFraction(id, name, bio, politic, color, homeSector, homeConstellationId, symbol, description));
                 }
             }
 
             _fractions = list;
+            return list;
+        }
+
+        /// <summary>Возвращает список имён созвездий из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogConstellationName> GetConstellationNames(bool forceReload = false)
+        {
+            if (!forceReload && _constellationNames != null) return _constellationNames;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, text FROM a_contellations_names ORDER BY id";
+
+            var list = new List<CatalogConstellationName>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var text = reader.GetString(1);
+                    list.Add(new CatalogConstellationName(id, text));
+                }
+            }
+
+            _constellationNames = list;
             return list;
         }
 
@@ -486,8 +511,13 @@ CREATE TABLE IF NOT EXISTS f_fractions (
     politic TEXT NOT NULL,
     color TEXT NOT NULL,
     home_sector INTEGER NOT NULL DEFAULT 0,
+    home_constellation_id INTEGER NOT NULL DEFAULT 0,
     symbol TEXT NOT NULL,
     description TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS a_contellations_names (
+    id INTEGER PRIMARY KEY,
+    text TEXT NOT NULL
 );
 ";
             cmd.ExecuteNonQuery();
@@ -706,6 +736,59 @@ FROM ""eq-weapons"";";
                 ("volume", "REAL NOT NULL DEFAULT 0"),
                 ("regen", "REAL NOT NULL DEFAULT 0")
             });
+            EnsureFractionSchema(connection);
+        }
+
+        private static void EnsureFractionSchema(IDbConnection connection)
+        {
+            var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(f_fractions)";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    existing.Add(reader.GetString(1));
+            }
+
+            if (existing.Contains("home_constellation_id"))
+                return;
+
+            using var tx = connection.BeginTransaction();
+            using var cmdCreate = connection.CreateCommand();
+            cmdCreate.Transaction = tx;
+            cmdCreate.CommandText = @"
+CREATE TABLE IF NOT EXISTS f_fractions_new (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    bio TEXT NOT NULL,
+    politic TEXT NOT NULL,
+    color TEXT NOT NULL,
+    home_sector INTEGER NOT NULL DEFAULT 0,
+    home_constellation_id INTEGER NOT NULL DEFAULT 0,
+    symbol TEXT NOT NULL,
+    description TEXT NOT NULL
+);";
+            cmdCreate.ExecuteNonQuery();
+
+            using var cmdCopy = connection.CreateCommand();
+            cmdCopy.Transaction = tx;
+            cmdCopy.CommandText = @"
+INSERT INTO f_fractions_new (id, name, bio, politic, color, home_sector, home_constellation_id, symbol, description)
+SELECT id, name, bio, politic, color, home_sector, 0, symbol, description
+FROM f_fractions;";
+            cmdCopy.ExecuteNonQuery();
+
+            using var cmdDrop = connection.CreateCommand();
+            cmdDrop.Transaction = tx;
+            cmdDrop.CommandText = "DROP TABLE f_fractions;";
+            cmdDrop.ExecuteNonQuery();
+
+            using var cmdRename = connection.CreateCommand();
+            cmdRename.Transaction = tx;
+            cmdRename.CommandText = "ALTER TABLE f_fractions_new RENAME TO f_fractions;";
+            cmdRename.ExecuteNonQuery();
+
+            tx.Commit();
         }
 
         private static void EnsureColumns(IDbConnection connection, string table, (string Name, string Sql)[] columns)
@@ -758,6 +841,112 @@ INSERT OR IGNORE INTO ""eq-shields"" (id, key, display_name, description, price,
 INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, power, cpu, acceleration, prefab_size, prefab_name, weapon_slots, shield_slots, engine_slots) VALUES
     (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 50, 40, 0, 1.0, '', 2, 1, 1),
     (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 120, 90, 0, 1.0, '', 4, 2, 1);
+
+INSERT OR IGNORE INTO a_contellations_names (id, text) VALUES
+    (1, 'Viverra'),
+    (2, 'Genetta'),
+    (3, 'Meles'),
+    (4, 'Taxus'),
+    (5, 'Sciurus'),
+    (6, 'Erinaceus'),
+    (7, 'Talpa'),
+    (8, 'Castor'),
+    (9, 'Fiber'),
+    (10, 'Lepusculus'),
+    (11, 'Capreolus'),
+    (12, 'Alces'),
+    (13, 'Oryx'),
+    (14, 'Saiga'),
+    (15, 'Camelus'),
+    (16, 'Dromedarius'),
+    (17, 'Hystrix'),
+    (18, 'Lagopus'),
+    (19, 'Perdix'),
+    (20, 'Coturnix'),
+    (21, 'Phasianus'),
+    (22, 'Numida'),
+    (23, 'Ardeola'),
+    (24, 'Ciconia'),
+    (25, 'Ibis'),
+    (26, 'Phaethon'),
+    (27, 'Sula'),
+    (28, 'Larus'),
+    (29, 'Sternula'),
+    (30, 'Fulmarus'),
+    (31, 'Gannetum'),
+    (32, 'Delphinulus'),
+    (33, 'Phoca'),
+    (34, 'Monachus'),
+    (35, 'Echinus'),
+    (36, 'Ostrea'),
+    (37, 'Mytilus'),
+    (38, 'Cancerinus'),
+    (39, 'Astacus'),
+    (40, 'Homarus'),
+    (41, 'Sepiola'),
+    (42, 'Loligo'),
+    (43, 'Nautilus'),
+    (44, 'Concha'),
+    (45, 'Pecten'),
+    (46, 'Spatula'),
+    (47, 'Dolabra'),
+    (48, 'Falx'),
+    (49, 'Scalprum'),
+    (50, 'Forfex'),
+    (51, 'Forceps'),
+    (52, 'Pincerna'),
+    (53, 'Follis'),
+    (54, 'Tuba'),
+    (55, 'Tympanum'),
+    (56, 'Cornu'),
+    (57, 'Fistula'),
+    (58, 'Tibia'),
+    (59, 'Cithara'),
+    (60, 'Barbiton'),
+    (61, 'Sistrum'),
+    (62, 'Cymbalum'),
+    (63, 'Phiala'),
+    (64, 'Amphora'),
+    (65, 'Urna'),
+    (66, 'Dolium'),
+    (67, 'Cruxellus'),
+    (68, 'Cingulum'),
+    (69, 'Annulus'),
+    (70, 'Monile'),
+    (71, 'Fibula'),
+    (72, 'Spatha'),
+    (73, 'Hasta'),
+    (74, 'Pilum'),
+    (75, 'Sagitta'),
+    (76, 'Cuspis'),
+    (77, 'Apex'),
+    (78, 'Vertex'),
+    (79, 'Angulus'),
+    (80, 'Arcusculus'),
+    (81, 'Porta'),
+    (82, 'Vallum'),
+    (83, 'Turricula'),
+    (84, 'Arx'),
+    (85, 'Monsculus'),
+    (86, 'Rupes'),
+    (87, 'Saxum'),
+    (88, 'Petra'),
+    (89, 'Insula'),
+    (90, 'Isthmus'),
+    (91, 'Fretum'),
+    (92, 'Sinus'),
+    (93, 'Promontorium'),
+    (94, 'Lacus'),
+    (95, 'Rivus'),
+    (96, 'Flumen'),
+    (97, 'Unda'),
+    (98, 'Nimbus'),
+    (99, 'Nubes'),
+    (100, 'Ventus'),
+    (101, 'Aurora'),
+    (102, 'Umbra'),
+    (103, 'Lumen'),
+    (104, 'Radius');
 ";
             cmd.ExecuteNonQuery();
             tx.Commit();

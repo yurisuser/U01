@@ -9,6 +9,7 @@ namespace _Project.DataAccess
             string politic,
             string color,
             int homeSector,
+            int homeConstellationId,
             string symbol,
             string description)
         {
@@ -18,6 +19,7 @@ namespace _Project.DataAccess
             Politic = politic;
             Color = color;
             HomeSector = homeSector;
+            HomeConstellationId = homeConstellationId;
             Symbol = symbol;
             Description = description;
         }
@@ -28,6 +30,7 @@ namespace _Project.DataAccess
         public string Politic { get; }
         public string Color { get; }
         public int HomeSector { get; }
+        public int HomeConstellationId { get; }
         public string Symbol { get; }
         public string Description { get; }
     }

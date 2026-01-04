@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Galaxy.Constellations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -165,7 +166,7 @@ namespace _Project.Scripts.UI
             if (_starNameLabel != null)
                 _starNameLabel.text = starName;
             if (_constellationNameLabel != null)
-                _constellationNameLabel.text = starSys.ConstellationId > 0 ? starSys.ConstellationId.ToString() : "no info";
+                _constellationNameLabel.text = ConstellationService.GetNameById(starSys.ConstellationId);
 
             if (_starParamLabel == null || _starValueLabel == null)
                 return;
