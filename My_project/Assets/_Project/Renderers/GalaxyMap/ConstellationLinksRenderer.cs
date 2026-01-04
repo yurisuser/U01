@@ -420,13 +420,18 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             _constellationColors = new Color[maxId + 1];
             var hasOwnerColor = new bool[maxId + 1];
-            var emptyColor = emptyConstellationColor;
-            emptyColor.a = constellationAlpha;
+            var adjacency = BuildConstellationAdjacency();
 
             for (int i = 1; i <= maxId; i++)
             {
-                _constellationColors[i] = emptyColor;
+                // Базовый цвет для созвездия — стабильный по id, чтобы режим констелляций был разноцветным.
+                float hue = Hash01(i);
+                var baseColor = Color.HSVToRGB(hue, constellationSaturation, constellationValue);
+                baseColor.a = constellationAlpha;
+                _constellationColors[i] = baseColor;
             }
+
+            EnsureConstellationColorSeparation(adjacency);
 
             for (int i = 0; i < _renderedGalaxy.Length; i++)
             {
@@ -444,6 +449,105 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     _constellationColors[cid] = ownerColor;
                     hasOwnerColor[cid] = true;
                 }
+            }
+        }
+
+        private Dictionary<int, HashSet<int>> BuildConstellationAdjacency()
+        {
+            var adjacency = new Dictionary<int, HashSet<int>>();
+
+            if (_renderedGalaxy == null || _renderedGalaxy.Length == 0)
+                return adjacency;
+
+            var seenEdges = new HashSet<long>();
+            for (int i = 0; i < _renderedGalaxy.Length; i++)
+            {
+                var links = _renderedGalaxy[i].links;
+                if (links == null || links.Length == 0)
+                    continue;
+
+                int cidA = _renderedGalaxy[i].ConstellationId;
+                if (cidA <= 0)
+                    continue;
+
+                for (int j = 0; j < links.Length; j++)
+                {
+                    int other = links[j];
+                    if (other < 0 || other >= _renderedGalaxy.Length)
+                        continue;
+
+                    long key = GetEdgeKey(i, other);
+                    if (!seenEdges.Add(key))
+                        continue;
+
+                    int cidB = _renderedGalaxy[other].ConstellationId;
+                    if (cidB <= 0 || cidA == cidB)
+                        continue;
+
+                    if (!adjacency.TryGetValue(cidA, out var setA))
+                    {
+                        setA = new HashSet<int>();
+                        adjacency[cidA] = setA;
+                    }
+                    setA.Add(cidB);
+
+                    if (!adjacency.TryGetValue(cidB, out var setB))
+                    {
+                        setB = new HashSet<int>();
+                        adjacency[cidB] = setB;
+                    }
+                    setB.Add(cidA);
+                }
+            }
+
+            return adjacency;
+        }
+
+        private void EnsureConstellationColorSeparation(Dictionary<int, HashSet<int>> adjacency)
+        {
+            if (_constellationColors == null || _constellationColors.Length == 0)
+                return;
+
+            const float minHueDelta = 0.08f; // ~29 deg
+            const float hueStep = 0.381966f; // golden angle fraction
+            const int maxAttempts = 8;
+
+            for (int cid = 1; cid < _constellationColors.Length; cid++)
+            {
+                if (!adjacency.TryGetValue(cid, out var neighbors) || neighbors == null || neighbors.Count == 0)
+                    continue;
+
+                var color = _constellationColors[cid];
+                Color.RGBToHSV(color, out var hue, out var sat, out var val);
+
+                int attempts = 0;
+                while (attempts < maxAttempts)
+                {
+                    bool tooClose = false;
+                    foreach (var neighborCid in neighbors)
+                    {
+                        if (neighborCid <= 0 || neighborCid >= _constellationColors.Length)
+                            continue;
+
+                        Color.RGBToHSV(_constellationColors[neighborCid], out var nhue, out _, out _);
+                        float diff = Mathf.Abs(Mathf.DeltaAngle(hue * 360f, nhue * 360f)) / 360f;
+                        if (diff < minHueDelta)
+                        {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+
+                    if (!tooClose)
+                        break;
+
+                    hue = Mathf.Repeat(hue + hueStep, 1f);
+                    attempts++;
+                }
+
+                var adjusted = Color.HSVToRGB(hue, sat, val);
+                adjusted.a = color.a;
+                _constellationColors[cid] = adjusted;
             }
         }
 

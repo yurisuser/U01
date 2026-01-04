@@ -23,10 +23,13 @@ namespace _Project.Scripts.UI
         private Label _linkLabel;
         private VisualElement _fractionsButton;
         private Label _fractionsLabel;
+        private VisualElement _constellationsButton;
+        private Label _constellationsLabel;
         private GameStateService _state;
 
         private EventCallback<ClickEvent> _onClick;
         private EventCallback<ClickEvent> _onFractionsClick;
+        private EventCallback<ClickEvent> _onConstellationsClick;
 
         private void OnEnable()
         {
@@ -45,9 +48,14 @@ namespace _Project.Scripts.UI
             _fractionsButton?.UnregisterCallback(_onFractionsClick);
             _fractionsButton?.RegisterCallback(_onFractionsClick);
 
+            _onConstellationsClick = OnConstellationsClicked;
+            _constellationsButton?.UnregisterCallback(_onConstellationsClick);
+            _constellationsButton?.RegisterCallback(_onConstellationsClick);
+
             ApplyPanelBackground();
             RefreshLinkVisual();
             RefreshFractionsVisual();
+            RefreshConstellationsVisual();
         }
 
         private void OnDisable()
@@ -60,6 +68,8 @@ namespace _Project.Scripts.UI
                 _linkButton.UnregisterCallback(_onClick);
             if (_fractionsButton != null && _onFractionsClick != null)
                 _fractionsButton.UnregisterCallback(_onFractionsClick);
+            if (_constellationsButton != null && _onConstellationsClick != null)
+                _constellationsButton.UnregisterCallback(_onConstellationsClick);
         }
 
         private void OnValidate()
@@ -77,6 +87,7 @@ namespace _Project.Scripts.UI
             ApplyPanelBackground();
             RefreshLinkVisual();
             RefreshFractionsVisual();
+            RefreshConstellationsVisual();
         }
 
         private bool TryResolveElements()
@@ -102,8 +113,10 @@ namespace _Project.Scripts.UI
             _linkLabel = _linkButton?.Q<Label>();
             _fractionsButton = _root.Q<VisualElement>("VisualElement2");
             _fractionsLabel = _fractionsButton?.Q<Label>();
+            _constellationsButton = _root.Q<VisualElement>("VisualElement3");
+            _constellationsLabel = _constellationsButton?.Q<Label>();
 
-            return _panel != null && _linkButton != null && _fractionsButton != null;
+            return _panel != null && _linkButton != null && _fractionsButton != null && _constellationsButton != null;
         }
 
         private void ApplyPanelBackground()
@@ -118,6 +131,7 @@ namespace _Project.Scripts.UI
         {
             RefreshLinkVisual();
             RefreshFractionsVisual();
+            RefreshConstellationsVisual();
         }
 
         private void OnLinkClicked(ClickEvent evt)
@@ -129,7 +143,19 @@ namespace _Project.Scripts.UI
         private void OnFractionsClicked(ClickEvent evt)
         {
             var settings = SettingsService.Instance;
-            settings.SetUseFractionColoring(!settings.UseFractionColoring);
+            bool newValue = !settings.UseFractionColoring;
+            settings.SetUseFractionColoring(newValue);
+            if (newValue && settings.UseHyperlinkColoring)
+                settings.SetUseHyperlinkColoring(false);
+        }
+
+        private void OnConstellationsClicked(ClickEvent evt)
+        {
+            var settings = SettingsService.Instance;
+            bool newValue = !settings.UseHyperlinkColoring;
+            settings.SetUseHyperlinkColoring(newValue);
+            if (newValue && settings.UseFractionColoring)
+                settings.SetUseFractionColoring(false);
         }
 
         private void RefreshLinkVisual()
@@ -162,6 +188,22 @@ namespace _Project.Scripts.UI
 
             if (_fractionsLabel != null)
                 _fractionsLabel.style.color = _state.UseFractionColoring ? linkOnColor : linkOffColor;
+        }
+
+        private void RefreshConstellationsVisual()
+        {
+            if (_constellationsButton == null)
+                return;
+
+            if (_state == null)
+            {
+                if (_constellationsLabel != null)
+                    _constellationsLabel.style.color = linkDisabledColor;
+                return;
+            }
+
+            if (_constellationsLabel != null)
+                _constellationsLabel.style.color = _state.UseHyperlinkColoring ? linkOnColor : linkOffColor;
         }
     }
 }
