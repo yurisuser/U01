@@ -41,6 +41,9 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private readonly List<GameObject> _spawned = new();
         private GameStateService _state;
+        private StarSys[] _currentGalaxy;
+        private bool _lastUseHyperlinkColoring;
+        private bool _lastUseFractionColoring;
 
         public IReadOnlyList<GameObject> Spawned => _spawned;
 
@@ -69,6 +72,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_state != null)
                 _state.StateChanged -= OnStateChanged;
             _state = null;
+            _currentGalaxy = null;
         }
 
         private void OnDrawGizmos()
@@ -115,7 +119,28 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
         private void OnStateChanged()
         {
-            Render(_state?.Galaxy, clearBefore: true);
+            if (_state == null)
+                return;
+
+            var galaxy = _state.Galaxy;
+            bool coloringChanged = _lastUseHyperlinkColoring != _state.UseHyperlinkColoring
+                                   || _lastUseFractionColoring != _state.UseFractionColoring;
+
+            if (_currentGalaxy != galaxy)
+            {
+                Render(galaxy, clearBefore: true);
+                _currentGalaxy = galaxy;
+                _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
+                _lastUseFractionColoring = _state.UseFractionColoring;
+                return;
+            }
+
+            if (coloringChanged)
+            {
+                _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
+                _lastUseFractionColoring = _state.UseFractionColoring;
+                RefreshSpawnedColors();
+            }
         }
 
         public void Render(StarSys[] systems, bool clearBefore = true)
@@ -152,7 +177,17 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     click.System = s;
                 }
 
+                var colorizer = go.GetComponent<StarGalaxyColorizer>() ?? go.AddComponent<StarGalaxyColorizer>();
+                colorizer?.RefreshColor();
+
                 _spawned.Add(go);
+            }
+
+            _currentGalaxy = systems;
+            if (_state != null)
+            {
+                _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
+                _lastUseFractionColoring = _state.UseFractionColoring;
             }
         }
 
@@ -213,6 +248,19 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 Vector3 next = center + new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f);
                 Gizmos.DrawLine(prev, next);
                 prev = next;
+            }
+        }
+
+        private void RefreshSpawnedColors()
+        {
+            for (int i = 0; i < _spawned.Count; i++)
+            {
+                var go = _spawned[i];
+                if (!go)
+                    continue;
+
+                var colorizer = go.GetComponent<StarGalaxyColorizer>();
+                colorizer?.RefreshColor();
             }
         }
 
