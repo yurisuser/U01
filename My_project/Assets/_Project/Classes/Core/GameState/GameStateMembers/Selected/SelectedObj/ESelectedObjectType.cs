@@ -8,5 +8,6 @@ namespace _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj
         Planet = 2,
         Moon = 3,
         Ship = 4,
+        Station = 5,
     }
 }

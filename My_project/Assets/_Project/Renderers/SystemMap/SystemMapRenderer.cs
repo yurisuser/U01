@@ -18,6 +18,7 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private Transform layersRoot;
         [SerializeField] private SystemMapGeoRenderer geoLayer;
         [SerializeField] private SystemMapShipRenderer shipLayer;
+        [SerializeField] private SystemMapStationRenderer stationLayer;
         [SerializeField] private SystemMapDebugOrchestrator debugOrchestrator;
 
         [Header("Масштаб элементов системы")]
@@ -48,6 +49,8 @@ namespace _Project.Scripts.SystemMap
                 geoLayer = GetComponent<SystemMapGeoRenderer>() ?? GetComponentInChildren<SystemMapGeoRenderer>(true);
             if (!shipLayer)
                 shipLayer = GetComponent<SystemMapShipRenderer>() ?? GetComponentInChildren<SystemMapShipRenderer>(true) ?? gameObject.AddComponent<SystemMapShipRenderer>();
+            if (!stationLayer)
+                stationLayer = GetComponent<SystemMapStationRenderer>() ?? GetComponentInChildren<SystemMapStationRenderer>(true) ?? gameObject.AddComponent<SystemMapStationRenderer>();
             EnsureDebugOrchestrator();
         }
 
@@ -107,6 +110,7 @@ namespace _Project.Scripts.SystemMap
 
             RenderStaticSystem(system.Value, systemChanged);
             RenderShips(system.Value, systemChanged);
+            RenderStations(system.Value, systemChanged);
         }
 
         private void Update()
@@ -119,6 +123,7 @@ namespace _Project.Scripts.SystemMap
                 return;
 
             RenderShips(system.Value, false);
+            RenderStations(system.Value, false);
         }
 
         private void RenderStaticSystem(in StarSys system, bool systemChanged)
@@ -138,7 +143,10 @@ namespace _Project.Scripts.SystemMap
             }
 
             if (systemChanged)
+            {
                 shipLayer?.Init(layersRoot);
+                stationLayer?.Init(layersRoot);
+            }
         }
 
         private void RenderShips(in StarSys system, bool systemChanged)
@@ -152,11 +160,23 @@ namespace _Project.Scripts.SystemMap
             shipLayer.Render(system);
         }
 
+        private void RenderStations(in StarSys system, bool systemChanged)
+        {
+            if (!stationLayer)
+                return;
+
+            if (systemChanged)
+                stationLayer.Init(layersRoot);
+
+            stationLayer.Render(system);
+        }
+
         private void ClearLayers()
         {
             geoLayer?.Dispose();
             _currentSystemUid = default;
             shipLayer?.Dispose();
+            stationLayer?.Dispose();
         }
 
         private void EnsureDebugOrchestrator()

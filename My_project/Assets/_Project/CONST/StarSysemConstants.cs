@@ -42,5 +42,11 @@
 
         // Слоты орбит вокруг звезды/планеты.
         public const int OrbitSlots = 20;
+
+        // Максимальный индекс орбиты, внутри которой размещаем станции.
+        public const int StationSpawnMaxOrbitIndex = 10;
+
+        // Масштаб префаба станции на системной карте.
+        public const float StationPrefabScale = 10f;
     }
 }

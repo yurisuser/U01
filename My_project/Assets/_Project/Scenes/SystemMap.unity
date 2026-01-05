@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 200395028}
   - component: {fileID: 200395030}
   - component: {fileID: 200395031}
+  - component: {fileID: 200395032}
   m_Layer: 0
   m_Name: SystemMapRoot
   m_TagString: Untagged
@@ -153,6 +154,7 @@ MonoBehaviour:
   layersRoot: {fileID: 200395029}
   geoLayer: {fileID: 200395030}
   shipLayer: {fileID: 200395031}
+  stationLayer: {fileID: 0}
   debugOrchestrator: {fileID: 0}
   starScale: 1
   planetScale: 1
@@ -209,6 +211,21 @@ MonoBehaviour:
   order: 5
   catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
   shipScale: 1
+--- !u!114 &200395032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200395027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9f4ae2f9f042824d9a68a5c8c1ea254, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_Project.Scripts.SystemMap.SystemMapStationRenderer
+  order: 2
+  catalog: {fileID: 11400000, guid: 0d50a82e8c8d2264da7938d84ac1a9a9, type: 2}
+  stationScale: 1
 --- !u!1001 &453937181
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -12,6 +12,8 @@ namespace _Project.Scripts.Stations
             {
                 Uid = uid,                              // идентификатор
                 Owner = owner,                          // владелец
+                TypeKey = def?.Key,                     // тип станции
+                PrefabKey = def?.PrefabKey,             // ключ префаба
                 Hull = def?.BaseHull ?? 0f,             // стартовая прочность
                 PowerCapacity = def?.BasePower ?? 0f,   // ёмкость энергии
                 PowerStored = def?.BasePower ?? 0f,     // стартовый запас

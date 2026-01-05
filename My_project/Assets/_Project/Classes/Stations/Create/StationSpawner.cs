@@ -21,17 +21,20 @@ namespace _Project.Scripts.Stations
         {
             float orbitUnit = OrbitMath.PlanetOrbitIndexToUnits(1);
             float innerRadius = Mathf.Max(0f, StarSysemConstants.InnerDeadZoneOrbits * orbitUnit);
-            float outerRadius = OrbitMath.PlanetOrbitIndexToUnits(StarSysemConstants.OrbitSlots);
+            int maxOrbitIndex = Mathf.Max(1, GetMaxOrbitIndex(sys));
+            int outerIndex = Mathf.Min(maxOrbitIndex, StarSysemConstants.StationSpawnMaxOrbitIndex);
+            float outerRadius = OrbitMath.PlanetOrbitIndexToUnits(outerIndex);
+            if (outerRadius <= 0f)
+                outerRadius = OrbitMath.PlanetOrbitIndexToUnits(4); // запасной вариант
 
             if (outerRadius <= 0f || outerRadius <= innerRadius)
                 return Vector3.zero;
 
-            float safeOuter = Mathf.Max(innerRadius + orbitUnit, outerRadius - orbitUnit * 0.5f); // чуть внутри 20-й орбиты
-            float targetRadius = Mathf.Lerp(innerRadius, safeOuter, 0.85f); // ближе к внешней границе, но с запасом
+            float targetRadius = Mathf.Max(innerRadius + orbitUnit * 0.25f, outerRadius * 0.5f); // середина между звездой и выбранной границей
 
             var planetPositions = CollectPlanetPositions(in sys, orbitUnit);
             if (planetPositions.Count == 0)
-                return new Vector3(targetRadius, 0f, 0f);
+                return new Vector3(targetRadius, 0f, 0f); // если планет нет, поставим на 4-й орбите
 
             float bestScore = -1f;
             float bestAngle = 0f;
@@ -40,7 +43,7 @@ namespace _Project.Scripts.Stations
             for (int i = 0; i < StarSysemConstants.MaxAngleAttempts; i++)
             {
                 Vector3 candidate = AngleToPos(angle, targetRadius);
-                float score = ScorePosition(candidate, planetPositions, targetRadius, safeOuter);
+                float score = ScorePosition(candidate, planetPositions, targetRadius, outerRadius);
                 if (score > bestScore)
                 {
                     bestScore = score;
@@ -66,6 +69,28 @@ namespace _Project.Scripts.Stations
             float distToOuter = Mathf.Max(0f, outerRadius - radius);
             float distScore = Mathf.Sqrt(minDistSq);
             return Mathf.Min(distScore, distToOuter); // ближе к объектам или границе — хуже
+        }
+
+        private static int GetMaxOrbitIndex(in StarSys sys)
+        {
+            int maxIndex = 0;
+
+            if (sys.PlanetOrbits != null)
+            {
+                for (int i = 0; i < sys.PlanetOrbits.Length; i++)
+                    maxIndex = Mathf.Max(maxIndex, sys.PlanetOrbits[i]);
+            }
+
+            if (sys.PlanetSysArr != null)
+            {
+                for (int i = 0; i < sys.PlanetSysArr.Length; i++)
+                    maxIndex = Mathf.Max(maxIndex, sys.PlanetSysArr[i].OrbitIndex);
+            }
+
+            if (maxIndex <= 0)
+                maxIndex = 4; // если планет нет, ставим на 4-й орбите
+
+            return maxIndex;
         }
 
         private static List<Vector3> CollectPlanetPositions(in StarSys sys, float orbitUnit)
