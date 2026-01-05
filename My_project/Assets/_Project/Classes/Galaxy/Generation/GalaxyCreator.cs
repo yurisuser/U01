@@ -3,6 +3,7 @@ using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction.Create;
 using _Project.Scripts.Simulation;
+using _Project.Scripts.Stations;
 using UnityEngine;
 
 namespace _Project.Scripts.Galaxy.Generation
@@ -88,6 +89,7 @@ namespace _Project.Scripts.Galaxy.Generation
             ConstellationCreator.Generate(galaxy);
 
             FractionsSpawner.SpawnAll(galaxy);
+            StationSectorSeeder.SpawnFactionStations(galaxy);
 
             return galaxy;
         }
