@@ -3,6 +3,7 @@ using _Project.Scripts.Core;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.NPC.Individ;
 using _Project.Scripts.Simulation;
+using _Project.Scripts.Stations;
 
 namespace _Project.Scripts.Galaxy.Data
 {
@@ -24,6 +25,7 @@ namespace _Project.Scripts.Galaxy.Data
         public PlanetSys[] PlanetSysArr;
         public Individ[] IndividArr;
         public LocalSysRuntimeContext State;
+        public Station[] Stations; // станции в системе
 
         public int[] PlanetOrbits;
         public float OldX;

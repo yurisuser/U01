@@ -48,6 +48,10 @@ MonoBehaviour:
   - {fileID: 4298940278040418173, guid: bf3b3e57058176847a88d6cdfd7ccd58, type: 3}
   ShipPrefabsByClass:
   - {fileID: 4513421269407687772, guid: 02c1ae6b7d7d543418b7964bb6e86c9d, type: 3}
+  ShipPrefabsByKey: []
+  StationPrefabsByKey:
+  - Key: station_test
+    Prefab: {fileID: 100000, guid: c5809a02c66d4abca993fcfc195cdd25, type: 3}
   OrbitPlanetColor: {r: 1, g: 0.9831489, b: 0, a: 0}
   OrbitMoonColor: {r: 1, g: 0.8433224, b: 0, a: 0}
   SelectionHighlightPrefab: {fileID: 0}
