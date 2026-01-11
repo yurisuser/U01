@@ -1,4 +1,5 @@
 using _Project.Scripts.Core;
+using _Project.DataAccess;
 
 namespace _Project.Scripts.Galaxy.Data
 {
@@ -26,7 +27,7 @@ namespace _Project.Scripts.Galaxy.Data
                 if (NameId < 0)
                     return string.Empty;
 
-                return LocalizationDatabase.TryGetStarName(NameId, OldX, OldY, out var value)
+                return StarNameCatalog.TryGetStarName(NameId, OldX, OldY, out var value)
                     ? value
                     : string.Empty;
             }

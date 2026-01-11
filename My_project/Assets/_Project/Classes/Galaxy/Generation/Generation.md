@@ -148,7 +148,7 @@
   - `PlanetOrbits`
 
 ## Имена
-- `LocalizationDatabase.PrepareStarNames` вызывается перед генерацией систем.
+   - `StarNameCatalog.PrepareStarNames` вызывается перед генерацией систем.
 - Имена звёзд/планет/лун создаются на лету и регистрируются в локализации.
 
 ## Что важно знать

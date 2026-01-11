@@ -20,12 +20,7 @@ namespace _Project.Scripts.Galaxy.Data
 
         public string Name
         {
-            get
-            {
-                return LocalizationDatabase.TryGet(NameId, out var value)
-                    ? value
-                    : string.Empty;
-            }
+            get => StarNameCatalog.TryGet(NameId, out var value) ? value : string.Empty;
         }
     }
 }

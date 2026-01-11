@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using _Project.DataAccess;
 
-public static class LocalizationDatabase
+/// <summary>Генерация имён звёзд/планет/лун на основе каталога префиксов.</summary>
+public static class StarNameCatalog
 {
-    // Префиксы имён звёзд читаются из names.<lang>.star_prefix.json и размножаются под нужное количество систем.
-    // Планетарные/лунные имена строятся динамически от имени звезды и регистрируются как динамические значения.
     private static readonly Dictionary<int, string> _dynamicEntries = new();
     private static int _nextDynamicId = -1;
     private static string[] _starNames = Array.Empty<string>();
@@ -16,13 +16,10 @@ public static class LocalizationDatabase
 
     public static bool IsInitialized => _isInitialized;
 
-    public static void Initialize(string directoryPath)
+    public static void Initialize(string languageCode = "en")
     {
-        var reader = new LocalizationReader();
-
         ResetDynamicValuesCore();
-        _starPrefixes = reader.ReadStarPrefixes(directoryPath);
-
+        _starPrefixes = StarPrefixCatalogReader.GetAll(languageCode);
         _isInitialized = true;
         _starNamesPrepared = false;
     }
@@ -58,7 +55,7 @@ public static class LocalizationDatabase
         if (TryGet(id, out var value))
             return value;
 
-        throw new KeyNotFoundException($"Localization id {id} was not loaded.");
+        throw new KeyNotFoundException($"StarNameCatalog id {id} was not loaded.");
     }
 
     public static string GetStarName(int index)
@@ -124,7 +121,7 @@ public static class LocalizationDatabase
         }
 
         if (_starPrefixes == null || _starPrefixes.Count == 0)
-            throw new InvalidOperationException("Не найдены префиксы имён звёзд в локализации.");
+            throw new InvalidOperationException("Не найдены префиксы имён звёзд.");
 
         _starNames = new string[requiredCount];
         int baseCount = _starPrefixes.Count;
@@ -181,7 +178,7 @@ public static class LocalizationDatabase
     private static void EnsureInitialized()
     {
         if (!_isInitialized)
-            throw new InvalidOperationException("LocalizationDatabase.Initialize must be called before accessing data.");
+            throw new InvalidOperationException("StarNameCatalog.Initialize must be called before accessing data.");
     }
 
     private static string ComposeStarName(string root, float oldX, float oldY)

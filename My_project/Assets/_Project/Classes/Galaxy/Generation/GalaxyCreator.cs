@@ -17,8 +17,8 @@ namespace _Project.Scripts.Galaxy.Generation
         public static StarSys[] Create()
         {
             var galaxy = CreateSpiralGalaxy(GalaxyConstants.StarCount, GalaxyConstants.GalaxyStarLayer); // Создаем заготовку спиральной галактики
-            LocalizationDatabase.PrepareStarNames(galaxy.Length);
-            LocalizationDatabase.ResetDynamicValues();
+            StarNameCatalog.PrepareStarNames(galaxy.Length);
+            StarNameCatalog.ResetDynamicValues();
 
             for (int i = 0; i < galaxy.Length; i++) // Обрабатываем каждую систему по порядку
             {
@@ -48,7 +48,7 @@ namespace _Project.Scripts.Galaxy.Generation
                 var planetOrbits = PlanetOrbitCreator.Create(star); // Строим орбиты планет вокруг звезды
                 var planetsArr = new Planet[planetOrbits.Length];   // Массив планет для текущей системы
                 var planetSysArr = new PlanetSys[planetOrbits.Length]; // Массив систем планеты со спутниками
-                var starDisplayName = LocalizationDatabase.GetStarName(star.NameId, star.OldX, star.OldY);
+                var starDisplayName = StarNameCatalog.GetStarName(star.NameId, star.OldX, star.OldY);
 
                 for (var j = 0; j < planetOrbits.Length; j++) // Создаем планеты и их спутники
                 {
@@ -61,8 +61,8 @@ namespace _Project.Scripts.Galaxy.Generation
                         var moon = MoonCreator.Create(star, planetOrbits[j], planet, moonOrbits[k]); // Создаем спутник
                         if (!string.IsNullOrWhiteSpace(starDisplayName))
                         {
-                            var moonName = LocalizationDatabase.ComposeMoonName(starDisplayName, j, k);
-                            var moonId = LocalizationDatabase.RegisterDynamicValue(moonName);
+                            var moonName = StarNameCatalog.ComposeMoonName(starDisplayName, j, k);
+                            var moonId = StarNameCatalog.RegisterDynamicValue(moonName);
                             if (moonId != int.MinValue)
                                 moon.NameId = moonId;
                         }
@@ -71,8 +71,8 @@ namespace _Project.Scripts.Galaxy.Generation
 
                     if (!string.IsNullOrWhiteSpace(starDisplayName))
                     {
-                        var planetName = LocalizationDatabase.ComposePlanetName(starDisplayName, j);
-                        var planetId = LocalizationDatabase.RegisterDynamicValue(planetName);
+                        var planetName = StarNameCatalog.ComposePlanetName(starDisplayName, j);
+                        var planetId = StarNameCatalog.RegisterDynamicValue(planetName);
                         if (planetId != int.MinValue)
                             planet.NameId = planetId;
                     }
