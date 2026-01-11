@@ -1,0 +1,11 @@
+{
+  "id": 3,
+  "name": "Pirat",
+  "bio": "Pirat",
+  "politic": "Politic",
+  "color": "#FF0000",
+  "homeSector": 17,
+  "homeConstellationId": 3,
+  "symbol": "1",
+  "description": "Пираты. Подчиняются своим внутренним правилам и законам."
+}

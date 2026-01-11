@@ -1,0 +1,11 @@
+{
+  "id": 2,
+  "name": "Mech",
+  "bio": "Mech",
+  "politic": "Politic",
+  "color": "#8B0000",
+  "homeSector": 57,
+  "homeConstellationId": 2,
+  "symbol": "1",
+  "description": "Механоиды. Малопонятны, местами агрессивны. Терраформируют или потрошат планеты."
+}

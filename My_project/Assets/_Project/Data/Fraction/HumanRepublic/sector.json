@@ -1,0 +1,124 @@
+{
+  "fractionId": 6,
+  "constellationId": 0,
+  "systems": [
+    {
+      "order": 0,
+      "star": { "type": "Yellow", "size": "Normal", "customName": "AURORIAN" },
+      "orbits": [
+        {
+          "index": 1,
+          "planetType": "Stone",
+          "name": "TERRAONE",
+          "moons": [
+            { "type": "Stone", "name": "MOONROCK" }
+          ]
+        },
+        {
+          "index": 2,
+          "planetType": "GasGiant",
+          "name": "GASGIANT",
+          "moons": [
+            { "type": "Ice", "name": "RINGMOON" }
+          ]
+        },
+        {
+          "index": 3,
+          "planetType": "Ocean",
+          "name": "SEAWORLD",
+          "moons": [
+            { "type": "Ocean", "name": "DEEPBLUE" }
+          ]
+        }
+      ]
+    },
+    {
+      "order": 1,
+      "star": { "type": "Orange", "size": "Normal", "customName": "EMBERSEA" },
+      "orbits": [
+        {
+          "index": 1,
+          "planetType": "Desert",
+          "name": "SANDHOME",
+          "moons": [
+            { "type": "Stone", "name": "DUNEROCK" }
+          ]
+        },
+        {
+          "index": 2,
+          "planetType": "Stone",
+          "name": "OREFIELD",
+          "moons": [
+            { "type": "Stone", "name": "MINELOOP" }
+          ]
+        },
+        {
+          "index": 3,
+          "planetType": "IceGiant",
+          "name": "ICEGIANT",
+          "moons": [
+            { "type": "Ice", "name": "FROSTORB" }
+          ]
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "star": { "type": "Red", "size": "Dwarf", "customName": "CRIMSONA" },
+      "orbits": [
+        {
+          "index": 1,
+          "planetType": "Lava",
+          "name": "MOLTEN01",
+          "moons": [
+            { "type": "Lava", "name": "FIREMOON" }
+          ]
+        },
+        {
+          "index": 2,
+          "planetType": "Stone",
+          "name": "FORGELAB",
+          "moons": []
+        },
+        {
+          "index": 3,
+          "planetType": "GasGiant",
+          "name": "SKYFORGE",
+          "moons": [
+            { "type": "Stone", "name": "ANVILMOO" }
+          ]
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "star": { "type": "White", "size": "Normal", "customName": "GLACIERX" },
+      "orbits": [
+        {
+          "index": 1,
+          "planetType": "Frozen",
+          "name": "ICEBOUND",
+          "moons": [
+            { "type": "Ice", "name": "FROSTBIT" }
+          ]
+        },
+        {
+          "index": 2,
+          "planetType": "Ocean",
+          "name": "WATERSEA",
+          "moons": [
+            { "type": "Ocean", "name": "TIDEWAVE" }
+          ]
+        },
+        {
+          "index": 3,
+          "planetType": "Stone",
+          "name": "HOMESTEP",
+          "moons": [
+            { "type": "Stone", "name": "LANDMARK" }
+          ]
+        }
+      ]
+    }
+  ]
+}
