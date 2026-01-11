@@ -14,7 +14,7 @@ namespace _Project.DataAccess
             GameDatabaseLite.GetScanners(forceReload);
             GameDatabaseLite.GetShields(forceReload);
             GameDatabaseLite.GetShips(forceReload);
-            GameDatabaseLite.GetFractions(forceReload);
+            FractionCatalogReader.GetAll();
         }
     }
 }
