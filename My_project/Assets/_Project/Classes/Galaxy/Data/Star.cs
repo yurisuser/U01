@@ -13,10 +13,10 @@ namespace _Project.Scripts.Galaxy.Data
         public EStarType type;
         public EStarSize size;
         public float temperature; // K
-        public float mass;        // ᮫���� �����
-        public float radius;      // ᮫���� ࠤ����
-        public float luminosity;  // ᮫���� ᢥ⨬���
-        public float age;              // ��� ���
+        public float mass;
+        public float radius;
+        public float luminosity;
+        public float age;
         public float metallicity;      // 0-1
         public float stability;        // 0-1
     }

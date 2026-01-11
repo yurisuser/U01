@@ -14,12 +14,10 @@ namespace _Project.Scripts.GalaxyMap.Runtime
     {
         [SerializeField] private bool   logClick = true;
 
-        [Header("����� (�������� ७����/��䠡)")]
         public EStarType type;
         public string   systemName;
         public StarSys? System;
 
-        [Header("����� (�᫨ ���� - ������ MainCamera)")]
         [SerializeField] private Camera cam;
 
         [Header("UI (панель звезды)")]
