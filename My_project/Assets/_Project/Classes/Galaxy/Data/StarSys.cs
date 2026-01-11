@@ -28,6 +28,8 @@ namespace _Project.Scripts.Galaxy.Data
         public LocalSysRuntimeContext State;
         public Station[] Stations; // станции в системе
 
+        public bool isHome;
+
         public int[] PlanetOrbits;
         public float OldX;
         public float OldY;

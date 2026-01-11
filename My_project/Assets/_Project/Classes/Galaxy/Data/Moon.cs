@@ -17,6 +17,7 @@ namespace _Project.Scripts.Galaxy.Data
         public float Atmosphere;
         public float Temperature;
         public float Gravity;
+        public bool isHome;
 
         public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
     }

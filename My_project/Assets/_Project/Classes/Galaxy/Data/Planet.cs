@@ -13,6 +13,7 @@ namespace _Project.Scripts.Galaxy.Data
         public float Temperature;
         public float Gravity;
         public PlanetResource[] Resources;
+        public bool isHome;
 
         public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
     }
