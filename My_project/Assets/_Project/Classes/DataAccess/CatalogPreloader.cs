@@ -7,14 +7,7 @@ namespace _Project.DataAccess
     {
         public static void PreloadAll(bool forceReload = false)
         {
-            GameDatabaseLite.GetWeapons(forceReload);
-            GameDatabaseLite.GetGoods(forceReload);
-            GameDatabaseLite.GetQuest(forceReload);
-            GameDatabaseLite.GetEngines(forceReload);
-            GameDatabaseLite.GetScanners(forceReload);
-            GameDatabaseLite.GetShields(forceReload);
-            GameDatabaseLite.GetShips(forceReload);
-            FractionCatalogReader.GetAll();
+            CATALOG.LoadAll(forceReload);
         }
     }
 }

@@ -52,7 +52,6 @@ namespace _Project.Scripts.Core
                 _gameState = new GameStateService();
 
             CatalogPreloader.PreloadAll(forceReload: true); // прогреваем все каталоги в память
-
             StarNameCatalog.Initialize();
 
             var galaxy = GalaxyCreator.Create();

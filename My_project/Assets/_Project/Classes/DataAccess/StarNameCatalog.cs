@@ -16,10 +16,17 @@ public static class StarNameCatalog
 
     public static bool IsInitialized => _isInitialized;
 
-    public static void Initialize(string languageCode = "en")
+    public static void Initialize()
     {
         ResetDynamicValuesCore();
-        _starPrefixes = StarPrefixCatalogReader.GetAll(languageCode);
+        if (CATALOG.StarPrefixes != null && CATALOG.StarPrefixes.Count > 0)
+        {
+            _starPrefixes = CATALOG.StarPrefixes;
+        }
+        else
+        {
+            throw new InvalidOperationException("CATALOG must be loaded before StarNameCatalog.Initialize.");
+        }
         _isInitialized = true;
         _starNamesPrepared = false;
     }

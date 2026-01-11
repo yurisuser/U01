@@ -36,7 +36,7 @@ namespace _Project.Scripts.Galaxy.Constellations
 
         private static CatalogConstellationName[] Load()
         {
-            var list = ConstellationNameCatalogReader.GetAll();
+            var list = CATALOG.ConstellationNames;
             if (list == null || list.Count == 0)
                 return new[] { new CatalogConstellationName(0, string.Empty) };
 

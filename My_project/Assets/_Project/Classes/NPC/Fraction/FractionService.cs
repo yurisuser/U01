@@ -36,7 +36,7 @@ namespace _Project.Scripts.NPC.Fraction
 
         private static Fraction[] Load()
         {
-            var list = FractionCatalogReader.GetAll();
+            var list = CATALOG.Fractions;
             if (list == null || list.Count == 0)
                 return new[] { new Fraction(0, "Default") };
 
