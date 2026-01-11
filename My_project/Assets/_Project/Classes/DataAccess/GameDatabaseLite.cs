@@ -272,7 +272,19 @@ namespace _Project.DataAccess
                     var homeConstellationId = reader.GetInt32(6);
                     var symbol = reader.GetString(7);
                     var description = reader.GetString(8);
-                    list.Add(new CatalogFraction(id, name, bio, politic, color, homeSector, homeConstellationId, symbol, description));
+                    list.Add(new CatalogFraction(
+                        id,
+                        name,
+                        bio,
+                        politic,
+                        color,
+                        homeSector,
+                        homeConstellationId,
+                        symbol,
+                        description,
+                        Array.Empty<string>(),
+                        Array.Empty<string>(),
+                        Array.Empty<string>()));
                 }
             }
 

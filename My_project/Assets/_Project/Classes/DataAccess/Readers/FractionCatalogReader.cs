@@ -32,6 +32,11 @@ namespace _Project.DataAccess
                 if (!seenIds.Add(dto.id))
                     throw new InvalidOperationException($"Дублирующийся id фракции {dto.id} в файле {file}");
 
+                var dir = Path.GetDirectoryName(file);
+                var starNames = ReadNames(dir, "stars");
+                var planetNames = ReadNames(dir, "planet");
+                var moonNames = ReadNames(dir, "moon");
+
                 list.Add(new CatalogFraction(
                     dto.id,
                     dto.name,
@@ -41,13 +46,35 @@ namespace _Project.DataAccess
                     dto.homeSector,
                     dto.homeConstellationId,
                     dto.symbol,
-                    dto.description));
+                    dto.description,
+                    starNames,
+                    planetNames,
+                    moonNames));
             }
 
             if (list.Count == 0)
                 throw new InvalidOperationException("Не найдено ни одного fraction.json");
 
             return list.ToArray();
+        }
+
+        private static IReadOnlyList<string> ReadNames(string dir, string kind)
+        {
+            if (string.IsNullOrWhiteSpace(dir))
+                return Array.Empty<string>();
+
+            var fileName = $"names.en.{kind}.json";
+            var path = Path.Combine(dir, fileName);
+            if (!File.Exists(path))
+                return Array.Empty<string>();
+
+            var raw = File.ReadAllText(path);
+            var wrapped = $"{{\"items\":{raw}}}";
+            var dto = JsonUtility.FromJson<NameList>(wrapped);
+            if (dto?.items == null || dto.items.Count == 0)
+                return Array.Empty<string>();
+
+            return dto.items.ToArray();
         }
 
         [Serializable]
@@ -62,6 +89,12 @@ namespace _Project.DataAccess
             public int homeConstellationId;
             public string symbol;
             public string description;
+        }
+
+        [Serializable]
+        private sealed class NameList
+        {
+            public List<string> items;
         }
     }
 }

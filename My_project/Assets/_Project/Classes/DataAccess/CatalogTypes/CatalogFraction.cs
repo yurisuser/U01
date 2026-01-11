@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace _Project.DataAccess
 {
     public readonly struct CatalogFraction
@@ -11,7 +13,10 @@ namespace _Project.DataAccess
             int homeSector,
             int homeConstellationId,
             string symbol,
-            string description)
+            string description,
+            IReadOnlyList<string> starNames,
+            IReadOnlyList<string> planetNames,
+            IReadOnlyList<string> moonNames)
         {
             Id = id;
             Name = name;
@@ -22,6 +27,9 @@ namespace _Project.DataAccess
             HomeConstellationId = homeConstellationId;
             Symbol = symbol;
             Description = description;
+            StarNames = starNames;
+            PlanetNames = planetNames;
+            MoonNames = moonNames;
         }
 
         public int Id { get; }
@@ -33,5 +41,8 @@ namespace _Project.DataAccess
         public int HomeConstellationId { get; }
         public string Symbol { get; }
         public string Description { get; }
+        public IReadOnlyList<string> StarNames { get; }
+        public IReadOnlyList<string> PlanetNames { get; }
+        public IReadOnlyList<string> MoonNames { get; }
     }
 }
