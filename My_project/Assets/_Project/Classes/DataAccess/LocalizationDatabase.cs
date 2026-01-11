@@ -21,8 +21,7 @@ public static class LocalizationDatabase
         var reader = new LocalizationReader();
 
         ResetDynamicValuesCore();
-        var starPrefixChunk = reader.ReadStarPrefixChunk(directoryPath);
-        _starPrefixes = starPrefixChunk.Values;
+        _starPrefixes = reader.ReadStarPrefixes(directoryPath);
 
         _isInitialized = true;
         _starNamesPrepared = false;
@@ -213,66 +212,4 @@ public static class LocalizationDatabase
     }
 
     private static bool IsUsableCoordinate(float coord) => !float.IsNaN(coord) && !float.IsInfinity(coord);
-}
-
-public sealed class LocalizationChunk
-{
-    private readonly string[] _values;
-
-    public LocalizationChunk(int startId, int endId)
-    {
-        if (endId < startId)
-            throw new ArgumentOutOfRangeException(nameof(endId), "End id must be greater or equal to start id.");
-
-        StartId = startId;
-        EndId = endId;
-        _values = new string[endId - startId + 1];
-    }
-
-    public int StartId { get; }
-    public int EndId { get; }
-    public IReadOnlyList<string> Values => _values;
-
-    public bool Contains(int id) => id >= StartId && id <= EndId;
-
-    public bool TryAdd(int id, string value, out string error)
-    {
-        if (!Contains(id))
-        {
-            error = $"Id {id} is outside of chunk range [{StartId}, {EndId}].";
-            return false;
-        }
-
-        var index = id - StartId;
-        if (_values[index] != null)
-        {
-            error = $"Duplicate entry for id {id}.";
-            return false;
-        }
-
-        _values[index] = value;
-        error = string.Empty;
-        return true;
-    }
-
-    public bool TryGetValue(int id, out string value)
-    {
-        if (!Contains(id))
-        {
-            value = string.Empty;
-            return false;
-        }
-
-        var stored = _values[id - StartId];
-        if (stored == null)
-        {
-            value = string.Empty;
-            return false;
-        }
-
-        value = stored;
-        return true;
-    }
-
-    public string this[int id] => _values[id - StartId] ?? string.Empty;
 }
