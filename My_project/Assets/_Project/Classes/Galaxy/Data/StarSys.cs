@@ -16,7 +16,7 @@ namespace _Project.Scripts.Galaxy.Data
     public struct StarSys
     {
         public UID Uid;
-        public int NameId;
+        public string DisplayName;
         public int[] links;
         public int ConstellationId;
         public Fraction OwnerFrac;
@@ -33,20 +33,8 @@ namespace _Project.Scripts.Galaxy.Data
         public float OldY;
         public float DistanceToCenter;
 
-        public string Name
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(CustomName))
-                    return CustomName;
-
-                if (NameId < 0)
-                    return string.Empty;
-
-                return StarNameCatalog.TryGetStarName(NameId, OldX, OldY, out var value)
-                    ? value
-                    : string.Empty;
-            }
-        }
+        public string Name => !string.IsNullOrWhiteSpace(CustomName)
+            ? CustomName
+            : string.IsNullOrWhiteSpace(DisplayName) ? string.Empty : DisplayName;
     }
 }

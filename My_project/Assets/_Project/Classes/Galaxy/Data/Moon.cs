@@ -5,7 +5,7 @@ namespace _Project.Scripts.Galaxy.Data
     public struct Moon
     {
         public Core.UID Uid;
-        public int NameId;            // ID записи в локализации
+        public string Name;
         public EMoonType Type;        // ��� ���
         public EMoonSize Size;        // ������
         public int OrbitIndex;        // ����� �ࡨ��
@@ -18,9 +18,6 @@ namespace _Project.Scripts.Galaxy.Data
         public float Temperature;     // �।��� ⥬������ �����孮��
         public float Gravity;         // �᪮७�� ᢮������� �������
 
-        public string Name
-        {
-            get => StarNameCatalog.TryGet(NameId, out var value) ? value : string.Empty;
-        }
+        public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
     }
 }

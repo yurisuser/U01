@@ -158,7 +158,7 @@ namespace _Project.Scripts.Galaxy.Generation
             return new Moon
             {
                 Uid = UIDService.Create(EntityType.Moon),
-                NameId = -1,
+                Name = string.Empty,
                 Type = mType,              // из твоего enum EMoonType :contentReference[oaicite:5]{index=5}
                 Size = mSize,              // из твоего enum EMoonSize :contentReference[oaicite:6]{index=6}
                 OrbitIndex = moonOrbitIndex

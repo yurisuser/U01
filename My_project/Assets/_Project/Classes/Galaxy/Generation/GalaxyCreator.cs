@@ -23,32 +23,31 @@ namespace _Project.Scripts.Galaxy.Generation
             for (int i = 0; i < galaxy.Length; i++) // Обрабатываем каждую систему по порядку
             {
                 ref var sysData = ref galaxy[i];
-                sysData.NameId = i;
-
                 if (i == 0)
                 {
                     // В центре оставляем исходную систему
                     //
                     // Ядро: гигантская чёрная дыра без планет.
                     var coreStar = StarCreator.Create(EStarType.Black, EStarSize.Supergiant);
-                    coreStar.NameId = i;
+                    coreStar.Name = GalaxyConstants.CentralBlackHoleName;
                     coreStar.OldX = sysData.OldX;
                     coreStar.OldY = sysData.OldY;
-                    sysData.NameId = i;
+                    sysData.DisplayName = GalaxyConstants.CentralBlackHoleName;
                     sysData.CustomName = GalaxyConstants.CentralBlackHoleName;
                     sysData = StarSysCreator.Create(sysData, coreStar, Array.Empty<PlanetSys>(), Array.Empty<int>());
                     continue;
                 }
 
                 var star = StarCreator.Create(); // Создаем звезду
-                star.NameId = i;
                 star.OldX = sysData.OldX;
                 star.OldY = sysData.OldY;
 
                 var planetOrbits = PlanetOrbitCreator.Create(star); // Строим орбиты планет вокруг звезды
                 var planetsArr = new Planet[planetOrbits.Length];   // Массив планет для текущей системы
                 var planetSysArr = new PlanetSys[planetOrbits.Length]; // Массив систем планеты со спутниками
-                var starDisplayName = StarNameCatalog.GetStarName(star.NameId, star.OldX, star.OldY);
+                var starDisplayName = StarNameCatalog.GetStarName(i, star.OldX, star.OldY);
+                star.Name = starDisplayName;
+                sysData.DisplayName = starDisplayName;
 
                 for (var j = 0; j < planetOrbits.Length; j++) // Создаем планеты и их спутники
                 {
@@ -62,9 +61,7 @@ namespace _Project.Scripts.Galaxy.Generation
                         if (!string.IsNullOrWhiteSpace(starDisplayName))
                         {
                             var moonName = StarNameCatalog.ComposeMoonName(starDisplayName, j, k);
-                            var moonId = StarNameCatalog.RegisterDynamicValue(moonName);
-                            if (moonId != int.MinValue)
-                                moon.NameId = moonId;
+                            moon.Name = moonName;
                         }
                         moonsArr[k] = moon;
                     }
@@ -72,9 +69,7 @@ namespace _Project.Scripts.Galaxy.Generation
                     if (!string.IsNullOrWhiteSpace(starDisplayName))
                     {
                         var planetName = StarNameCatalog.ComposePlanetName(starDisplayName, j);
-                        var planetId = StarNameCatalog.RegisterDynamicValue(planetName);
-                        if (planetId != int.MinValue)
-                            planet.NameId = planetId;
+                        planet.Name = planetName;
                     }
 
                     planetsArr[j] = planet;

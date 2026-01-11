@@ -7,7 +7,7 @@ namespace _Project.Scripts.Galaxy.Data
     public struct Star
     {
         public UID Uid;
-        public int NameId;
+        public string Name;
         public float OldX;
         public float OldY;
         public EStarType type;
@@ -19,18 +19,5 @@ namespace _Project.Scripts.Galaxy.Data
         public float age;              // ��� ���
         public float metallicity;      // 0-1
         public float stability;        // 0-1
-
-        public string Name
-        {
-            get
-            {
-                if (NameId < 0)
-                    return string.Empty;
-
-                return StarNameCatalog.TryGetStarName(NameId, OldX, OldY, out var value)
-                    ? value
-                    : string.Empty;
-            }
-        }
     }
 }

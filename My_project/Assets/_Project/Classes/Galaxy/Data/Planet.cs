@@ -3,7 +3,7 @@ namespace _Project.Scripts.Galaxy.Data
     public struct Planet
     {
         public Core.UID Uid;
-        public int NameId;         // ID записи в локализации
+        public string Name;
         public float Mass;
         public EPlanetType Type;
         public float Atmosphere;
@@ -14,9 +14,6 @@ namespace _Project.Scripts.Galaxy.Data
         public float Gravity;
         public PlanetResource[] Resources;
 
-        public string Name
-        {
-            get => StarNameCatalog.TryGet(NameId, out var value) ? value : string.Empty;
-        }
+        public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
     }
 }
