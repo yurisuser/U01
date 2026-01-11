@@ -7,6 +7,9 @@
 - Каждый тип хранится в своей таблице (eq-weapons/goods/quest/eq-engines/eq-scanners/eq-shields).
 - Ридеры читают профильные таблицы и кешируют результаты.
 - Оркестратор даёт базовую карточку предмета по `ItemType + Id`.
+- Источник истины: SQLite через `GameDatabaseLite` + ридеры. Других кешей/фасадов не плодим.
+- CatalogTypes — DTO под таблицы БД. Игровые модели (например, NPC.Fraction) живут отдельно, чтобы не смешивать уровни.
+- Каталоги прогреваются один раз на старте игры и живут весь рантайм без пересозданий, чтобы не плодить GC.
 
 ## Ридеры
 - Папка: `Assets/_Project/Classes/DataAccess/Readers`
@@ -50,5 +53,6 @@
 2) Добавить модель каталога в `CatalogTypes.cs`.
 3) Добавить `GetXxx()` в `GameDatabaseLite`.
 4) Добавить `XxxCatalogReader`.
-5) Добавить кейс в `ItemCatalogService`.
-6) Обновить `ItemType` и `ITEMS_ARCHITECTURE.md`.
+5) Добавить маппер из `CatalogXxx` в игровую модель, если нужна отдельная runtime-структура.
+6) Добавить кейс в `ItemCatalogService`.
+7) Обновить `ItemType` и `ITEMS_ARCHITECTURE.md`.
