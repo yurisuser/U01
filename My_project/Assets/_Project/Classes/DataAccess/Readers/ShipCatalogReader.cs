@@ -5,34 +5,32 @@ namespace _Project.DataAccess
 {
     /// <summary>
     /// Centralized access to ship catalog entries from SQLite.
-    /// Caches entries in memory and provides helper methods.
     /// </summary>
-    public static class ShipCatalogReader
+    internal static class ShipCatalogReader
     {
         private static readonly Random Rng = new Random();
         private static CatalogShip[] _cache;
 
-        public static CatalogShip GetRandomShip()
+        public static IReadOnlyList<CatalogShip> GetAll()
         {
-            EnsureCache();
-            if (_cache == null || _cache.Length == 0)
-                throw new InvalidOperationException("Ship catalog database is empty or unavailable.");
-
-            var index = Rng.Next(0, _cache.Length);
-            return _cache[index];
+            if (_cache == null)
+            {
+                var list = GameDatabaseLite.GetShips();
+                _cache = list == null || list.Count == 0
+                    ? Array.Empty<CatalogShip>()
+                    : new List<CatalogShip>(list).ToArray();
+            }
+            return _cache;
         }
 
-        private static void EnsureCache()
+        public static CatalogShip GetRandomShip()
         {
-            if (_cache != null)
-                return;
+            var all = GetAll();
+            if (all == null || all.Count == 0)
+                throw new InvalidOperationException("Ship catalog database is empty or unavailable.");
 
-            var list = GameDatabaseLite.GetShips();
-            if (list == null || list.Count == 0)
-                return;
-
-            var arr = new List<CatalogShip>(list).ToArray();
-            _cache = arr;
+            var index = Rng.Next(0, all.Count);
+            return all[index];
         }
     }
 }

@@ -6,88 +6,46 @@ using UnityEngine;
 namespace _Project.DataAccess
 {
     /// <summary>Читает фракции из файлов fraction.json в каталоге Data/Fraction.</summary>
-    public static class FractionCatalogReader
+    internal static class FractionCatalogReader
     {
-        private static CatalogFraction[] _all;
-        private static Dictionary<int, CatalogFraction> _byId;
-
         public static IReadOnlyList<CatalogFraction> GetAll()
         {
-            EnsureLoaded();
-            return _all;
-        }
-
-        public static bool TryGet(int id, out CatalogFraction fraction)
-        {
-            EnsureIndex();
-            return _byId.TryGetValue(id, out fraction);
-        }
-
-        private static void EnsureLoaded()
-        {
-            if (_all != null)
-                return;
-
-            _all = LoadFromFiles();
-            _byId = null;
-        }
-
-        private static void EnsureIndex()
-        {
-            if (_byId != null)
-                return;
-
-            EnsureLoaded();
-            var dict = new Dictionary<int, CatalogFraction>(_all.Length);
-            for (int i = 0; i < _all.Length; i++)
-            {
-                var item = _all[i];
-                dict[item.Id] = item;
-            }
-
-            _byId = dict;
+            return LoadFromFiles();
         }
 
         private static CatalogFraction[] LoadFromFiles()
         {
             var root = Path.Combine(Application.dataPath, "_Project/Data/Fraction");
             if (!Directory.Exists(root))
-                return Array.Empty<CatalogFraction>();
+                throw new DirectoryNotFoundException($"Каталог фракций не найден: {root}");
 
             var list = new List<CatalogFraction>();
             var seenIds = new HashSet<int>();
 
             foreach (var file in Directory.EnumerateFiles(root, "fraction.json", SearchOption.AllDirectories))
             {
-                try
-                {
-                    var json = File.ReadAllText(file);
-                    var dto = JsonUtility.FromJson<FractionFile>(json);
-                    if (dto == null)
-                        continue;
+                var json = File.ReadAllText(file);
+                var dto = JsonUtility.FromJson<FractionFile>(json);
+                if (dto == null)
+                    throw new InvalidOperationException($"Не удалось распарсить fraction.json: {file}");
 
-                    if (!seenIds.Add(dto.id))
-                        continue; // дубли id игнорируем
+                if (!seenIds.Add(dto.id))
+                    throw new InvalidOperationException($"Дублирующийся id фракции {dto.id} в файле {file}");
 
-                    list.Add(new CatalogFraction(
-                        dto.id,
-                        dto.name,
-                        dto.bio,
-                        dto.politic,
-                        dto.color,
-                        dto.homeSector,
-                        dto.homeConstellationId,
-                        dto.symbol,
-                        dto.description));
-                }
-                catch (Exception)
-                {
-                    // Игнорируем битые файлы; можно логировать при необходимости.
-                }
+                list.Add(new CatalogFraction(
+                    dto.id,
+                    dto.name,
+                    dto.bio,
+                    dto.politic,
+                    dto.color,
+                    dto.homeSector,
+                    dto.homeConstellationId,
+                    dto.symbol,
+                    dto.description));
             }
 
             if (list.Count == 0)
-                return Array.Empty<CatalogFraction>();
+                throw new InvalidOperationException("Не найдено ни одного fraction.json");
 
             return list.ToArray();
         }

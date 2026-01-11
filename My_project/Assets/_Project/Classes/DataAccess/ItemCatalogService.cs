@@ -9,7 +9,7 @@ namespace _Project.DataAccess
             switch (type)
             {
                 case ItemType.Weapon:
-                    if (WeaponCatalogReader.TryGet(id, out var weapon))
+                    if (CATALOG.WeaponsById != null && CATALOG.WeaponsById.TryGetValue(id, out var weapon))
                     {
                         info = new CatalogItemInfo(
                             weapon.Id, weapon.Key, weapon.DisplayName, weapon.Description,
@@ -18,7 +18,7 @@ namespace _Project.DataAccess
                     }
                     break;
                 case ItemType.Goods:
-                    if (GoodsCatalogReader.TryGet(id, out var goods))
+                    if (CATALOG.GoodsById != null && CATALOG.GoodsById.TryGetValue(id, out var goods))
                     {
                         info = new CatalogItemInfo(
                             goods.Id, goods.Key, goods.DisplayName, goods.Description,
@@ -27,7 +27,7 @@ namespace _Project.DataAccess
                     }
                     break;
                 case ItemType.Quest:
-                    if (QuestCatalogReader.TryGet(id, out var quest))
+                    if (CATALOG.QuestItemsById != null && CATALOG.QuestItemsById.TryGetValue(id, out var quest))
                     {
                         info = new CatalogItemInfo(
                             quest.Id, quest.Key, quest.DisplayName, quest.Description,
@@ -36,7 +36,7 @@ namespace _Project.DataAccess
                     }
                     break;
                 case ItemType.Engine:
-                    if (EngineCatalogReader.TryGet(id, out var engine))
+                    if (CATALOG.EnginesById != null && CATALOG.EnginesById.TryGetValue(id, out var engine))
                     {
                         info = new CatalogItemInfo(
                             engine.Id, engine.Key, engine.DisplayName, engine.Description,
@@ -45,7 +45,7 @@ namespace _Project.DataAccess
                     }
                     break;
                 case ItemType.Scanner:
-                    if (ScannerCatalogReader.TryGet(id, out var scanner))
+                    if (CATALOG.ScannersById != null && CATALOG.ScannersById.TryGetValue(id, out var scanner))
                     {
                         info = new CatalogItemInfo(
                             scanner.Id, scanner.Key, scanner.DisplayName, scanner.Description,
@@ -54,7 +54,7 @@ namespace _Project.DataAccess
                     }
                     break;
                 case ItemType.Shield:
-                    if (ShieldCatalogReader.TryGet(id, out var shield))
+                    if (CATALOG.ShieldsById != null && CATALOG.ShieldsById.TryGetValue(id, out var shield))
                     {
                         info = new CatalogItemInfo(
                             shield.Id, shield.Key, shield.DisplayName, shield.Description,
