@@ -53,7 +53,7 @@ namespace _Project.Scripts.Core
 
             CatalogPreloader.PreloadAll(forceReload: true); // прогреваем все каталоги в память
 
-            var localizationPath = Path.Combine(Application.dataPath, "_Project/Data/Localization/JSONS/en");
+            var localizationPath = Path.Combine(Application.dataPath, "_Project/Data/Localization");
             LocalizationDatabase.Initialize(localizationPath);
 
             var galaxy = GalaxyCreator.Create();
