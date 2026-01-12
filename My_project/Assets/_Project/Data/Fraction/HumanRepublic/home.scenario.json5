@@ -4,7 +4,7 @@
     {
       "role": "capital",
       "isHome": true,
-      "pick": { "order": "by_external_hyper_distance", "index": 0 },
+      "pick": "far_to_hyper_distance",
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] }, // 1: каменный малыш
         { "type": "Stone", "size": "Medium", "orbit": 4, "catalogName": true, "moons": [    // 2: каменная средняя
@@ -31,7 +31,7 @@
     },
     {
       "role": "industry",
-      "pick": { "order": "by_shortest_hyper_to_capital", "index": 2 },
+      "pick": "closest_to_capital",
       "planets": [
         { "type": "Stone", "size": "Medium", "orbit": 3, "catalogName": true, "moons": [] }, // 1: каменная средняя
         { "type": "Ocean", "size": "Large", "orbit": 6, "catalogName": true, "moons": [      // 2: океаническая крупная
@@ -49,7 +49,7 @@
     },
     {
       "role": "border",
-      "pick": { "order": "by_external_hyper_distance", "index": 0, "filters": [ { "has_external_hyperlink": true } ] },
+      "pick": "have_external_hyper",
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },  // 1: каменный малыш
         { "type": "Desert", "size": "Medium", "orbit": 5, "catalogName": true, "moons": [    // 2: пустынная средняя
