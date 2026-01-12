@@ -161,7 +161,8 @@ namespace _Project.Scripts.Galaxy.Generation
                 Name = string.Empty,
                 Type = mType,              // из твоего enum EMoonType :contentReference[oaicite:5]{index=5}
                 Size = mSize,              // из твоего enum EMoonSize :contentReference[oaicite:6]{index=6}
-                OrbitIndex = moonOrbitIndex
+                OrbitIndex = moonOrbitIndex,
+                isHome = false
                 // Остальные поля (Mass, Radius, OrbitDistance, …) оставляю по умолчанию — под твои генераторы.
             };
         }

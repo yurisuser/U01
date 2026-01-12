@@ -139,7 +139,8 @@ namespace _Project.Scripts.Galaxy.Generation
                 Uid = UIDService.Create(EntityType.Planet),
                 Name = string.Empty,
                 Type = pType,
-                Radius = r
+                Radius = r,
+                isHome = false
             };
         }
 

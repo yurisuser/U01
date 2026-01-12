@@ -99,13 +99,15 @@ namespace _Project.Scripts.Galaxy.Generation
                 State = new LocalSysRuntimeContext(),
                 GalaxyPosition = new Vector3(0f, 0f, zLayer),
                 OldX = 0f,
-                OldY = 0f
+                OldY = 0f,
+                isHome = false
             };
             // Размещаем остальные системы
             for (int i = 1; i < count; i++)
             {
                 var sys = new StarSys();
                 sys.State = new LocalSysRuntimeContext();
+                sys.isHome = false;
 
                 Vector3 pos = PlaceWithMinDistance(
                     index: i,
