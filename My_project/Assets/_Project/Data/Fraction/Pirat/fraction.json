@@ -7,5 +7,6 @@
   "homeSector": 17,
   "homeConstellationId": 3,
   "symbol": "1",
-  "description": "Пираты. Подчиняются своим внутренним правилам и законам."
+  "description": "Пираты. Подчиняются своим внутренним правилам и законам.",
+  "fractionType": "Pirate"
 }

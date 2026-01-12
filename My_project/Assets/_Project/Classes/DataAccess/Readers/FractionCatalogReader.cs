@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.DataAccess
 {
@@ -36,6 +37,7 @@ namespace _Project.DataAccess
                 var starNames = ReadNames(dir, "stars");
                 var planetNames = ReadNames(dir, "planet");
                 var moonNames = ReadNames(dir, "moon");
+                var fractionType = ParseFractionType(dto.fractionType, file);
 
                 list.Add(new CatalogFraction(
                     dto.id,
@@ -45,6 +47,7 @@ namespace _Project.DataAccess
                     dto.color,
                     dto.homeSector,
                     dto.homeConstellationId,
+                    fractionType,
                     dto.symbol,
                     dto.description,
                     starNames,
@@ -77,6 +80,16 @@ namespace _Project.DataAccess
             return dto.items.ToArray();
         }
 
+        private static EFractionTypes ParseFractionType(string raw, string file)
+        {
+            if (!string.IsNullOrWhiteSpace(raw)
+                && Enum.TryParse<EFractionTypes>(raw, ignoreCase: true, out var parsed))
+                return parsed;
+
+            Debug.LogWarning($"fractionType не задан или не распознан в {file}, используется Regular");
+            return EFractionTypes.Regular;
+        }
+
         [Serializable]
         private sealed class FractionFile
         {
@@ -87,6 +100,7 @@ namespace _Project.DataAccess
             public string color;
             public int homeSector;
             public int homeConstellationId;
+            public string fractionType;
             public string symbol;
             public string description;
         }

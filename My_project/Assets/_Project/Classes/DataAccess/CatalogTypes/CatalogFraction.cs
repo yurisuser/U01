@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.DataAccess
 {
@@ -12,6 +13,7 @@ namespace _Project.DataAccess
             string color,
             int homeSector,
             int homeConstellationId,
+            EFractionTypes fractionType,
             string symbol,
             string description,
             IReadOnlyList<string> starNames,
@@ -25,6 +27,7 @@ namespace _Project.DataAccess
             Color = color;
             HomeSector = homeSector;
             HomeConstellationId = homeConstellationId;
+            FractionType = fractionType;
             Symbol = symbol;
             Description = description;
             StarNames = starNames;
@@ -39,6 +42,7 @@ namespace _Project.DataAccess
         public string Color { get; }
         public int HomeSector { get; }
         public int HomeConstellationId { get; }
+        public EFractionTypes FractionType { get; }
         public string Symbol { get; }
         public string Description { get; }
         public IReadOnlyList<string> StarNames { get; }

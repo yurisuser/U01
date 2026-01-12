@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Mono.Data.Sqlite;
 using UnityEngine;
+using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.DataAccess
 {
@@ -272,6 +273,7 @@ namespace _Project.DataAccess
                     var homeConstellationId = reader.GetInt32(6);
                     var symbol = reader.GetString(7);
                     var description = reader.GetString(8);
+                    var fractionType = EFractionTypes.Regular; // БД пока не хранит тип, используем дефолт
                     list.Add(new CatalogFraction(
                         id,
                         name,
@@ -280,6 +282,7 @@ namespace _Project.DataAccess
                         color,
                         homeSector,
                         homeConstellationId,
+                        fractionType,
                         symbol,
                         description,
                         Array.Empty<string>(),
