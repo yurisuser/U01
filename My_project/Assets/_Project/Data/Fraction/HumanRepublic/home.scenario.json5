@@ -1,0 +1,71 @@
+{
+  "star": { "type": "Yellow", "size": "Medium" }, // Средняя жёлтая звезда
+  "systems": [
+    {
+      "role": "capital",
+      "isHome": true,
+      "pick": "furthest_from_external_hyperlinks",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 2, "moons": [] }, // 1: каменный малыш
+        { "type": "Stone", "size": "Medium", "orbit": 4, "moons": [    // 2: каменная средняя
+          { "type": "Stone", "size": "Tiny" },
+          { "type": "Stone", "size": "Tiny" }
+        ]},
+        { "type": "Stone", "size": "Medium", "orbit": 7, "moons": [    // 3: каменная средняя
+          { "type": "Stone", "size": "Tiny" }
+        ]},
+        { "type": "GasGiant", "orbit": 12, "moons": [                  // 4: газовый гигант
+          { "type": "Ice", "size": "Medium", "orbit": 3 },
+          { "type": "Stone", "size": "Tiny", "orbit": 5 },
+          { "type": "Ice", "size": "Tiny", "orbit": 7 }
+        ]},
+        { "type": "IceGiant", "orbit": 17, "moons": [                  // 5: ледяной гигант
+          { "type": "Stone", "size": "Tiny", "orbit": 3 },
+          { "type": "Ice", "size": "Tiny", "orbit": 4 },
+          { "type": "Stone", "size": "Tiny", "orbit": 6 }
+        ]}
+      ],
+      "factories": [
+        { "type": "Default", "orbit": 5 }
+      ]
+    },
+    {
+      "role": "industry",
+      "pick": "third_closest_by_shortest_hyper",
+      "planets": [
+        { "type": "Stone", "size": "Medium", "orbit": 3, "moons": [] }, // 1: каменная средняя
+        { "type": "Ocean", "size": "Large", "orbit": 6, "moons": [      // 2: океаническая крупная
+          { "type": "Stone", "size": "Tiny", "orbit": 2 }
+        ]},
+        { "type": "GasGiant", "orbit": 11, "moons": [                   // 3: газовый гигант
+          { "type": "Ice", "size": "Small", "orbit": 3 },
+          { "type": "Stone", "size": "Tiny", "orbit": 5 }
+        ]}
+      ],
+      "factories": [
+        { "type": "Default", "orbit": 4 },
+        { "type": "Default", "orbit": 8 }
+      ]
+    },
+    {
+      "role": "border",
+      "pick": "furthest_with_external_hyperlink",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 2, "moons": [] },  // 1: каменный малыш
+        { "type": "Desert", "size": "Medium", "orbit": 5, "moons": [    // 2: пустынная средняя
+          { "type": "Stone", "size": "Tiny", "orbit": 2 }
+        ]},
+        { "type": "IceGiant", "orbit": 10, "moons": [                   // 3: ледяной гигант
+          { "type": "Ice", "size": "Small", "orbit": 3 }
+        ]},
+        { "type": "GasGiant", "orbit": 16, "moons": [                   // 4: газовый гигант
+          { "type": "Stone", "size": "Tiny", "orbit": 4 },
+          { "type": "Ice", "size": "Tiny", "orbit": 6 }
+        ]}
+      ],
+      "factories": [
+        { "type": "Default", "orbit": 6 }
+      ]
+    }
+  ]
+}
