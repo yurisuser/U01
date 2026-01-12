@@ -47,6 +47,9 @@ namespace _Project.Scripts.NPC.Fraction.Create
                 }
                 galaxy[i] = sys;
             }
+
+            if (hasCatalog)
+                FractionScenarioHandler.Apply(galaxy, fraction, catalog);
         }
     }
 }

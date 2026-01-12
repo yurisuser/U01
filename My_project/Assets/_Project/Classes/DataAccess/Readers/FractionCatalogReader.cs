@@ -52,7 +52,8 @@ namespace _Project.DataAccess
                     dto.description,
                     starNames,
                     planetNames,
-                    moonNames));
+                    moonNames,
+                    dir));
             }
 
             if (list.Count == 0)

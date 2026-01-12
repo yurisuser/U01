@@ -25,7 +25,7 @@
           { "type": "Stone", "size": "Tiny", "orbit": 6, "catalogName": true }
         ]}
       ],
-      "factories": [
+      "stations": [
         { "type": "Default", "orbit": 5 }
       ]
     },
@@ -42,7 +42,7 @@
           { "type": "Stone", "size": "Tiny", "orbit": 5, "catalogName": true }
         ]}
       ],
-      "factories": [
+      "stations": [
         { "type": "Default", "orbit": 4 },
         { "type": "Default", "orbit": 8 }
       ]
@@ -63,7 +63,7 @@
           { "type": "Ice", "size": "Tiny", "orbit": 6, "catalogName": true }
         ]}
       ],
-      "factories": [
+      "stations": [
         { "type": "Default", "orbit": 6 }
       ]
     }

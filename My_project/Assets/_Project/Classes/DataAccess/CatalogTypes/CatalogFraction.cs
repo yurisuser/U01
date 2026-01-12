@@ -18,7 +18,8 @@ namespace _Project.DataAccess
             string description,
             IReadOnlyList<string> starNames,
             IReadOnlyList<string> planetNames,
-            IReadOnlyList<string> moonNames)
+            IReadOnlyList<string> moonNames,
+            string directoryPath)
         {
             Id = id;
             Name = name;
@@ -33,6 +34,7 @@ namespace _Project.DataAccess
             StarNames = starNames;
             PlanetNames = planetNames;
             MoonNames = moonNames;
+            DirectoryPath = directoryPath;
         }
 
         public int Id { get; }
@@ -48,5 +50,6 @@ namespace _Project.DataAccess
         public IReadOnlyList<string> StarNames { get; }
         public IReadOnlyList<string> PlanetNames { get; }
         public IReadOnlyList<string> MoonNames { get; }
+        public string DirectoryPath { get; }
     }
 }
