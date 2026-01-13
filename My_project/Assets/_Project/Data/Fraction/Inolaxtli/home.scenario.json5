@@ -1,0 +1,76 @@
+{
+  "star": { "type": "White", "size": "Medium", "catalogName": true },
+  "systems": [
+    {
+      "role": "capital",
+      "isHome": true,
+      "pick": "far_to_hyper_distance",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },
+        { "type": "Stone", "size": "Medium", "orbit": 4, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 2, "catalogName": true }
+        ]},
+        { "type": "Ocean", "size": "Medium", "orbit": 6, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 2, "catalogName": true }
+        ]},
+        { "type": "GasGiant", "orbit": 10, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 3, "catalogName": true },
+          { "type": "Ice", "size": "Tiny", "orbit": 5, "catalogName": true }
+        ]}
+      ],
+      "stations": [
+        { "type": "Default", "orbit": 7 }
+      ]
+    },
+    {
+      "role": "border",
+      "pick": "have_external_hyper",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 3, "catalogName": true, "moons": [] },
+        { "type": "Desert", "size": "Medium", "orbit": 6, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 2, "catalogName": true }
+        ]},
+        { "type": "GasGiant", "orbit": 11, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 3, "catalogName": true },
+          { "type": "Ice", "size": "Tiny", "orbit": 5, "catalogName": true }
+        ]}
+      ],
+      "stations": [
+        { "type": "Default", "orbit": 8 }
+      ]
+    },
+    {
+      "role": "training",
+      "pick": "closest_to_capital",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },
+        { "type": "Frozen", "size": "Medium", "orbit": 6, "catalogName": true, "moons": [
+          { "type": "Ice", "size": "Tiny", "orbit": 2, "catalogName": true }
+        ]},
+        { "type": "IceGiant", "orbit": 10, "catalogName": true, "moons": [
+          { "type": "Ice", "size": "Small", "orbit": 3, "catalogName": true }
+        ]}
+      ],
+      "stations": [
+        { "type": "Default", "orbit": 5 }
+      ]
+    },
+    {
+      "role": "outer_watch",
+      "pick": "far_to_capital",
+      "planets": [
+        { "type": "Stone", "size": "Small", "orbit": 3, "catalogName": true, "moons": [] },
+        { "type": "Frozen", "size": "Medium", "orbit": 7, "catalogName": true, "moons": [
+          { "type": "Ice", "size": "Tiny", "orbit": 2, "catalogName": true }
+        ]},
+        { "type": "GasGiant", "orbit": 12, "catalogName": true, "moons": [
+          { "type": "Stone", "size": "Tiny", "orbit": 3, "catalogName": true },
+          { "type": "Ice", "size": "Tiny", "orbit": 5, "catalogName": true }
+        ]}
+      ],
+      "stations": [
+        { "type": "Default", "orbit": 8 }
+      ]
+    }
+  ]
+}
