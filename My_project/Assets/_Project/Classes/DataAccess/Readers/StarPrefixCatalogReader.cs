@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-using System.Collections.Generic;
-
 namespace _Project.DataAccess
 {
     /// <summary>Читает префиксы имён звёзд из файлов names.&lt;lang&gt;.star_prefix.json.</summary>

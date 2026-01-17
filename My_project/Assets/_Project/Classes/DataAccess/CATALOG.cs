@@ -11,6 +11,9 @@ namespace _Project.DataAccess
         public static IReadOnlyList<CatalogWeapon> Weapons { get; private set; } = Array.Empty<CatalogWeapon>();
         public static IReadOnlyDictionary<int, CatalogWeapon> WeaponsById { get; private set; } = EmptyIndex<CatalogWeapon>();
 
+        public static IReadOnlyList<CatalogSku> Sku { get; private set; } = Array.Empty<CatalogSku>();
+        public static IReadOnlyDictionary<int, CatalogSku> SkuById { get; private set; } = EmptyIndex<CatalogSku>();
+
         public static IReadOnlyList<CatalogGoods> Goods { get; private set; } = Array.Empty<CatalogGoods>();
         public static IReadOnlyDictionary<int, CatalogGoods> GoodsById { get; private set; } = EmptyIndex<CatalogGoods>();
 
@@ -45,6 +48,9 @@ namespace _Project.DataAccess
 
             Weapons = GameDatabaseLite.GetWeapons(forceReload);
             WeaponsById = BuildIndex(Weapons, x => x.Id);
+
+            Sku = SkuCatalogReader.GetAll();
+            SkuById = BuildIndex(Sku, x => x.Id);
 
             Goods = GameDatabaseLite.GetGoods(forceReload);
             GoodsById = BuildIndex(Goods, x => x.Id);
@@ -81,6 +87,9 @@ namespace _Project.DataAccess
 
             Weapons = Array.Empty<CatalogWeapon>();
             WeaponsById = EmptyIndex<CatalogWeapon>();
+
+            Sku = Array.Empty<CatalogSku>();
+            SkuById = EmptyIndex<CatalogSku>();
 
             Goods = Array.Empty<CatalogGoods>();
             GoodsById = EmptyIndex<CatalogGoods>();

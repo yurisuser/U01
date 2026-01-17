@@ -15,6 +15,7 @@ namespace _Project.DataAccess
         private const string RelativePath = "Data/game.db";
         private const string SqliteHeader = "SQLite format 3\0";
         private static string _fullPath;
+        private static IReadOnlyList<CatalogSku> _sku;
         private static IReadOnlyList<CatalogWeapon> _weapons;
         private static IReadOnlyList<CatalogGoods> _goods;
         private static IReadOnlyList<CatalogQuest> _quest;
@@ -24,6 +25,35 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogShip> _ships;
         private static IReadOnlyList<CatalogFraction> _fractions;
         private static IReadOnlyList<CatalogConstellationName> _constellationNames;
+
+        /// <summary>Возвращает список SKU из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogSku> GetSku(bool forceReload = false)
+        {
+            if (!forceReload && _sku != null) return _sku;
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable FROM sku ORDER BY id";
+
+            var list = new List<CatalogSku>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    var id = reader.GetInt32(0);
+                    var name = reader.GetString(1);
+                    var description = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                    var img = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
+                    var price = (float)reader.GetDouble(4);
+                    var isMineable = reader.GetInt32(5) != 0;
+                    var isIndustrial = reader.GetInt32(6) != 0;
+                    var isConsumable = reader.GetInt32(7) != 0;
+                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable));
+                }
+            }
+
+            _sku = list;
+            return list;
+        }
 
         /// <summary>Возвращает список оружия из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogWeapon> GetWeapons(bool forceReload = false)
@@ -534,6 +564,16 @@ CREATE TABLE IF NOT EXISTS f_fractions (
 CREATE TABLE IF NOT EXISTS a_contellations_names (
     id INTEGER PRIMARY KEY,
     text TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sku (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    img TEXT,
+    price REAL NOT NULL DEFAULT 0,
+    isMineable INTEGER NOT NULL DEFAULT 0 CHECK (isMineable IN (0,1)),
+    isIndustrial INTEGER NOT NULL DEFAULT 0 CHECK (isIndustrial IN (0,1)),
+    isConsumable INTEGER NOT NULL DEFAULT 0 CHECK (isConsumable IN (0,1))
 );
 ";
             cmd.ExecuteNonQuery();
