@@ -12,7 +12,7 @@ namespace _Project.Scripts.Galaxy.Data
         public float OrbitalPeriod;
         public float Temperature;
         public float Gravity;
-        public PlanetResource[] Resources;
+        public ResourceDeposit[] ResourceDeposits;
         public bool isHome;
 
         public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;

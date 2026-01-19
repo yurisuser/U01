@@ -18,6 +18,7 @@ namespace _Project.Scripts.Galaxy.Data
         public float Temperature;
         public float Gravity;
         public bool isHome;
+        public ResourceDeposit[] ResourceDeposits;
 
         public string DisplayName => string.IsNullOrWhiteSpace(Name) ? string.Empty : Name;
     }
