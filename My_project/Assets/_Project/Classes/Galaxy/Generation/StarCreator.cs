@@ -228,5 +228,11 @@ namespace _Project.Scripts.Galaxy.Generation
             value = Mathf.Clamp01((value + noise) * sizeMul);
             return value;
         }
+
+        /// <summary>Пересчитывает металличность для уже созданной звезды.</summary>
+        public static void RecalculateMetallicity(ref Star star)
+        {
+            star.metallicity = PickMetallicity(star.type, star.size);
+        }
     }
 }

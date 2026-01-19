@@ -29,6 +29,7 @@ namespace _Project.Scripts.Galaxy.Generation
                     //
                     // Ядро: гигантская чёрная дыра без планет.
                     var coreStar = StarCreator.Create(EStarType.Black, EStarSize.Supergiant);
+                    StarCreator.RecalculateMetallicity(ref coreStar);
                     coreStar.Name = GalaxyConstants.CentralBlackHoleName;
                     coreStar.OldX = sysData.OldX;
                     coreStar.OldY = sysData.OldY;
@@ -39,6 +40,7 @@ namespace _Project.Scripts.Galaxy.Generation
                 }
 
                 var star = StarCreator.Create(); // Создаем звезду
+                StarCreator.RecalculateMetallicity(ref star);
                 star.OldX = sysData.OldX;
                 star.OldY = sysData.OldY;
 
