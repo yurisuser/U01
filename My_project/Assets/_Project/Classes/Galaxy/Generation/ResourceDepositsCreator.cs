@@ -8,6 +8,32 @@ namespace _Project.Scripts.Galaxy.Generation
     /// <summary>Создаёт месторождения ресурсов для планет и лун после заселения галактики.</summary>
     public static class ResourceDepositsCreator
     {
+        private static float GetFullness(StarSys starSys, int objAmmount)
+        {
+            float typeK = starSys.Star.type switch
+            {
+                EStarType.Black => 0.7f,
+                EStarType.Neutron => 0.8f,
+                EStarType.Blue => 0.6f,
+                EStarType.White => 0.7f,
+                EStarType.Orange => 0.4f,
+                EStarType.Yellow => 0.5f,
+                EStarType.Red => 0.3f,
+                _ => 0.5f
+            };
+
+            float sizeK = starSys.Star.size switch
+            {
+                EStarSize.Dwarf => 1.0f,
+                EStarSize.Normal => 0.7f,
+                EStarSize.Giant => 0.4f,
+                EStarSize.Supergiant => 0.2f,
+                _ => 0.5f
+            };
+            float density = objAmmount <= 0 ? 0f : MathF.Min(1f, objAmmount / 12f);
+            float objectsK = 0.4f + 0.6f * density; // 0.4 .. 1.0
+            return typeK * sizeK * objectsK;
+        }
         private static float starMetallicity = 0f;
         public static void AssignDeposits(StarSys[] galaxy)
         {
@@ -36,7 +62,7 @@ namespace _Project.Scripts.Galaxy.Generation
             for (int i = 0; i < planetSys.Moons.Length; i++)
             {
                 var moon =  planetSys.Moons[i];
-                moon.ResourceDeposits = GetMoonDeposit(moon, fullness); // обработка луны
+                moon.ResourceDeposits = GetMoonDeposit(moon, planet, fullness); // обработка луны
             }
         }
 
@@ -45,12 +71,10 @@ namespace _Project.Scripts.Galaxy.Generation
             return new ResourceDeposit[0];
         }
 
-        private static ResourceDeposit[] GetMoonDeposit(Moon moon, float fullness)
+        private static ResourceDeposit[] GetMoonDeposit(Moon moon, Planet planet, float fullness)
         {
             return new ResourceDeposit[0];
         }
-
-
 
         private static int GetObjectsAmount(StarSys starSys)
         {
@@ -66,33 +90,6 @@ namespace _Project.Scripts.Galaxy.Generation
             return count;
         }
 
-        private static float GetFullness(StarSys starSys, int objAmmount)
-        {
-            float typeK = starSys.Star.type switch
-            {
-                EStarType.Black => 0.7f,
-                EStarType.Neutron => 0.8f,
-                EStarType.Blue => 0.6f,
-                EStarType.White => 0.7f,
-                EStarType.Orange => 0.4f,
-                EStarType.Yellow => 0.5f,
-                EStarType.Red => 0.3f,
-                _ => 0.5f
-            };
 
-            float sizeK = starSys.Star.size switch
-            {
-                EStarSize.Dwarf => 1.0f,
-                EStarSize.Normal => 0.7f,
-                EStarSize.Giant => 0.4f,
-                EStarSize.Supergiant => 0.2f,
-                _ => 0.5f
-            };
-
-            float density = objAmmount <= 0 ? 0f : MathF.Min(1f, objAmmount / 12f);
-            float objectsK = 0.4f + 0.6f * density; // 0.4 .. 1.0
-
-            return typeK * sizeK * objectsK;
-        }
     }
 }
