@@ -32,7 +32,7 @@ namespace _Project.DataAccess
             if (!forceReload && _sku != null) return _sku;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, peak_orbit, orbit_spread, metallicity_factor FROM sku ORDER BY id";
+            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peak_orbit, orbit_spread, metallicity_factor, peak_orbit_norm, orbit_spread_norm FROM sku ORDER BY id";
 
             var list = new List<CatalogSku>();
             using (var reader = cmd.ExecuteReader())
@@ -49,10 +49,13 @@ namespace _Project.DataAccess
                     if (isMineable && isIndustrial)
                         throw new InvalidOperationException($"SKU #{id} \"{name}\" помечен и как добываемый, и как промышленный. Флаги должны быть взаимоисключающими.");
                     var isConsumable = reader.GetInt32(7) != 0;
-                    var peakOrbit = reader.GetInt32(8);
-                    var orbitSpread = (float)reader.GetDouble(9);
-                    var metallicityFactor = (float)reader.GetDouble(10);
-                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable, peakOrbit, orbitSpread, metallicityFactor));
+                    var isLootOnly = reader.GetInt32(8) != 0;
+                    var peakOrbit = (float)reader.GetDouble(9);
+                    var orbitSpread = (float)reader.GetDouble(10);
+                    var metallicityFactor = (float)reader.GetDouble(11);
+                    var peakOrbitNorm = reader.IsDBNull(12) ? 0f : (float)reader.GetDouble(12);
+                    var orbitSpreadNorm = reader.IsDBNull(13) ? 0f : (float)reader.GetDouble(13);
+                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peakOrbit, orbitSpread, metallicityFactor, peakOrbitNorm, orbitSpreadNorm));
                 }
             }
 
@@ -580,9 +583,12 @@ CREATE TABLE IF NOT EXISTS sku (
     isMineable INTEGER NOT NULL DEFAULT 0 CHECK (isMineable IN (0,1)),
     isIndustrial INTEGER NOT NULL DEFAULT 0 CHECK (isIndustrial IN (0,1)),
     isConsumable INTEGER NOT NULL DEFAULT 0 CHECK (isConsumable IN (0,1)),
-    peak_orbit INTEGER NOT NULL DEFAULT 0,
-    orbit_spread REAL NOT NULL DEFAULT 1,
-    metallicity_factor REAL NOT NULL DEFAULT 1
+    isLootOnly INTEGER NOT NULL DEFAULT 0 CHECK (isLootOnly IN (0,1)),
+    peak_orbit REAL NOT NULL DEFAULT 0,
+    orbit_spread REAL NOT NULL DEFAULT 0,
+    metallicity_factor REAL NOT NULL DEFAULT 1,
+    peak_orbit_norm REAL NOT NULL DEFAULT 0,
+    orbit_spread_norm REAL NOT NULL DEFAULT 0
 );
 ";
             cmd.ExecuteNonQuery();
@@ -860,9 +866,12 @@ FROM f_fractions;";
         {
             EnsureColumns(connection, "sku", new[]
             {
-                ("peak_orbit", "INTEGER NOT NULL DEFAULT 0"),
-                ("orbit_spread", "REAL NOT NULL DEFAULT 1"),
-                ("metallicity_factor", "REAL NOT NULL DEFAULT 1")
+                ("peak_orbit", "REAL NOT NULL DEFAULT 0"),
+                ("orbit_spread", "REAL NOT NULL DEFAULT 0"),
+                ("metallicity_factor", "REAL NOT NULL DEFAULT 1"),
+                ("peak_orbit_norm", "REAL NOT NULL DEFAULT 0"),
+                ("orbit_spread_norm", "REAL NOT NULL DEFAULT 0"),
+                ("isLootOnly", "INTEGER NOT NULL DEFAULT 0 CHECK (isLootOnly IN (0,1))")
             });
         }
 
