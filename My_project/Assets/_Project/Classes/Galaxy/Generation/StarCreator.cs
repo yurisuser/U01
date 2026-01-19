@@ -57,6 +57,22 @@ namespace _Project.Scripts.Galaxy.Generation
         private const float MulGiant      = 10f;
         private const float MulSupergiant = 50f;
 
+        // диапазоны металличности по типу (игровые, не астрофизика)
+        private static readonly Vector2 MetalRed     = new(0.5f, 0.7f);
+        private static readonly Vector2 MetalOrange  = new(0.4f, 0.65f);
+        private static readonly Vector2 MetalYellow  = new(0.4f, 0.55f);
+        private static readonly Vector2 MetalWhite   = new(0.3f, 0.4f);
+        private static readonly Vector2 MetalBlue    = new(0.2f, 0.3f);
+        private static readonly Vector2 MetalBlack   = new(0.8f, 0.9f);
+        private static readonly Vector2 MetalNeutron = new (1.0f, 1.0f);
+
+        // поправки по размеру (больше/горячее → беднее), мультипликатор
+        private const float MetalSizeMulDwarf      = 1.0f;
+        private const float MetalSizeMulNormal     = 0.9f;
+        private const float MetalSizeMulGiant      = 0.8f;
+        private const float MetalSizeMulSupergiant = 0.7f;
+        private const float MetalNoise          = 0.1f;
+
         // === Публичный API ===
         public static Star Create()
         {
@@ -84,7 +100,7 @@ namespace _Project.Scripts.Galaxy.Generation
             float luminosity = Mathf.Clamp(Mathf.Pow(mass, 3.5f), 0.001f, 1e6f);
 
             float age = Random.Range(0.1f, 12f);
-            float metallicity = Random.Range(0.0f, 1.0f);
+            float metallicity = PickMetallicity(type, size);
             float stability = Mathf.Clamp01(1f - (mass / 40f) + Random.Range(-0.1f, 0.1f));
 
             return new Star
@@ -183,5 +199,34 @@ namespace _Project.Scripts.Galaxy.Generation
             EStarSize.Supergiant => MulSupergiant,
             _ => MulNormal
         };
+
+        private static float PickMetallicity(EStarType type, EStarSize size)
+        {
+            Vector2 range = type switch
+            {
+                EStarType.Red     => MetalRed,
+                EStarType.Orange  => MetalOrange,
+                EStarType.Yellow  => MetalYellow,
+                EStarType.White   => MetalWhite,
+                EStarType.Blue    => MetalBlue,
+                EStarType.Black   => MetalBlack,
+                EStarType.Neutron => MetalNeutron,
+                _ => MetalYellow
+            };
+
+            float sizeMul = size switch
+            {
+                EStarSize.Dwarf      => MetalSizeMulDwarf,
+                EStarSize.Normal     => MetalSizeMulNormal,
+                EStarSize.Giant      => MetalSizeMulGiant,
+                EStarSize.Supergiant => MetalSizeMulSupergiant,
+                _ => MetalSizeMulNormal
+            };
+
+            float noise = Random.Range(-MetalNoise, MetalNoise);
+            float value = range.x + (range.y - range.x) * Random.value;
+            value = Mathf.Clamp01((value + noise) * sizeMul);
+            return value;
+        }
     }
 }
