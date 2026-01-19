@@ -32,7 +32,7 @@ namespace _Project.DataAccess
             if (!forceReload && _sku != null) return _sku;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable FROM sku ORDER BY id";
+            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, peak_orbit, orbit_spread, metallicity_factor FROM sku ORDER BY id";
 
             var list = new List<CatalogSku>();
             using (var reader = cmd.ExecuteReader())
@@ -46,8 +46,13 @@ namespace _Project.DataAccess
                     var price = (float)reader.GetDouble(4);
                     var isMineable = reader.GetInt32(5) != 0;
                     var isIndustrial = reader.GetInt32(6) != 0;
+                    if (isMineable && isIndustrial)
+                        throw new InvalidOperationException($"SKU #{id} \"{name}\" помечен и как добываемый, и как промышленный. Флаги должны быть взаимоисключающими.");
                     var isConsumable = reader.GetInt32(7) != 0;
-                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable));
+                    var peakOrbit = reader.GetInt32(8);
+                    var orbitSpread = (float)reader.GetDouble(9);
+                    var metallicityFactor = (float)reader.GetDouble(10);
+                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable, peakOrbit, orbitSpread, metallicityFactor));
                 }
             }
 
@@ -391,6 +396,7 @@ namespace _Project.DataAccess
             EnsureWeaponsSchema(connection);
             EnsureLegacyItemsRemoval(connection);
             EnsureEquipmentColumns(connection);
+            EnsureSkuColumns(connection);
             SeedDefaults(connection);
         }
 
@@ -573,7 +579,10 @@ CREATE TABLE IF NOT EXISTS sku (
     price REAL NOT NULL DEFAULT 0,
     isMineable INTEGER NOT NULL DEFAULT 0 CHECK (isMineable IN (0,1)),
     isIndustrial INTEGER NOT NULL DEFAULT 0 CHECK (isIndustrial IN (0,1)),
-    isConsumable INTEGER NOT NULL DEFAULT 0 CHECK (isConsumable IN (0,1))
+    isConsumable INTEGER NOT NULL DEFAULT 0 CHECK (isConsumable IN (0,1)),
+    peak_orbit INTEGER NOT NULL DEFAULT 0,
+    orbit_spread REAL NOT NULL DEFAULT 1,
+    metallicity_factor REAL NOT NULL DEFAULT 1
 );
 ";
             cmd.ExecuteNonQuery();
@@ -845,6 +854,16 @@ FROM f_fractions;";
             cmdRename.ExecuteNonQuery();
 
             tx.Commit();
+        }
+
+        private static void EnsureSkuColumns(IDbConnection connection)
+        {
+            EnsureColumns(connection, "sku", new[]
+            {
+                ("peak_orbit", "INTEGER NOT NULL DEFAULT 0"),
+                ("orbit_spread", "REAL NOT NULL DEFAULT 1"),
+                ("metallicity_factor", "REAL NOT NULL DEFAULT 1")
+            });
         }
 
         private static void EnsureColumns(IDbConnection connection, string table, (string Name, string Sql)[] columns)

@@ -3,7 +3,7 @@ namespace _Project.DataAccess
     /// <summary>Единица каталога ресурсов/товаров (SKU).</summary>
     public readonly struct CatalogSku
     {
-        public CatalogSku(int id, string name, string description, string img, float price, bool isMineable, bool isIndustrial, bool isConsumable)
+        public CatalogSku(int id, string name, string description, string img, float price, bool isMineable, bool isIndustrial, bool isConsumable, int peakOrbit, float orbitSpread, float metallicityFactor)
         {
             Id = id;
             Name = name;
@@ -13,6 +13,9 @@ namespace _Project.DataAccess
             IsMineable = isMineable;
             IsIndustrial = isIndustrial;
             IsConsumable = isConsumable;
+            PeakOrbit = peakOrbit;
+            OrbitSpread = orbitSpread;
+            MetallicityFactor = metallicityFactor;
         }
 
         public int Id { get; }
@@ -23,5 +26,8 @@ namespace _Project.DataAccess
         public bool IsMineable { get; }
         public bool IsIndustrial { get; }
         public bool IsConsumable { get; }
+        public int PeakOrbit { get; }
+        public float OrbitSpread { get; }
+        public float MetallicityFactor { get; }
     }
 }
