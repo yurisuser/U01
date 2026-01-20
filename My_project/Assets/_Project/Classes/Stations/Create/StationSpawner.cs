@@ -30,11 +30,11 @@ namespace _Project.Scripts.Stations
             if (outerRadius <= 0f || outerRadius <= innerRadius)
                 return Vector3.zero;
 
-            float targetRadius = Mathf.Max(innerRadius + orbitUnit * 0.25f, outerRadius * 0.5f); // середина между звездой и выбранной границей
-
+            int targetOrbit = PickOrbitIndex(in sys);
+            float targetRadius = Mathf.Max(innerRadius + orbitUnit, OrbitMath.PlanetOrbitIndexToUnits(targetOrbit));
             var planetPositions = CollectPlanetPositions(in sys, orbitUnit);
             if (planetPositions.Count == 0)
-                return new Vector3(targetRadius, 0f, 0f); // если планет нет, поставим на 4-й орбите
+                return new Vector3(targetRadius, 0f, 0f); // если планет нет, поставим на выбранном радиусе
 
             float bestScore = -1f;
             float bestAngle = 0f;
@@ -91,6 +91,39 @@ namespace _Project.Scripts.Stations
                 maxIndex = 4; // если планет нет, ставим на 4-й орбите
 
             return maxIndex;
+        }
+
+        private static int PickOrbitIndex(in StarSys sys)
+        {
+            var occupied = new HashSet<int>();
+            if (sys.PlanetSysArr != null)
+            {
+                for (int i = 0; i < sys.PlanetSysArr.Length; i++)
+                {
+                    int idx = Mathf.Max(0, sys.PlanetSysArr[i].OrbitIndex);
+                    occupied.Add(idx);
+                }
+            }
+
+            const int preferred = 5;
+            const int minOrbit = 3;
+            const int maxOrbit = 20;
+
+            if (!occupied.Contains(preferred))
+                return preferred;
+
+            for (int delta = 1; delta <= maxOrbit; delta++)
+            {
+                int left = preferred - delta;
+                int right = preferred + delta;
+
+                if (left >= minOrbit && left <= maxOrbit && !occupied.Contains(left))
+                    return left;
+                if (right >= minOrbit && right <= maxOrbit && !occupied.Contains(right))
+                    return right;
+            }
+
+            return Mathf.Clamp(preferred, minOrbit, maxOrbit);
         }
 
         private static List<Vector3> CollectPlanetPositions(in StarSys sys, float orbitUnit)
