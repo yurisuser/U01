@@ -87,6 +87,7 @@ namespace _Project.Scripts.Galaxy.Generation
 
             FractionsSpawner.SpawnAll(galaxy);
             StationSectorSeeder.SpawnFactionStations(galaxy);
+            ResourceDepositsCreator.AssignDeposits(galaxy);
 
             return galaxy;
         }
