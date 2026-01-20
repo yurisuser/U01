@@ -52,6 +52,8 @@ MonoBehaviour:
   StationPrefabsByKey:
   - Key: station_test
     Prefab: {fileID: 100000, guid: c5809a02c66d4abca993fcfc195cdd25, type: 3}
+  - Key: station_mining_pyramid
+    Prefab: {fileID: 100000, guid: 071c03eef28748e9aea144439939ab84, type: 3}
   OrbitPlanetColor: {r: 1, g: 0.9831489, b: 0, a: 0}
   OrbitMoonColor: {r: 1, g: 0.8433224, b: 0, a: 0}
   SelectionHighlightPrefab: {fileID: 0}
