@@ -474,7 +474,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3695153838410723144, guid: c5de9c4d95b1443eb07fdfe502f60eda, type: 3}
       propertyPath: m_Name
-      value: MainTopPanel
+      value: GalaxyViewModes
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

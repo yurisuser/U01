@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement name="MainTopPanelWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-items: flex-end;">
-        <ui:VisualElement name="MainTopPanel" class="MainTopPanel" style="width: 100%; min-height: 40px; flex-direction: row; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; background-color: rgba(12, 18, 26, 0.85);">
-            <ui:Label name="TitleLabel" text="MAIN TOP PANEL" class="TopBarTitle" style="color: rgba(220, 235, 255, 0.75); font-size: 11px; -unity-font-style: bold;" />
+    <ui:VisualElement name="GalaxyViewModesWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-items: flex-end;">
+        <ui:VisualElement name="GalaxyViewModes" class="GalaxyViewModes" style="width: 100%; min-height: 40px; flex-direction: row; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; background-color: rgba(12, 18, 26, 0.85);">
+            <ui:Label name="TitleLabel" text="GALAXY VIEW MODES" class="TopBarTitle" style="color: rgba(220, 235, 255, 0.75); font-size: 11px; -unity-font-style: bold;" />
             <ui:VisualElement name="ToggleRow" class="ToggleRow" style="-unity-text-align: upper-center; flex-direction: row-reverse; flex-shrink: 0; white-space: normal; justify-content: flex-end; align-items: center;">
                 <ui:VisualElement name="VisualElement1" style="flex-grow: 1; margin-right: 10px; margin-left: 10px; align-items: flex-end;">
                     <ui:Label text="Links" name="Label" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; align-self: auto; align-content: auto; align-items: auto;" />
@@ -21,9 +21,9 @@
             <ui:VisualElement name="Vertical" style="flex-grow: 1; margin-right: 20px;">
                 <ui:VisualElement style="flex-grow: 0; align-items: center; flex-direction: row-reverse; justify-content: flex-start;">
                     <ui:Label text="X" name="Closer" style="-unity-font-style: bold; -unity-text-align: upper-right; max-height: none; color: rgb(255, 255, 255); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; text-shadow: 1px 1px 2px rgb(0, 0, 0); align-self: center; align-items: center; justify-content: center;" />
-                    <ui:Label text="ConstellationName" name="ConstellationName" style="-unity-font-style: bold-and-italic; color: rgb(255, 255, 255); font-size: 16px; margin-top: 0; margin-right: 10px; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;" />
+                    <ui:Label text="ConstellationName" name="UpStringObjectName" style="-unity-font-style: bold-and-italic; color: rgb(255, 255, 255); font-size: 16px; margin-top: 0; margin-right: 10px; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;" />
                 </ui:VisualElement>
-                <ui:Label text="Glise - 4814" name="StarName" style="font-size: 35px; -unity-text-align: upper-right; color: rgb(217, 217, 217); -unity-font-style: bold-and-italic; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-left-color: rgb(255, 215, 0); border-right-color: rgb(255, 215, 0); border-top-color: rgb(255, 215, 0); border-bottom-color: rgb(255, 215, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 2px; border-left-width: 0;" />
+                <ui:Label text="Glise - 4814" name="ObjectName" style="font-size: 35px; -unity-text-align: upper-right; color: rgb(217, 217, 217); -unity-font-style: bold-and-italic; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-left-color: rgb(255, 215, 0); border-right-color: rgb(255, 215, 0); border-top-color: rgb(255, 215, 0); border-bottom-color: rgb(255, 215, 0); border-top-width: 0; border-right-width: 0; border-bottom-width: 2px; border-left-width: 0;" />
                 <ui:VisualElement name="buttons" style="flex-grow: 0; flex-direction: row-reverse; color: rgb(255, 178, 0); height: 20px; flex-shrink: 1; flex-basis: auto; border-bottom-width: 0; border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); border-top-width: 0; border-right-width: 0; border-left-width: 0; text-shadow: 5px 5px 1px rgb(0, 0, 0); -unity-font-style: italic;">
                     <ui:VisualElement name="VisualElement" style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); width: 50px; height: 20px; border-left-color: rgb(255, 215, 0); border-right-color: rgb(255, 215, 0); border-top-color: rgb(255, 215, 0); border-bottom-color: rgb(255, 215, 0); border-bottom-width: 0; justify-content: center; align-items: center; max-height: 20px; min-height: 20px; flex-shrink: 5;">
                         <ui:Label text="star" name="Label" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" display-tooltip-when-elided="false" />
@@ -38,11 +38,7 @@
                         <ui:Label text="sub" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="StarParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic; font-size: 12px;">
-                    <ui:Label text="Param&#10;" name="Param" style="align-items: auto; -unity-text-align: upper-right; -unity-font-style: normal;" />
-                    <ui:Label text="Value" name="Value" parse-escape-sequences="true" />
-                </ui:VisualElement>
-                <ui:VisualElement name="SystemParamValue" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic; font-size: 12px;">
+                <ui:VisualElement name="ParamValueBlock" style="flex-grow: 1; color: rgb(255, 255, 255); flex-direction: row; justify-content: flex-end; -unity-font-style: italic; font-size: 12px;">
                     <ui:Label text="Param&#10;" name="Param" style="align-items: auto; -unity-text-align: upper-right; -unity-font-style: normal;" />
                     <ui:Label text="Value" name="Value" parse-escape-sequences="true" />
                 </ui:VisualElement>

@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace _Project.Scripts.UI
 {
-    /// <summary>UI Toolkit панель информации об объекте/режимах карты.</summary>
-    public sealed class MainTopPanelController : MonoBehaviour
+    /// <summary>UI Toolkit панель режимов отображения галактики.</summary>
+    public sealed class GalaxyViewModesController : MonoBehaviour
     {
         [Header("Colors")]
         [SerializeField] private Color panelBackground = new Color(0.07f, 0.10f, 0.16f, 0.90f);
@@ -95,7 +95,7 @@ namespace _Project.Scripts.UI
             _doc = GetComponent<UIDocument>();
             if (_doc == null)
             {
-                Debug.LogError("[MainTopPanel] UIDocument not found.");
+                Debug.LogError("[GalaxyViewModes] UIDocument not found.");
                 return false;
             }
 
@@ -108,7 +108,7 @@ namespace _Project.Scripts.UI
                 _doc.visualTreeAsset.CloneTree(_root);
             }
 
-            _panel = _root.Q<VisualElement>("MainTopPanel");
+            _panel = _root.Q<VisualElement>("GalaxyViewModes");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
             _fractionsButton = _root.Q<VisualElement>("VisualElement2");

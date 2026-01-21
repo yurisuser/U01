@@ -18,14 +18,16 @@ namespace _Project.Scripts.UI
         private UIDocument _doc;
         private VisualElement _root;
         private VisualElement _tabsContainer;
-        private Label _starNameLabel;
-        private Label _constellationNameLabel;
-        private VisualElement _starParamValue;
-        private VisualElement _systemParamValue;
-        private Label _starParamLabel;
-        private Label _starValueLabel;
-        private Label _systemParamLabel;
-        private Label _systemValueLabel;
+        private Label _objectNameLabel;
+        private Label _upStringObjectNameLabel;
+        private VisualElement _paramValueBlock;
+        private Label _paramLabel;
+        private Label _valueLabel;
+        private string _starParamText = string.Empty;
+        private string _starValueText = string.Empty;
+        private string _systemParamText = string.Empty;
+        private string _systemValueText = string.Empty;
+        private string _activeTabText = string.Empty;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
         private readonly Dictionary<Label, Color> _inactiveColors = new Dictionary<Label, Color>();
 
@@ -70,14 +72,11 @@ namespace _Project.Scripts.UI
             }
 
             _tabsContainer = _root.Q<VisualElement>(tabsContainerName);
-            _starNameLabel = _root.Q<Label>("StarName");
-            _constellationNameLabel = _root.Q<Label>("ConstellationName");
-            _starParamValue = _root.Q<VisualElement>("StarParamValue") ?? _root.Q<VisualElement>("ParamValue");
-            _systemParamValue = _root.Q<VisualElement>("SystemParamValue");
-            _starParamLabel = _starParamValue?.Q<Label>("Param");
-            _starValueLabel = _starParamValue?.Q<Label>("Value");
-            _systemParamLabel = _systemParamValue?.Q<Label>("Param");
-            _systemValueLabel = _systemParamValue?.Q<Label>("Value");
+            _objectNameLabel = _root.Q<Label>("ObjectName");
+            _upStringObjectNameLabel = _root.Q<Label>("UpStringObjectName");
+            _paramValueBlock = _root.Q<VisualElement>("ParamValueBlock") ?? _root.Q<VisualElement>("ParamValue");
+            _paramLabel = _paramValueBlock?.Q<Label>("Param");
+            _valueLabel = _paramValueBlock?.Q<Label>("Value");
             return _tabsContainer != null;
         }
 
@@ -149,7 +148,8 @@ namespace _Project.Scripts.UI
             }
 
             var activeLabel = activeTab?.Q<Label>();
-            UpdateParamPanels(activeLabel?.text);
+            _activeTabText = activeLabel?.text;
+            UpdateParamPanels(_activeTabText);
         }
 
         public void ApplyStarInfo(StarSys starSys)
@@ -157,18 +157,18 @@ namespace _Project.Scripts.UI
             if (_root == null && !TryResolveElements())
                 return;
 
-            if (_starNameLabel == null || _starParamLabel == null || _starValueLabel == null)
+            if (_objectNameLabel == null || _paramLabel == null || _valueLabel == null)
                 TryResolveElements();
 
             var starName = string.IsNullOrWhiteSpace(starSys.Name) ? "Unknown" : starSys.Name;
             int planetsCount = starSys.PlanetSysArr != null ? starSys.PlanetSysArr.Length : 0;
 
-            if (_starNameLabel != null)
-                _starNameLabel.text = starName;
-            if (_constellationNameLabel != null)
-                _constellationNameLabel.text = ConstellationService.GetNameById(starSys.ConstellationId);
+            if (_objectNameLabel != null)
+                _objectNameLabel.text = starName;
+            if (_upStringObjectNameLabel != null)
+                _upStringObjectNameLabel.text = ConstellationService.GetNameById(starSys.ConstellationId);
 
-            if (_starParamLabel == null || _starValueLabel == null)
+            if (_paramLabel == null || _valueLabel == null)
                 return;
 
             var paramList = new StringBuilder();
@@ -201,11 +201,8 @@ namespace _Project.Scripts.UI
             paramList.Append("stability:").Append('\n');
             valueList.Append(FormatFloat(starSys.Star.stability, treatZeroAsMissing: false)).Append('\n');
 
-            _starParamLabel.text = paramList.ToString();
-            _starValueLabel.text = valueList.ToString();
-
-            if (_systemParamLabel == null || _systemValueLabel == null)
-                return;
+            _starParamText = paramList.ToString();
+            _starValueText = valueList.ToString();
 
             var systemParamList = new StringBuilder();
             var systemValueList = new StringBuilder();
@@ -232,8 +229,9 @@ namespace _Project.Scripts.UI
                 }
             }
 
-            _systemParamLabel.text = systemParamList.ToString();
-            _systemValueLabel.text = systemValueList.ToString();
+            _systemParamText = systemParamList.ToString();
+            _systemValueText = systemValueList.ToString();
+            UpdateParamPanels(_activeTabText);
         }
 
         private static string FormatFloat(float value, bool treatZeroAsMissing)
@@ -266,10 +264,25 @@ namespace _Project.Scripts.UI
             bool showStar = active == "star";
             bool showSystem = active == "system";
 
-            if (_starParamValue != null)
-                _starParamValue.style.display = showStar ? DisplayStyle.Flex : DisplayStyle.None;
-            if (_systemParamValue != null)
-                _systemParamValue.style.display = showSystem ? DisplayStyle.Flex : DisplayStyle.None;
+            if (_paramValueBlock == null || _paramLabel == null || _valueLabel == null)
+                return;
+
+            if (showStar)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _starParamText;
+                _valueLabel.text = _starValueText;
+            }
+            else if (showSystem)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _systemParamText;
+                _valueLabel.text = _systemValueText;
+            }
+            else
+            {
+                _paramValueBlock.style.display = DisplayStyle.None;
+            }
         }
     }
 }
