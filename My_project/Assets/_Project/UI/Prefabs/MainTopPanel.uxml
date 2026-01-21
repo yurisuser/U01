@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement name="GalaxyMapTopBarWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-items: flex-end;">
-        <ui:VisualElement name="GalaxyMapTopBar" class="GalaxyMapTopBar" style="width: 100%; min-height: 40px; flex-direction: row; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; background-color: rgba(12, 18, 26, 0.85);">
-            <ui:Label name="TitleLabel" text="GALAXY MAP MODES" class="TopBarTitle" style="color: rgba(220, 235, 255, 0.75); font-size: 11px; -unity-font-style: bold;" />
+    <ui:VisualElement name="MainTopPanelWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-items: flex-end;">
+        <ui:VisualElement name="MainTopPanel" class="MainTopPanel" style="width: 100%; min-height: 40px; flex-direction: row; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; background-color: rgba(12, 18, 26, 0.85);">
+            <ui:Label name="TitleLabel" text="MAIN TOP PANEL" class="TopBarTitle" style="color: rgba(220, 235, 255, 0.75); font-size: 11px; -unity-font-style: bold;" />
             <ui:VisualElement name="ToggleRow" class="ToggleRow" style="-unity-text-align: upper-center; flex-direction: row-reverse; flex-shrink: 0; white-space: normal; justify-content: flex-end; align-items: center;">
                 <ui:VisualElement name="VisualElement1" style="flex-grow: 1; margin-right: 10px; margin-left: 10px; align-items: flex-end;">
                     <ui:Label text="Links" name="Label" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; align-self: auto; align-content: auto; align-items: auto;" />
@@ -17,7 +17,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="StarInfoElement" style="flex-grow: 1; width: 300px; height: 300px; background-color: rgba(135, 206, 250, 0);">
+        <ui:VisualElement name="ObjectData" style="flex-grow: 1; width: 300px; height: 300px; background-color: rgba(135, 206, 250, 0);">
             <ui:VisualElement name="Vertical" style="flex-grow: 1; margin-right: 20px;">
                 <ui:VisualElement style="flex-grow: 0; align-items: center; flex-direction: row-reverse; justify-content: flex-start;">
                     <ui:Label text="X" name="Closer" style="-unity-font-style: bold; -unity-text-align: upper-right; max-height: none; color: rgb(255, 255, 255); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; text-shadow: 1px 1px 2px rgb(0, 0, 0); align-self: center; align-items: center; justify-content: center;" />

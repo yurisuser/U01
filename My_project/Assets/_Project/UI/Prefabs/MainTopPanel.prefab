@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4520747835706836828}
   - component: {fileID: 5399759193109027799}
   m_Layer: 0
-  m_Name: GalaxyMapTopBar
+  m_Name: MainTopPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

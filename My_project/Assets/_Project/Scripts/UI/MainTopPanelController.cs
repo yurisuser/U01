@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace _Project.Scripts.UI
 {
-    /// <summary>UI Toolkit верхняя панель режимов карты.</summary>
-    public sealed class GalaxyMapTopBarController : MonoBehaviour
+    /// <summary>UI Toolkit панель информации об объекте/режимах карты.</summary>
+    public sealed class MainTopPanelController : MonoBehaviour
     {
         [Header("Colors")]
         [SerializeField] private Color panelBackground = new Color(0.07f, 0.10f, 0.16f, 0.90f);
@@ -95,7 +95,7 @@ namespace _Project.Scripts.UI
             _doc = GetComponent<UIDocument>();
             if (_doc == null)
             {
-                Debug.LogError("[GalaxyMapTopBar] UIDocument not found.");
+                Debug.LogError("[MainTopPanel] UIDocument not found.");
                 return false;
             }
 
@@ -108,7 +108,7 @@ namespace _Project.Scripts.UI
                 _doc.visualTreeAsset.CloneTree(_root);
             }
 
-            _panel = _root.Q<VisualElement>("GalaxyMapTopBar");
+            _panel = _root.Q<VisualElement>("MainTopPanel");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
             _fractionsButton = _root.Q<VisualElement>("VisualElement2");

@@ -12,7 +12,7 @@ namespace _Project.Scripts.UI
 
         private UIDocument _doc;
         private VisualElement _root;
-        private VisualElement _starInfoElement;
+        private VisualElement _objectDataElement;
         private VisualElement _closer;
         private EventCallback<ClickEvent> _onCloserClick;
         private StarSys starSys;
@@ -57,7 +57,7 @@ namespace _Project.Scripts.UI
             }
 
             SetDataToUI();
-            _starInfoElement.style.display = DisplayStyle.Flex;
+            _objectDataElement.style.display = DisplayStyle.Flex;
         }
 
         public void ClearStarInfo()
@@ -70,8 +70,8 @@ namespace _Project.Scripts.UI
 
         private void Hide()
         {
-            if (_starInfoElement != null)
-                _starInfoElement.style.display = DisplayStyle.None;
+            if (_objectDataElement != null)
+                _objectDataElement.style.display = DisplayStyle.None;
         }
 
         private bool TryResolveElements()
@@ -93,12 +93,12 @@ namespace _Project.Scripts.UI
                 _doc.visualTreeAsset.CloneTree(_root);
             }
 
-            _starInfoElement = _root.Q<VisualElement>("StarInfoElement");
+            _objectDataElement = _root.Q<VisualElement>("ObjectData");
             _closer = _root.Q<VisualElement>("Closer");
             if (_tabsController == null)
                 _tabsController = GetComponent<GalaxyMapStarInfoTabsController>();
 
-            return _starInfoElement != null;
+            return _objectDataElement != null;
         }
 
         private void OnDisable()
