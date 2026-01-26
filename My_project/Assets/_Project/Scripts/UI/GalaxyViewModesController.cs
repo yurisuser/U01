@@ -63,6 +63,7 @@ namespace _Project.Scripts.UI
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
+            RebindStarInfo();
         }
 
         private void OnDisable()
@@ -98,6 +99,7 @@ namespace _Project.Scripts.UI
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
+            RebindStarInfo();
         }
 
         private bool TryResolveElements()
@@ -148,6 +150,15 @@ namespace _Project.Scripts.UI
 
             if (_tabsController != null)
                 _tabsController.Rebind();
+        }
+
+        private void RebindStarInfo()
+        {
+            if (_starInfoController == null)
+                _starInfoController = GetComponent<GalaxyMapStarInfoController>();
+
+            if (_starInfoController != null)
+                _starInfoController.Rebind();
         }
 
         private void HideDefaultObjectData()

@@ -22,12 +22,7 @@ namespace _Project.Scripts.UI
             if (!TryResolveElements())
                 return;
 
-            _onCloserClick = OnCloserClicked;
-            if (_closer != null)
-            {
-                _closer.UnregisterCallback(_onCloserClick);
-                _closer.RegisterCallback(_onCloserClick);
-            }
+            BindCloser();
 
             if (hideWhenEmpty)
                 Hide();
@@ -43,6 +38,14 @@ namespace _Project.Scripts.UI
                 return;
 
             TryResolveElements();
+        }
+
+        public void Rebind()
+        {
+            if (!TryResolveElements())
+                return;
+
+            BindCloser();
         }
 
         public void ShowStarInfo(UID starUid)
@@ -110,6 +113,16 @@ namespace _Project.Scripts.UI
         private void OnCloserClicked(ClickEvent evt)
         {
             ClearStarInfo();
+        }
+
+        private void BindCloser()
+        {
+            _onCloserClick = OnCloserClicked;
+            if (_closer != null)
+            {
+                _closer.UnregisterCallback(_onCloserClick);
+                _closer.RegisterCallback(_onCloserClick);
+            }
         }
 
         private bool TryFindStarSys(UID starUid)

@@ -1,4 +1,6 @@
-﻿.GalaxyViewModes {
+﻿.GalaxyViewModes,
+.vm-panel {
+    width: 100%;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -6,22 +8,191 @@
     padding: 8px 12px;
     min-height: 44px;
 
-    border-radius: 12px;
-    border-width: 1px;
+    border-radius: 0px;
+    border-width: 0px;
     border-color: rgba(90, 120, 160, 0.35);
     background-color: rgba(12, 18, 26, 0.85);
 }
 
-.TopBarTitle {
+.vm-panel {
+    border-bottom-width: 1px;
+}
+
+.TopBarTitle,
+.vm-title {
     margin-right: 10px;
     color: rgba(220, 235, 255, 0.75);
     font-size: 11px;
     -unity-font-style: bold;
 }
 
-.ToggleRow {
+.ToggleRow,
+.vm-toggle-row {
     flex-direction: row;
     align-items: center;
+}
+
+.vm-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    align-items: flex-end;
+}
+
+.vm-toggle-item {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-left: 10px;
+    align-items: flex-end;
+}
+
+.vm-toggle-row {
+    -unity-text-align: upper-center;
+    flex-direction: row-reverse;
+    flex-shrink: 0;
+    white-space: normal;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.vm-toggle-label {
+    width: auto;
+    color: rgb(255, 255, 255);
+    -unity-text-align: upper-left;
+    max-width: none;
+    align-self: auto;
+    align-content: auto;
+    align-items: auto;
+}
+
+.vm-toggle-label-tight {
+    margin: 0 10px;
+    padding: 0;
+    min-width: auto;
+}
+
+.od-host {
+    flex-grow: 1;
+    width: 300px;
+    height: 300px;
+}
+
+.od-root {
+    flex-grow: 1;
+    width: 300px;
+    height: 300px;
+    background-color: rgba(135, 206, 250, 0);
+}
+
+.od-vertical {
+    flex-grow: 1;
+    margin-right: 20px;
+}
+
+.od-header {
+    flex-grow: 0;
+    align-items: center;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.od-close {
+    -unity-font-style: bold;
+    -unity-text-align: upper-right;
+    max-height: none;
+    color: rgb(255, 255, 255);
+    margin: 0;
+    padding: 2px;
+    text-shadow: 1px 1px 2px rgb(0, 0, 0);
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.od-upname {
+    -unity-font-style: bold-and-italic;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    margin: 0 10px 0 0;
+    padding: 0;
+}
+
+.od-name {
+    font-size: 35px;
+    -unity-text-align: upper-right;
+    color: rgb(217, 217, 217);
+    -unity-font-style: bold-and-italic;
+    margin: 0;
+    padding: 0;
+    border-left-color: rgb(255, 215, 0);
+    border-right-color: rgb(255, 215, 0);
+    border-top-color: rgb(255, 215, 0);
+    border-bottom-color: rgb(255, 215, 0);
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 2px;
+    border-left-width: 0;
+}
+
+.od-tabs {
+    flex-grow: 0;
+    flex-direction: row-reverse;
+    color: rgb(255, 178, 0);
+    height: 20px;
+    flex-shrink: 1;
+    flex-basis: auto;
+    border-bottom-width: 0;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-top-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    text-shadow: 5px 5px 1px rgb(0, 0, 0);
+    -unity-font-style: italic;
+}
+
+.od-tab {
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0);
+    width: 50px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.od-tab-active {
+    border-left-color: rgb(255, 215, 0);
+    border-right-color: rgb(255, 215, 0);
+    border-top-color: rgb(255, 215, 0);
+    border-bottom-color: rgb(255, 215, 0);
+    border-bottom-width: 0;
+    max-height: 20px;
+    min-height: 20px;
+    flex-shrink: 5;
+}
+
+.od-param-block {
+    flex-grow: 1;
+    color: rgb(255, 255, 255);
+    flex-direction: row;
+    justify-content: flex-end;
+    -unity-font-style: italic;
+    font-size: 12px;
+}
+
+.od-param {
+    -unity-text-align: upper-right;
+    -unity-font-style: normal;
+}
+
+.od-value {
+}
+
+.od-spacer {
+    flex-grow: 1;
 }
 
 .ModeToggle {

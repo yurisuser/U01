@@ -1,23 +1,23 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/_Project/UI/Styles/ViewModesCommon.uss?fileID=7433441132597879392&amp;guid=7a6b77f666d94732b3277f8887cf4891&amp;type=3" />
-    <ui:VisualElement name="GalaxyViewModesWrapper" style="position: absolute; top: 0; left: 0; right: 0; align-items: flex-end;">
-        <ui:VisualElement name="GalaxyViewModes" class="GalaxyViewModes" style="width: 100%; min-height: 40px; flex-direction: row; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 6px; padding-bottom: 6px; background-color: rgba(12, 18, 26, 0.85);">
-            <ui:Label name="TitleLabel" text="GALAXY VIEW MODES" class="TopBarTitle" style="color: rgba(220, 235, 255, 0.75); font-size: 11px; -unity-font-style: bold;" />
-            <ui:VisualElement name="ToggleRow" class="ToggleRow" style="-unity-text-align: upper-center; flex-direction: row-reverse; flex-shrink: 0; white-space: normal; justify-content: flex-end; align-items: center;">
-                <ui:VisualElement name="VisualElement1" style="flex-grow: 1; margin-right: 10px; margin-left: 10px; align-items: flex-end;">
-                    <ui:Label text="Links" name="Label" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; align-self: auto; align-content: auto; align-items: auto;" />
+    <ui:VisualElement name="GalaxyViewModesWrapper" class="vm-wrapper">
+        <ui:VisualElement name="GalaxyViewModes" class="GalaxyViewModes vm-panel">
+            <ui:Label name="TitleLabel" text="GALAXY VIEW MODES" class="TopBarTitle vm-title" />
+            <ui:VisualElement name="ToggleRow" class="ToggleRow vm-toggle-row">
+                <ui:VisualElement name="VisualElement1" class="vm-toggle-item">
+                    <ui:Label text="Links" name="Label" class="vm-toggle-label" />
                 </ui:VisualElement>
-                <ui:VisualElement name="VisualElement2" style="flex-grow: 1; margin-left: 10px; margin-right: 10px; align-content: auto; align-items: flex-end;">
-                    <ui:Label text="Fractions" selectable="true" focusable="true" style="width: auto; color: rgb(255, 255, 255); -unity-text-align: upper-left; max-width: none; min-width: auto; align-items: auto; align-content: auto;" />
+                <ui:VisualElement name="VisualElement2" class="vm-toggle-item">
+                    <ui:Label text="Fractions" selectable="true" focusable="true" class="vm-toggle-label vm-toggle-label-tight" />
                 </ui:VisualElement>
-                <ui:VisualElement name="VisualElement3" style="flex-grow: 1; align-items: flex-end; align-content: auto;">
-                    <ui:Label text="Constellations" double-click-selects-word="false" style="width: auto; color: rgb(255, 255, 255); margin-top: 0; margin-right: 10px; margin-bottom: 0; margin-left: 10px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; align-items: auto; align-content: auto;" />
+                <ui:VisualElement name="VisualElement3" class="vm-toggle-item">
+                    <ui:Label text="Constellations" double-click-selects-word="false" class="vm-toggle-label vm-toggle-label-tight" />
                 </ui:VisualElement>
-                <ui:VisualElement name="VisualElement4" style="flex-grow: 1; align-items: flex-end; align-content: auto;">
-                    <ui:Label text="Unuse" style="width: auto; color: rgb(255, 255, 255); margin-top: 0; margin-right: 10px; margin-bottom: 0; margin-left: 10px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; min-width: auto; max-width: none; align-items: auto; align-content: auto;" />
+                <ui:VisualElement name="VisualElement4" class="vm-toggle-item">
+                    <ui:Label text="Unuse" class="vm-toggle-label vm-toggle-label-tight" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="ObjectDataHost" style="flex-grow: 1; width: 300px; height: 300px;" />
+        <ui:VisualElement name="ObjectDataHost" class="od-host" />
     </ui:VisualElement>
 </ui:UXML>
