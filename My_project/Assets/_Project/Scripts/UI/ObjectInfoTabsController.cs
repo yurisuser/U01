@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
-using _Project.Scripts.Galaxy.Data;
+using _Project.DataAccess;
 using _Project.Scripts.Galaxy.Constellations;
+using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -86,6 +87,8 @@ namespace _Project.Scripts.UI
             _paramValueBlock = _root.Q<VisualElement>("ParamValueBlock") ?? _root.Q<VisualElement>("ParamValue");
             _paramLabel = _paramValueBlock?.Q<Label>("Param");
             _valueLabel = _paramValueBlock?.Q<Label>("Value");
+            if (_paramLabel != null)
+                _paramLabel.enableRichText = true;
             return _tabsContainer != null;
         }
 
@@ -293,11 +296,57 @@ namespace _Project.Scripts.UI
 
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
-            _systemParamText = string.Empty;
-            _systemValueText = string.Empty;
-            _activeTabText = "star";
+            BuildPlanetResourceInfo(planetSys.Planet.ResourceDeposits);
+            _activeTabText = "info";
 
             UpdateParamPanels(_activeTabText);
+        }
+
+        private void BuildPlanetResourceInfo(ResourceDeposit[] deposits)
+        {
+            if (deposits == null || deposits.Length == 0)
+            {
+                _systemParamText = "resources:";
+                _systemValueText = "none";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            for (int i = 0; i < deposits.Length; i++)
+            {
+                var d = deposits[i];
+                var resourceName = GetResourceName(d.ResourceId);
+                paramList.Append("<b>").Append(resourceName).Append("</b>").Append('\n');
+                valueList.Append(string.Empty).Append('\n');
+
+                paramList.Append("purity:").Append('\n');
+                valueList.Append(FormatFloat2(d.ResourcePurity, treatZeroAsMissing: false)).Append('\n');
+
+                paramList.Append("availability:").Append('\n');
+                valueList.Append(FormatFloat2(d.Availability, treatZeroAsMissing: false)).Append('\n');
+
+                if (i < deposits.Length - 1)
+                {
+                    paramList.Append('\n');
+                    valueList.Append('\n');
+                }
+            }
+
+            _systemParamText = paramList.ToString();
+            _systemValueText = valueList.ToString();
+        }
+
+        private static string GetResourceName(int resourceId)
+        {
+            if (CATALOG.SkuById != null && CATALOG.SkuById.TryGetValue(resourceId, out var sku))
+            {
+                if (!string.IsNullOrWhiteSpace(sku.Name))
+                    return sku.Name;
+            }
+
+            return $"resource {resourceId}";
         }
 
         private static string FormatFloat(float value, bool treatZeroAsMissing)
@@ -308,6 +357,16 @@ namespace _Project.Scripts.UI
                 return "no info";
 
             return value.ToString("0.0000");
+        }
+
+        private static string FormatFloat2(float value, bool treatZeroAsMissing)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+                return "no info";
+            if (treatZeroAsMissing && Mathf.Approximately(value, 0f))
+                return "no info";
+
+            return value.ToString("0.00");
         }
 
         private static string FormatWithUnit(float value, string format, string unit, bool treatZeroAsMissing)
@@ -327,19 +386,19 @@ namespace _Project.Scripts.UI
                 ? string.Empty
                 : activeLabelText.ToLowerInvariant();
 
-            bool showStar = active == "star";
-            bool showSystem = active == "system";
+            bool showPrimary = active == "star" || active == "info";
+            bool showSecondary = active == "system" || active == "resources";
 
             if (_paramValueBlock == null || _paramLabel == null || _valueLabel == null)
                 return;
 
-            if (showStar)
+            if (showPrimary)
             {
                 _paramValueBlock.style.display = DisplayStyle.Flex;
                 _paramLabel.text = _starParamText;
                 _valueLabel.text = _starValueText;
             }
-            else if (showSystem)
+            else if (showSecondary)
             {
                 _paramValueBlock.style.display = DisplayStyle.Flex;
                 _paramLabel.text = _systemParamText;

@@ -46,29 +46,42 @@ namespace _Project.Scripts.Galaxy.Generation
  
             for (int i = 0; i < galaxy.Length; i++)
             {
-                starMetallicity = galaxy[i].Star.metallicity;
-                MakeStarSys(galaxy[i]);
+                var starSys = galaxy[i];
+                starMetallicity = starSys.Star.metallicity;
+                MakeStarSys(ref starSys);
+                galaxy[i] = starSys;
             }           
         }
 
-        public static void MakeStarSys(StarSys starSys) // обработка звездной системы
+        public static void MakeStarSys(ref StarSys starSys) // обработка звездной системы
         {
             int objectAmount = GetObjectsAmount(starSys);
             float sysFullness = GetFullness(starSys, objectAmount);
+            if (starSys.PlanetSysArr == null || starSys.PlanetSysArr.Length == 0)
+                return;
+
             for (int i = 0; i < starSys.PlanetSysArr.Length; i++)
             {
-                MakePlanetSys(starSys.PlanetSysArr[i], sysFullness); // обработка планетарной системы
+                var planetSys = starSys.PlanetSysArr[i];
+                MakePlanetSys(ref planetSys, sysFullness); // обработка планетарной системы
+                starSys.PlanetSysArr[i] = planetSys;
             }
         }
 
-        public static void MakePlanetSys(PlanetSys planetSys, float fullness)
+        public static void MakePlanetSys(ref PlanetSys planetSys, float fullness)
         {
             var planet = planetSys.Planet;
             planet.ResourceDeposits = GetPlanetDeposit(planet, fullness); // обработка планеты
+            planetSys.Planet = planet;
+
+            if (planetSys.Moons == null || planetSys.Moons.Length == 0)
+                return;
+
             for (int i = 0; i < planetSys.Moons.Length; i++)
             {
-                var moon =  planetSys.Moons[i];
+                var moon = planetSys.Moons[i];
                 moon.ResourceDeposits = GetMoonDeposit(moon, planet, fullness); // обработка луны
+                planetSys.Moons[i] = moon;
             }
         }
 
