@@ -1,4 +1,5 @@
 using _Project.Scripts.Core;
+using _Project.Scripts.Selection;
 using _Project.Scripts.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,11 +8,13 @@ namespace _Project.Scripts.SystemMap
 {
     /// <summary>ЛКМ по звезде в системной карте.</summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(SelectableData))]
     public sealed class StarSystemMapClick : MonoBehaviour
     {
         [SerializeField] private Camera targetCamera;
         [SerializeField] private GalaxyMapStarInfoController starInfoPanel;
         [SerializeField] private bool logClick = false;
+        private SelectableData _data;
 
         private void Awake()
         {
@@ -19,6 +22,7 @@ namespace _Project.Scripts.SystemMap
                 targetCamera = Camera.main;
             if (!starInfoPanel)
                 starInfoPanel = FindFirstObjectByType<GalaxyMapStarInfoController>();
+            _data = GetComponent<SelectableData>();
         }
 
         private void Update()
@@ -42,17 +46,18 @@ namespace _Project.Scripts.SystemMap
 
         private void OnLeftClick()
         {
-            var sys = GameBootstrap.GameState.GetSelectedSystem();
-            if (sys.HasValue)
-                starInfoPanel?.ShowStarInfo(sys.Value.Uid);
-            else
+            if (_data == null || !_data.HasData)
+            {
                 starInfoPanel?.ClearStarInfo();
+                return;
+            }
+
+            starInfoPanel?.ShowStarInfo(_data.Uid);
 
             if (!logClick)
                 return;
 
-            int id = sys.HasValue ? sys.Value.ConstellationId : -1;
-            UnityEngine.Debug.Log($"[SystemMap][Star] Click | ConstellationId={id}", this);
+            UnityEngine.Debug.Log($"[SystemMap][Star] Click | UID={_data.Uid.Type}/{_data.Uid.Id}", this);
         }
 
 #if UNITY_EDITOR
