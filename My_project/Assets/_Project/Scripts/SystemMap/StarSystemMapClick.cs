@@ -52,7 +52,7 @@ namespace _Project.Scripts.SystemMap
                 return;
 
             int id = sys.HasValue ? sys.Value.ConstellationId : -1;
-            Debug.Log($"[SystemMap][Star] Click | ConstellationId={id}", this);
+            UnityEngine.Debug.Log($"[SystemMap][Star] Click | ConstellationId={id}", this);
         }
 
 #if UNITY_EDITOR
