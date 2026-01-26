@@ -63,6 +63,10 @@ namespace _Project.Scripts.UI
             if (!TryResolveElements())
                 return;
 
+            if (_tabsController == null)
+                _tabsController = GetComponent<ObjectInfoTabsController>();
+            _tabsController?.SetScope(ObjectInfoTabsController.ObjectInfoTabScope.GalaxyStar);
+
             ApplyObjectDataTemplate(galaxyObjectData);
 
             if (!TryFindStarSys(starUid))
@@ -86,6 +90,10 @@ namespace _Project.Scripts.UI
             if (!TryResolveElements())
                 return;
 
+            if (_tabsController == null)
+                _tabsController = GetComponent<ObjectInfoTabsController>();
+            _tabsController?.SetScope(GetScopeForType(data.SelectedType));
+
             ApplyObjectDataTemplate(GetSysObjectDataTemplate(data.SelectedType));
 
             int systemIndex = data.SystemIndex >= 0 ? data.SystemIndex : GameBootstrap.GameState.SelectedSystemIndex;
@@ -94,9 +102,6 @@ namespace _Project.Scripts.UI
                 ClearStarInfo();
                 return;
             }
-
-            if (_tabsController == null)
-                _tabsController = GetComponent<ObjectInfoTabsController>();
 
             switch (data.SelectedType)
             {
@@ -210,6 +215,23 @@ namespace _Project.Scripts.UI
                     return sysShipObjectData;
                 default:
                     return null;
+            }
+        }
+
+        private static ObjectInfoTabsController.ObjectInfoTabScope GetScopeForType(ESelectedObjectType type)
+        {
+            switch (type)
+            {
+                case ESelectedObjectType.Star:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysStar;
+                case ESelectedObjectType.Planet:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysPlanet;
+                case ESelectedObjectType.Moon:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysMoon;
+                case ESelectedObjectType.Ship:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysShip;
+                default:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysStar;
             }
         }
 

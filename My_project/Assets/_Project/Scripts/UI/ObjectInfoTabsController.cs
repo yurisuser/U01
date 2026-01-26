@@ -11,6 +11,15 @@ namespace _Project.Scripts.UI
     /// <summary>Переключатели вкладок в блоке ObjectInfo.</summary>
     public sealed class ObjectInfoTabsController : MonoBehaviour
     {
+        public enum ObjectInfoTabScope
+        {
+            GalaxyStar,
+            SysStar,
+            SysPlanet,
+            SysMoon,
+            SysShip
+        }
+
         [SerializeField] private string tabsContainerName = "buttons";
         [SerializeField] private string defaultTabLabel = "star";
         [SerializeField] private Color activeColor = new Color(0.1f, 0.85f, 0.3f, 1f);
@@ -29,8 +38,10 @@ namespace _Project.Scripts.UI
         private string _systemParamText = string.Empty;
         private string _systemValueText = string.Empty;
         private string _activeTabText = string.Empty;
+        private ObjectInfoTabScope _currentScope = ObjectInfoTabScope.GalaxyStar;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
         private readonly Dictionary<Label, Color> _inactiveColors = new Dictionary<Label, Color>();
+        private readonly Dictionary<ObjectInfoTabScope, string> _lastTabByScope = new Dictionary<ObjectInfoTabScope, string>();
 
         private void OnEnable()
         {
@@ -118,21 +129,14 @@ namespace _Project.Scripts.UI
             if (_tabs.Count == 0)
                 return;
 
-            VisualElement defaultTab = null;
-            for (int i = 0; i < _tabs.Count; i++)
-            {
-                var label = _tabs[i].Q<Label>();
-                if (label == null)
-                    continue;
+            VisualElement targetTab = null;
+            if (_lastTabByScope.TryGetValue(_currentScope, out var savedTab) && !string.IsNullOrWhiteSpace(savedTab))
+                targetTab = FindTabByLabel(savedTab);
 
-                if (label.text != null && label.text.ToLowerInvariant() == defaultTabLabel.ToLowerInvariant())
-                {
-                    defaultTab = _tabs[i];
-                    break;
-                }
-            }
+            if (targetTab == null)
+                targetTab = FindTabByLabel(defaultTabLabel);
 
-            SetActiveTab(defaultTab ?? _tabs[0]);
+            SetActiveTab(targetTab ?? _tabs[0]);
         }
 
         private void OnTabClicked(ClickEvent evt)
@@ -161,7 +165,41 @@ namespace _Project.Scripts.UI
 
             var activeLabel = activeTab?.Q<Label>();
             _activeTabText = activeLabel?.text;
+            if (!string.IsNullOrWhiteSpace(_activeTabText))
+                _lastTabByScope[_currentScope] = _activeTabText;
             UpdateParamPanels(_activeTabText);
+        }
+
+        public void SetScope(ObjectInfoTabScope scope)
+        {
+            _currentScope = scope;
+        }
+
+        public void ApplyScopeTab()
+        {
+            if (_tabs.Count == 0)
+                return;
+
+            ApplyDefaultTab();
+        }
+
+        private VisualElement FindTabByLabel(string labelText)
+        {
+            if (string.IsNullOrWhiteSpace(labelText))
+                return null;
+
+            var target = labelText.ToLowerInvariant();
+            for (int i = 0; i < _tabs.Count; i++)
+            {
+                var label = _tabs[i].Q<Label>();
+                if (label?.text == null)
+                    continue;
+
+                if (label.text.ToLowerInvariant() == target)
+                    return _tabs[i];
+            }
+
+            return null;
         }
 
         public void ApplyStarInfo(StarSys starSys)
@@ -243,7 +281,7 @@ namespace _Project.Scripts.UI
 
             _systemParamText = systemParamList.ToString();
             _systemValueText = systemValueList.ToString();
-            UpdateParamPanels(_activeTabText);
+            UpdateParamPanels(GetActiveTabTextOrDefault());
         }
 
         public void ApplyPlanetInfo(in StarSys system, in PlanetSys planetSys)
@@ -297,9 +335,7 @@ namespace _Project.Scripts.UI
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
             BuildPlanetResourceInfo(planetSys.Planet.ResourceDeposits);
-            _activeTabText = "info";
-
-            UpdateParamPanels(_activeTabText);
+            UpdateParamPanels(GetActiveTabTextOrDefault());
         }
 
         public void ApplyMoonInfo(in StarSys system, in PlanetSys planetSys, in Moon moon)
@@ -349,9 +385,18 @@ namespace _Project.Scripts.UI
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
             BuildPlanetResourceInfo(moon.ResourceDeposits);
-            _activeTabText = "info";
+            UpdateParamPanels(GetActiveTabTextOrDefault());
+        }
 
-            UpdateParamPanels(_activeTabText);
+        private string GetActiveTabTextOrDefault()
+        {
+            if (!string.IsNullOrWhiteSpace(_activeTabText))
+                return _activeTabText;
+
+            if (_lastTabByScope.TryGetValue(_currentScope, out var savedTab) && !string.IsNullOrWhiteSpace(savedTab))
+                return savedTab;
+
+            return defaultTabLabel;
         }
 
         private void BuildPlanetResourceInfo(ResourceDeposit[] deposits)
