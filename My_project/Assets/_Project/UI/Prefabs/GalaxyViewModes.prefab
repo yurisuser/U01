@@ -71,6 +71,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hideWhenEmpty: 1
+  galaxyObjectData: {fileID: 9197481963319205126, guid: 7c3b06956c4a42ae857afe230bdabfac, type: 3}
+  sysStarObjectData: {fileID: 0}
+  sysPlanetObjectData: {fileID: 0}
+  sysMoonObjectData: {fileID: 0}
+  sysShipObjectData: {fileID: 0}
 --- !u!114 &2885361994970379119
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,5 +1,7 @@
 using _Project.Scripts.Core;
+using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Selection;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -9,6 +11,13 @@ namespace _Project.Scripts.UI
     public sealed class GalaxyMapStarInfoController : MonoBehaviour
     {
         [SerializeField] private bool hideWhenEmpty = true;
+        [Header("ObjectData Templates")]
+        [SerializeField] private VisualTreeAsset galaxyObjectData;
+        [Header("System Map Templates")]
+        [SerializeField] private VisualTreeAsset sysStarObjectData;
+        [SerializeField] private VisualTreeAsset sysPlanetObjectData;
+        [SerializeField] private VisualTreeAsset sysMoonObjectData;
+        [SerializeField] private VisualTreeAsset sysShipObjectData;
 
         private UIDocument _doc;
         private VisualElement _root;
@@ -16,7 +25,8 @@ namespace _Project.Scripts.UI
         private VisualElement _closer;
         private EventCallback<ClickEvent> _onCloserClick;
         private StarSys starSys;
-        private GalaxyMapStarInfoTabsController _tabsController;
+        private ObjectInfoTabsController _tabsController;
+        private GalaxyViewModesController _viewModesController;
         private void OnEnable()
         {
             if (!TryResolveElements())
@@ -53,6 +63,8 @@ namespace _Project.Scripts.UI
             if (!TryResolveElements())
                 return;
 
+            ApplyObjectDataTemplate(galaxyObjectData);
+
             if (!TryFindStarSys(starUid))
             {
                 Hide();
@@ -60,6 +72,48 @@ namespace _Project.Scripts.UI
             }
 
             SetDataToUI();
+            _objectDataElement.style.display = DisplayStyle.Flex;
+        }
+
+        public void ShowObjectInfo(SelectableData data)
+        {
+            if (data == null || !data.HasData)
+            {
+                ClearStarInfo();
+                return;
+            }
+
+            if (!TryResolveElements())
+                return;
+
+            ApplyObjectDataTemplate(GetSysObjectDataTemplate(data.SelectedType));
+
+            int systemIndex = data.SystemIndex >= 0 ? data.SystemIndex : GameBootstrap.GameState.SelectedSystemIndex;
+            if (!TryGetSystem(systemIndex, out var system))
+            {
+                ClearStarInfo();
+                return;
+            }
+
+            if (_tabsController == null)
+                _tabsController = GetComponent<ObjectInfoTabsController>();
+
+            switch (data.SelectedType)
+            {
+                case ESelectedObjectType.Star:
+                    _tabsController?.ApplyStarInfo(system);
+                    break;
+                case ESelectedObjectType.Planet:
+                    if (TryFindPlanet(system, data.Uid, out var planetSys))
+                        _tabsController?.ApplyPlanetInfo(system, planetSys);
+                    else
+                        ClearStarInfo();
+                    break;
+                default:
+                    ClearStarInfo();
+                    return;
+            }
+
             _objectDataElement.style.display = DisplayStyle.Flex;
         }
 
@@ -99,7 +153,7 @@ namespace _Project.Scripts.UI
             _objectDataElement = _root.Q<VisualElement>("ObjectData");
             _closer = _root.Q<VisualElement>("Closer");
             if (_tabsController == null)
-                _tabsController = GetComponent<GalaxyMapStarInfoTabsController>();
+                _tabsController = GetComponent<ObjectInfoTabsController>();
 
             return _objectDataElement != null;
         }
@@ -122,6 +176,34 @@ namespace _Project.Scripts.UI
             {
                 _closer.UnregisterCallback(_onCloserClick);
                 _closer.RegisterCallback(_onCloserClick);
+            }
+        }
+
+        private void ApplyObjectDataTemplate(VisualTreeAsset template)
+        {
+            if (template == null)
+                return;
+
+            if (_viewModesController == null)
+                _viewModesController = GetComponent<GalaxyViewModesController>();
+
+            _viewModesController?.ApplyObjectData(template);
+        }
+
+        private VisualTreeAsset GetSysObjectDataTemplate(ESelectedObjectType type)
+        {
+            switch (type)
+            {
+                case ESelectedObjectType.Star:
+                    return sysStarObjectData;
+                case ESelectedObjectType.Planet:
+                    return sysPlanetObjectData;
+                case ESelectedObjectType.Moon:
+                    return sysMoonObjectData;
+                case ESelectedObjectType.Ship:
+                    return sysShipObjectData;
+                default:
+                    return null;
             }
         }
 
@@ -148,6 +230,44 @@ namespace _Project.Scripts.UI
         {
             if (_tabsController != null)
                 _tabsController.ApplyStarInfo(starSys);
+        }
+
+        private bool TryGetSystem(int index, out StarSys system)
+        {
+            var galaxy = GameBootstrap.GameState.Galaxy;
+            if (galaxy == null || galaxy.Length == 0)
+            {
+                system = default;
+                return false;
+            }
+
+            if (index < 0 || index >= galaxy.Length)
+            {
+                system = default;
+                return false;
+            }
+
+            system = galaxy[index];
+            return true;
+        }
+
+        private static bool TryFindPlanet(in StarSys system, UID uid, out PlanetSys planetSys)
+        {
+            if (system.PlanetSysArr != null)
+            {
+                for (int i = 0; i < system.PlanetSysArr.Length; i++)
+                {
+                    if (system.PlanetSysArr[i].Planet.Uid.Type == uid.Type &&
+                        system.PlanetSysArr[i].Planet.Uid.Id == uid.Id)
+                    {
+                        planetSys = system.PlanetSysArr[i];
+                        return true;
+                    }
+                }
+            }
+
+            planetSys = default;
+            return false;
         }
     }
 }

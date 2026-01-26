@@ -29,7 +29,7 @@ namespace _Project.Scripts.UI
         private Label _constellationsLabel;
         private GameStateService _state;
         private GalaxyMapStarInfoController _starInfoController;
-        private GalaxyMapStarInfoTabsController _tabsController;
+        private ObjectInfoTabsController _tabsController;
 
         private EventCallback<ClickEvent> _onClick;
         private EventCallback<ClickEvent> _onFractionsClick;
@@ -143,10 +143,27 @@ namespace _Project.Scripts.UI
             objectDataAsset.CloneTree(_objectDataHost);
         }
 
+        public void ApplyObjectData(VisualTreeAsset asset)
+        {
+            if (asset == null)
+                return;
+
+            if (!TryResolveElements())
+                return;
+
+            if (_objectDataHost == null)
+                return;
+
+            _objectDataHost.Clear();
+            asset.CloneTree(_objectDataHost);
+            RebindTabs();
+            RebindStarInfo();
+        }
+
         private void RebindTabs()
         {
             if (_tabsController == null)
-                _tabsController = GetComponent<GalaxyMapStarInfoTabsController>();
+                _tabsController = GetComponent<ObjectInfoTabsController>();
 
             if (_tabsController != null)
                 _tabsController.Rebind();

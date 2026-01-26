@@ -1,28 +1,29 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/Styles/ViewModesCommon.uss?fileID=7433441132597879392&amp;guid=7a6b77f666d94732b3277f8887cf4891&amp;type=3#ViewModesCommon" />
     <ui:VisualElement name="ObjectData" class="od-root">
         <ui:VisualElement name="Vertical" class="od-vertical">
             <ui:VisualElement class="od-header">
                 <ui:Label text="X" name="Closer" class="od-close" />
-                <ui:Label text="UpStringObjectName" name="UpStringObjectName" class="od-upname" emoji-fallback-support="false" enable-rich-text="true" />
+                <ui:Label text="UpStringObjectName" name="UpStringObjectName" emoji-fallback-support="false" enable-rich-text="true" class="od-upname" />
             </ui:VisualElement>
             <ui:Label text="ObjectName" name="ObjectName" class="od-name" />
             <ui:VisualElement name="buttons" class="od-tabs">
                 <ui:VisualElement name="VisualElement" class="od-tab od-tab-active">
-                    <ui:Label text="star" name="Label" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" display-tooltip-when-elided="false" />
+                    <ui:Label text="info" name="Label" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" display-tooltip-when-elided="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="system" display-tooltip-when-elided="false" double-click-selects-word="false" triple-click-selects-line="false" emoji-fallback-support="false" />
+                    <ui:Label text="resources" display-tooltip-when-elided="false" double-click-selects-word="false" triple-click-selects-line="false" emoji-fallback-support="false" parse-escape-sequences="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="bodys" display-tooltip-when-elided="false" parse-escape-sequences="false" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" />
+                    <ui:Label text="objects" display-tooltip-when-elided="false" parse-escape-sequences="false" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="sub" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />
+                    <ui:Label text="anomaly" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="ParamValueBlock" class="od-param-block">
                 <ui:Label text="Param&#10;" name="Param" class="od-param" />
-                <ui:Label text="Value" name="Value" class="od-value" parse-escape-sequences="true" />
+                <ui:Label text="Value" name="Value" parse-escape-sequences="true" class="od-value" />
             </ui:VisualElement>
             <ui:VisualElement class="od-spacer" />
         </ui:VisualElement>

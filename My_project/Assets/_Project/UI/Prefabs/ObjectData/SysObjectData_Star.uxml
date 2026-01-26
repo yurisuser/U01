@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/_Project/UI/Styles/ViewModesCommon.uss?fileID=7433441132597879392&amp;guid=7a6b77f666d94732b3277f8887cf4891&amp;type=3" />
     <ui:VisualElement name="ObjectData" class="od-root">
         <ui:VisualElement name="Vertical" class="od-vertical">
             <ui:VisualElement class="od-header">

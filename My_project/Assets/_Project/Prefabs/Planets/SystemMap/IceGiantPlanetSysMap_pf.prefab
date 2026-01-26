@@ -8,6 +8,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 1935882111047332716}
   - component: {fileID: 6923479574862458712}
   - component: {fileID: 4735029557243125567}
   - component: {fileID: 4733370100787563462}
@@ -142,3 +143,18 @@ MonoBehaviour:
   uidId: -1
   selectedType: 0
   hasData: 0
+--- !u!114 &1935882111047332716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4298940278040418173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e298f223b444a5398e7c45d9890986b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
+  objectInfoPanel: {fileID: 0}
+  logClick: 0

@@ -7,8 +7,8 @@ using UnityEngine.UIElements;
 
 namespace _Project.Scripts.UI
 {
-    /// <summary>Переключатели вкладок в блоке StarInfo.</summary>
-    public sealed class GalaxyMapStarInfoTabsController : MonoBehaviour
+    /// <summary>Переключатели вкладок в блоке ObjectInfo.</summary>
+    public sealed class ObjectInfoTabsController : MonoBehaviour
     {
         [SerializeField] private string tabsContainerName = "buttons";
         [SerializeField] private string defaultTabLabel = "star";
@@ -240,6 +240,63 @@ namespace _Project.Scripts.UI
 
             _systemParamText = systemParamList.ToString();
             _systemValueText = systemValueList.ToString();
+            UpdateParamPanels(_activeTabText);
+        }
+
+        public void ApplyPlanetInfo(in StarSys system, in PlanetSys planetSys)
+        {
+            if (_root == null && !TryResolveElements())
+                return;
+
+            if (_objectNameLabel == null || _paramLabel == null || _valueLabel == null)
+                TryResolveElements();
+
+            if (_objectNameLabel != null)
+            {
+                var planetName = string.IsNullOrWhiteSpace(planetSys.Planet.Name) ? "Unknown planet" : planetSys.Planet.Name;
+                _objectNameLabel.text = planetName;
+            }
+
+            if (_upStringObjectNameLabel != null)
+            {
+                var starName = string.IsNullOrWhiteSpace(system.Star.Name) ? "Unknown star" : system.Star.Name;
+                _upStringObjectNameLabel.text = starName;
+            }
+
+            if (_paramLabel == null || _valueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("planet type:").Append('\n');
+            valueList.Append(planetSys.Planet.Type).Append('\n');
+
+            paramList.Append("orbit index:").Append('\n');
+            valueList.Append(planetSys.OrbitIndex).Append('\n');
+
+            paramList.Append("orbit dist:").Append('\n');
+            valueList.Append(FormatWithUnit(planetSys.Planet.OrbitalDistance, "0.00", "AU", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("temperature:").Append('\n');
+            valueList.Append(FormatWithUnit(planetSys.Planet.Temperature, "0", "K", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("mass:").Append('\n');
+            valueList.Append(FormatWithUnit(planetSys.Planet.Mass, "0.0000", "M⊕", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("radius:").Append('\n');
+            valueList.Append(FormatWithUnit(planetSys.Planet.Radius, "0.0000", "R⊕", treatZeroAsMissing: true)).Append('\n');
+
+            int moonsCount = planetSys.Moons != null ? planetSys.Moons.Length : 0;
+            paramList.Append("moons:").Append('\n');
+            valueList.Append(moonsCount).Append('\n');
+
+            _starParamText = paramList.ToString();
+            _starValueText = valueList.ToString();
+            _systemParamText = string.Empty;
+            _systemValueText = string.Empty;
+            _activeTabText = "star";
+
             UpdateParamPanels(_activeTabText);
         }
 
