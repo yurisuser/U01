@@ -19,6 +19,8 @@ namespace _Project.Scripts.UI
         private UIDocument _doc;
         private VisualElement _root;
         private VisualElement _panel;
+        [SerializeField] private VisualTreeAsset objectDataAsset;
+        private VisualElement _objectDataHost;
         private VisualElement _linkButton;
         private Label _linkLabel;
         private VisualElement _fractionsButton;
@@ -26,6 +28,8 @@ namespace _Project.Scripts.UI
         private VisualElement _constellationsButton;
         private Label _constellationsLabel;
         private GameStateService _state;
+        private GalaxyMapStarInfoController _starInfoController;
+        private GalaxyMapStarInfoTabsController _tabsController;
 
         private EventCallback<ClickEvent> _onClick;
         private EventCallback<ClickEvent> _onFractionsClick;
@@ -56,6 +60,9 @@ namespace _Project.Scripts.UI
             RefreshLinkVisual();
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
+            EnsureObjectData();
+            HideDefaultObjectData();
+            RebindTabs();
         }
 
         private void OnDisable()
@@ -88,6 +95,9 @@ namespace _Project.Scripts.UI
             RefreshLinkVisual();
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
+            EnsureObjectData();
+            HideDefaultObjectData();
+            RebindTabs();
         }
 
         private bool TryResolveElements()
@@ -109,6 +119,7 @@ namespace _Project.Scripts.UI
             }
 
             _panel = _root.Q<VisualElement>("GalaxyViewModes");
+            _objectDataHost = _root.Q<VisualElement>("ObjectDataHost");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
             _fractionsButton = _root.Q<VisualElement>("VisualElement2");
@@ -117,6 +128,35 @@ namespace _Project.Scripts.UI
             _constellationsLabel = _constellationsButton?.Q<Label>();
 
             return _panel != null && _linkButton != null && _fractionsButton != null && _constellationsButton != null;
+        }
+
+        private void EnsureObjectData()
+        {
+            if (_objectDataHost == null || objectDataAsset == null)
+                return;
+
+            if (_objectDataHost.childCount > 0)
+                return;
+
+            objectDataAsset.CloneTree(_objectDataHost);
+        }
+
+        private void RebindTabs()
+        {
+            if (_tabsController == null)
+                _tabsController = GetComponent<GalaxyMapStarInfoTabsController>();
+
+            if (_tabsController != null)
+                _tabsController.Rebind();
+        }
+
+        private void HideDefaultObjectData()
+        {
+            if (_starInfoController == null)
+                _starInfoController = GetComponent<GalaxyMapStarInfoController>();
+
+            if (_starInfoController != null)
+                _starInfoController.ClearStarInfo();
         }
 
         private void ApplyPanelBackground()

@@ -52,6 +52,15 @@ namespace _Project.Scripts.UI
             TryResolveElements();
         }
 
+        public void Rebind()
+        {
+            if (!TryResolveElements())
+                return;
+
+            CacheTabs();
+            ApplyDefaultTab();
+        }
+
         private bool TryResolveElements()
         {
             _doc = GetComponent<UIDocument>();

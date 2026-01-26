@@ -87,6 +87,7 @@ MonoBehaviour:
   linkOnColor: {r: 0.1, g: 0.85, b: 0.3, a: 1}
   linkOffColor: {r: 1, g: 1, b: 1, a: 1}
   linkDisabledColor: {r: 0.25, g: 0.25, b: 0.28, a: 0.6}
+  objectDataAsset: {fileID: 9197481963319205126, guid: 7c3b06956c4a42ae857afe230bdabfac, type: 3}
 --- !u!114 &5399759193109027799
 MonoBehaviour:
   m_ObjectHideFlags: 0
