@@ -302,6 +302,58 @@ namespace _Project.Scripts.UI
             UpdateParamPanels(_activeTabText);
         }
 
+        public void ApplyMoonInfo(in StarSys system, in PlanetSys planetSys, in Moon moon)
+        {
+            if (_root == null && !TryResolveElements())
+                return;
+
+            if (_objectNameLabel == null || _paramLabel == null || _valueLabel == null)
+                TryResolveElements();
+
+            if (_objectNameLabel != null)
+            {
+                var moonName = string.IsNullOrWhiteSpace(moon.Name) ? "Unknown moon" : moon.Name;
+                _objectNameLabel.text = moonName;
+            }
+
+            if (_upStringObjectNameLabel != null)
+            {
+                var planetName = string.IsNullOrWhiteSpace(planetSys.Planet.Name) ? "Unknown planet" : planetSys.Planet.Name;
+                _upStringObjectNameLabel.text = planetName;
+            }
+
+            if (_paramLabel == null || _valueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("moon type:").Append('\n');
+            valueList.Append(moon.Type).Append('\n');
+
+            paramList.Append("orbit index:").Append('\n');
+            valueList.Append(moon.OrbitIndex).Append('\n');
+
+            paramList.Append("orbit dist:").Append('\n');
+            valueList.Append(FormatWithUnit(moon.OrbitDistance, "0.00", "AU", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("temperature:").Append('\n');
+            valueList.Append(FormatWithUnit(moon.Temperature, "0", "K", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("mass:").Append('\n');
+            valueList.Append(FormatWithUnit(moon.Mass, "0.0000", "M⊕", treatZeroAsMissing: true)).Append('\n');
+
+            paramList.Append("radius:").Append('\n');
+            valueList.Append(FormatWithUnit(moon.Radius, "0.0000", "R⊕", treatZeroAsMissing: true)).Append('\n');
+
+            _starParamText = paramList.ToString();
+            _starValueText = valueList.ToString();
+            BuildPlanetResourceInfo(moon.ResourceDeposits);
+            _activeTabText = "info";
+
+            UpdateParamPanels(_activeTabText);
+        }
+
         private void BuildPlanetResourceInfo(ResourceDeposit[] deposits)
         {
             if (deposits == null || deposits.Length == 0)

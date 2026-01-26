@@ -109,6 +109,12 @@ namespace _Project.Scripts.UI
                     else
                         ClearStarInfo();
                     break;
+                case ESelectedObjectType.Moon:
+                    if (TryFindMoon(system, data.Uid, out var moonPlanetSys, out var moon))
+                        _tabsController?.ApplyMoonInfo(system, moonPlanetSys, moon);
+                    else
+                        ClearStarInfo();
+                    break;
                 default:
                     ClearStarInfo();
                     return;
@@ -199,7 +205,7 @@ namespace _Project.Scripts.UI
                 case ESelectedObjectType.Planet:
                     return sysPlanetObjectData;
                 case ESelectedObjectType.Moon:
-                    return sysMoonObjectData;
+                    return sysPlanetObjectData != null ? sysPlanetObjectData : sysMoonObjectData;
                 case ESelectedObjectType.Ship:
                     return sysShipObjectData;
                 default:
@@ -267,6 +273,34 @@ namespace _Project.Scripts.UI
             }
 
             planetSys = default;
+            return false;
+        }
+
+        private static bool TryFindMoon(in StarSys system, UID uid, out PlanetSys planetSys, out Moon moon)
+        {
+            if (system.PlanetSysArr != null)
+            {
+                for (int i = 0; i < system.PlanetSysArr.Length; i++)
+                {
+                    var candidatePlanetSys = system.PlanetSysArr[i];
+                    if (candidatePlanetSys.Moons == null)
+                        continue;
+
+                    for (int k = 0; k < candidatePlanetSys.Moons.Length; k++)
+                    {
+                        var candidateMoon = candidatePlanetSys.Moons[k];
+                        if (candidateMoon.Uid.Type == uid.Type && candidateMoon.Uid.Id == uid.Id)
+                        {
+                            planetSys = candidatePlanetSys;
+                            moon = candidateMoon;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            planetSys = default;
+            moon = default;
             return false;
         }
     }

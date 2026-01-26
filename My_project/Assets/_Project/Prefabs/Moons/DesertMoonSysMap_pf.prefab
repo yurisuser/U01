@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5152598586241798325}
   - component: {fileID: 817352547592489212}
   - component: {fileID: 437007647701835934}
+  - component: {fileID: 7500000000000000022}
   m_Layer: 0
   m_Name: DesertMoonSysMap_pf
   m_TagString: Untagged
@@ -142,3 +143,18 @@ MonoBehaviour:
   uidId: -1
   selectedType: 0
   hasData: 0
+--- !u!114 &7500000000000000022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4298940278040418173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fb40c082f4b41ce981e8a10fab0511a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
+  objectInfoPanel: {fileID: 0}
+  logClick: 0
