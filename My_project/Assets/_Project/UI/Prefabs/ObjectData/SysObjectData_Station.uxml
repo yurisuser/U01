@@ -12,10 +12,10 @@
                     <ui:Label text="info" name="Label" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" display-tooltip-when-elided="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="resources" display-tooltip-when-elided="false" double-click-selects-word="false" triple-click-selects-line="false" emoji-fallback-support="false" parse-escape-sequences="false" />
+                    <ui:Label text="By" display-tooltip-when-elided="false" double-click-selects-word="false" triple-click-selects-line="false" emoji-fallback-support="false" parse-escape-sequences="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="objects" display-tooltip-when-elided="false" parse-escape-sequences="false" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" />
+                    <ui:Label text="Sell" display-tooltip-when-elided="false" parse-escape-sequences="false" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
                     <ui:Label text="anomaly" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />

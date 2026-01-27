@@ -366,6 +366,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
         {
             if (stationsDto == null || stationsDto.Length == 0) return Array.Empty<Station>();
 
+            var rng = new System.Random();
             var list = new List<Station>(stationsDto.Length);
             for (int i = 0; i < stationsDto.Length; i++)
             {
@@ -373,6 +374,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
                 var def = DefaultStationDef();
                 var position = OrbitMath.PlanetOrbitIndexToUnits(dto.orbit);
                 var station = StationCreator.Create(def, owner, new UnityEngine.Vector3(position, 0f, 0f));
+                StationTradeBootstrap.InitForStation(ref station, rng);
                 list.Add(station);
             }
 
@@ -385,7 +387,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
             {
                 Key = "station_default",
                 PrefabKey = "station_default",
-                DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock },
+                DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock, EStationModuleType.Trade },
                 BaseHull = 100f,
                 BasePower = 50f
             };
