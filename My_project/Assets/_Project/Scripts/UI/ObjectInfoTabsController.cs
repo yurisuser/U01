@@ -438,6 +438,53 @@ namespace _Project.Scripts.UI
             UpdateParamPanels(GetActiveTabTextOrDefault());
         }
 
+        public void ApplyShipInfo(in StarSys system, in _Project.Scripts.Ships.Ship ship)
+        {
+            if (_root == null && !TryResolveElements())
+                return;
+
+            if (_objectNameLabel == null || _paramLabel == null || _valueLabel == null)
+                TryResolveElements();
+
+            if (_objectNameLabel != null)
+            {
+                _objectNameLabel.text = ship.Type.ToString();
+            }
+
+            if (_upStringObjectNameLabel != null)
+            {
+                var systemName = string.IsNullOrWhiteSpace(system.Name) ? "Unknown system" : system.Name;
+                _upStringObjectNameLabel.text = systemName;
+            }
+
+            if (_paramLabel == null || _valueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("type:").Append('\n');
+            valueList.Append(ship.Type).Append('\n');
+
+            paramList.Append("maker:").Append('\n');
+            valueList.Append(string.IsNullOrWhiteSpace(ship.MakerFraction.Name) ? "no info" : ship.MakerFraction.Name).Append('\n');
+
+            paramList.Append("hp:").Append('\n');
+            valueList.Append(ship.Stats.Hp).Append('\n');
+
+            paramList.Append("speed:").Append('\n');
+            valueList.Append($"{FormatFloat2(ship.CurrentSpeed, treatZeroAsMissing: false)}/{FormatFloat2(ship.Stats.MaxSpeed, treatZeroAsMissing: false)}").Append('\n');
+
+            paramList.Append("agility:").Append('\n');
+            valueList.Append(FormatFloat2(ship.Stats.Agility, treatZeroAsMissing: false)).Append('\n');
+
+            _starParamText = paramList.ToString();
+            _starValueText = valueList.ToString();
+            BuildShipEquipmentInfo(ship.Equipment);
+
+            UpdateParamPanels(GetActiveTabTextOrDefault());
+        }
+
         private void BuildStationModulesInfo(_Project.Scripts.Stations.StationModule[] modules)
         {
             if (modules == null || modules.Length == 0)
@@ -462,6 +509,41 @@ namespace _Project.Scripts.UI
                     valueList.Append('\n');
                 }
             }
+
+            _systemParamText = paramList.ToString();
+            _systemValueText = valueList.ToString();
+        }
+
+        private void BuildShipEquipmentInfo(_Project.Scripts.Ships.InstalledEquip equipment)
+        {
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            int weaponSlots = equipment.WeaponSlotsCount;
+            paramList.Append("weapons:").Append('\n');
+            valueList.Append(weaponSlots).Append('\n');
+
+            for (int i = 0; i < weaponSlots; i++)
+            {
+                var slot = equipment.GetWeaponSlot(i);
+                paramList.Append($"weapon {i + 1}:").Append('\n');
+                valueList.Append(slot.IsEmpty ? "empty" : $"id {slot.Id}").Append('\n');
+            }
+
+            if (weaponSlots > 0)
+            {
+                paramList.Append('\n');
+                valueList.Append('\n');
+            }
+
+            paramList.Append("engine:").Append('\n');
+            valueList.Append(equipment.Engine.IsEmpty ? "empty" : $"id {equipment.Engine.Id}").Append('\n');
+
+            paramList.Append("shield:").Append('\n');
+            valueList.Append(equipment.Shield.IsEmpty ? "empty" : $"id {equipment.Shield.Id}").Append('\n');
+
+            paramList.Append("scanner:").Append('\n');
+            valueList.Append(equipment.Scanner.IsEmpty ? "empty" : $"id {equipment.Scanner.Id}").Append('\n');
 
             _systemParamText = paramList.ToString();
             _systemValueText = valueList.ToString();

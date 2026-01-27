@@ -21,7 +21,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         [SerializeField] private Camera cam;
 
         [Header("UI (панель звезды)")]
-        [SerializeField] private GalaxyMapStarInfoController starInfoPanel;
+        [SerializeField] private ObjectInfoController starInfoPanel;
         [SerializeField] private float doubleClickThreshold = 0.25f;
 
         private Collider _col;
@@ -33,7 +33,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             _col = GetComponent<Collider>();
             if (!cam) cam = Camera.main;
             if (!starInfoPanel)
-                starInfoPanel = FindFirstObjectByType<GalaxyMapStarInfoController>();
+                starInfoPanel = FindFirstObjectByType<ObjectInfoController>();
         }
 
         private void Update()

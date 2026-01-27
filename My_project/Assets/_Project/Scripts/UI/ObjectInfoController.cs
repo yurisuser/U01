@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 namespace _Project.Scripts.UI
 {
     /// <summary>Показывает информацию о выбранной звезде на галкарте.</summary>
-    public sealed class GalaxyMapStarInfoController : MonoBehaviour
+    public sealed class ObjectInfoController : MonoBehaviour
     {
         [SerializeField] private bool hideWhenEmpty = true;
         [Header("ObjectData Templates")]
@@ -124,6 +124,12 @@ namespace _Project.Scripts.UI
                 case ESelectedObjectType.Station:
                     if (TryFindStation(system, data.Uid, out var station))
                         _tabsController?.ApplyStationInfo(system, station);
+                    else
+                        ClearStarInfo();
+                    break;
+                case ESelectedObjectType.Ship:
+                    if (TryFindShip(system, data.Uid, out var ship))
+                        _tabsController?.ApplyShipInfo(system, ship);
                     else
                         ClearStarInfo();
                     break;
@@ -262,6 +268,38 @@ namespace _Project.Scripts.UI
             }
 
             station = default;
+            return false;
+        }
+
+        private static bool TryFindShip(in StarSys system, UID uid, out _Project.Scripts.Ships.Ship ship)
+        {
+            var runtime = system.State;
+            if (runtime != null)
+            {
+                var ships = runtime.Ships;
+                for (int i = 0; i < ships.Count; i++)
+                {
+                    var candidate = ships[i];
+                    if (candidate.Uid.Type == uid.Type && candidate.Uid.Id == uid.Id)
+                    {
+                        ship = candidate;
+                        return true;
+                    }
+                }
+
+                var snapshot = runtime.CurrShipSnapshots;
+                for (int i = 0; i < snapshot.Count; i++)
+                {
+                    var candidate = snapshot[i];
+                    if (candidate.Uid.Type == uid.Type && candidate.Uid.Id == uid.Id)
+                    {
+                        ship = candidate;
+                        return true;
+                    }
+                }
+            }
+
+            ship = default;
             return false;
         }
 

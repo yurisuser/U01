@@ -12,7 +12,7 @@ namespace _Project.Scripts.SystemMap
     public sealed class StarSystemMapClick : MonoBehaviour
     {
         [SerializeField] private Camera targetCamera;
-        [SerializeField] private GalaxyMapStarInfoController starInfoPanel;
+        [SerializeField] private ObjectInfoController starInfoPanel;
         [SerializeField] private bool logClick = false;
         private SelectableData _data;
 
@@ -21,7 +21,7 @@ namespace _Project.Scripts.SystemMap
             if (!targetCamera)
                 targetCamera = Camera.main;
             if (!starInfoPanel)
-                starInfoPanel = FindFirstObjectByType<GalaxyMapStarInfoController>();
+                starInfoPanel = FindFirstObjectByType<ObjectInfoController>();
             _data = GetComponent<SelectableData>();
         }
 

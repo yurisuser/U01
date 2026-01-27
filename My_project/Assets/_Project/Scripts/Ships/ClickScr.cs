@@ -3,6 +3,7 @@ using _Project.Items; // для ItemType
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Selection;
+using _Project.Scripts.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,12 +14,15 @@ namespace _Project.Scripts.Ships
     public sealed class ClickScr : MonoBehaviour
     {
         [SerializeField] private Camera targetCamera;
+        [SerializeField] private ObjectInfoController objectInfoPanel;
         private SelectableData _data;
 
         private void Awake()
         {
             if (!targetCamera)
                 targetCamera = Camera.main;
+            if (!objectInfoPanel)
+                objectInfoPanel = FindFirstObjectByType<ObjectInfoController>();
             _data = GetComponent<SelectableData>();
         }
 
@@ -52,6 +56,7 @@ namespace _Project.Scripts.Ships
         private void OnLeftClick()
         {
             Debug.Log("Клик ЛКМ по кораблю", this);
+            ShowInfo();
             SetSelected();
         }
 
@@ -71,6 +76,17 @@ namespace _Project.Scripts.Ships
             int systemIndex = _data.SystemIndex >= 0 ? _data.SystemIndex : GameBootstrap.GameState.SelectedSystemIndex;
             Debug.Log($"Данные выбора: SystemIndex={systemIndex}, UID={_data.Uid.Type}/{_data.Uid.Id}, Type={_data.SelectedType}", this);
             GameBootstrap.GameState.SelectedService.SetSelected(systemIndex, _data.Uid, _data.SelectedType);
+        }
+
+        private void ShowInfo()
+        {
+            if (_data == null || !_data.HasData)
+            {
+                objectInfoPanel?.ClearStarInfo();
+                return;
+            }
+
+            objectInfoPanel?.ShowObjectInfo(_data);
         }
 
         private void LogEquipment()

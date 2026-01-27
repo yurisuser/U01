@@ -28,7 +28,7 @@ namespace _Project.Scripts.UI
         private VisualElement _constellationsButton;
         private Label _constellationsLabel;
         private GameStateService _state;
-        private GalaxyMapStarInfoController _starInfoController;
+        private ObjectInfoController _starInfoController;
         private ObjectInfoTabsController _tabsController;
 
         private EventCallback<ClickEvent> _onClick;
@@ -172,7 +172,7 @@ namespace _Project.Scripts.UI
         private void RebindStarInfo()
         {
             if (_starInfoController == null)
-                _starInfoController = GetComponent<GalaxyMapStarInfoController>();
+                _starInfoController = GetComponent<ObjectInfoController>();
 
             if (_starInfoController != null)
                 _starInfoController.Rebind();
@@ -181,7 +181,7 @@ namespace _Project.Scripts.UI
         private void HideDefaultObjectData()
         {
             if (_starInfoController == null)
-                _starInfoController = GetComponent<GalaxyMapStarInfoController>();
+                _starInfoController = GetComponent<ObjectInfoController>();
 
             if (_starInfoController != null)
                 _starInfoController.ClearStarInfo();
