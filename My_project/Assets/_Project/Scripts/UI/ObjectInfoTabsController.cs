@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using _Project.DataAccess;
+using _Project.Scripts.Stations;
 using _Project.Scripts.Galaxy.Constellations;
 using _Project.Scripts.Galaxy.Data;
 using UnityEngine;
@@ -38,6 +39,10 @@ namespace _Project.Scripts.UI
         private string _starValueText = string.Empty;
         private string _systemParamText = string.Empty;
         private string _systemValueText = string.Empty;
+        private string _buyParamText = string.Empty;
+        private string _buyValueText = string.Empty;
+        private string _sellParamText = string.Empty;
+        private string _sellValueText = string.Empty;
         private string _activeTabText = string.Empty;
         private ObjectInfoTabScope _currentScope = ObjectInfoTabScope.GalaxyStar;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
@@ -434,6 +439,7 @@ namespace _Project.Scripts.UI
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
             BuildStationModulesInfo(station.Modules);
+            BuildStationOrdersInfo(station.Modules);
 
             UpdateParamPanels(GetActiveTabTextOrDefault());
         }
@@ -512,6 +518,141 @@ namespace _Project.Scripts.UI
 
             _systemParamText = paramList.ToString();
             _systemValueText = valueList.ToString();
+        }
+
+        private void BuildStationOrdersInfo(_Project.Scripts.Stations.StationModule[] modules)
+        {
+            var tradeState = FindTradeState(modules);
+            var cargoState = FindCargoState(modules);
+            if (tradeState == null || cargoState == null)
+            {
+                _buyParamText = "buy:";
+                _buyValueText = "none";
+                _sellParamText = "sell:";
+                _sellValueText = "none";
+                return;
+            }
+
+            BuildBuyOrdersList(tradeState.OrdersBuy, cargoState, out _buyParamText, out _buyValueText);
+            BuildSellOrdersList(tradeState.OrdersSell, cargoState, out _sellParamText, out _sellValueText);
+        }
+
+        private static TradeModuleState FindTradeState(_Project.Scripts.Stations.StationModule[] modules)
+        {
+            if (modules == null)
+                return null;
+
+            for (int i = 0; i < modules.Length; i++)
+            {
+                var module = modules[i];
+                if (module == null || module.Type != _Project.Scripts.Stations.EStationModuleType.Trade)
+                    continue;
+
+                return module.State as TradeModuleState;
+            }
+
+            return null;
+        }
+
+        private static CargoModuleState FindCargoState(_Project.Scripts.Stations.StationModule[] modules)
+        {
+            if (modules == null)
+                return null;
+
+            for (int i = 0; i < modules.Length; i++)
+            {
+                var module = modules[i];
+                if (module == null || module.Type != _Project.Scripts.Stations.EStationModuleType.Cargo)
+                    continue;
+
+                return module.State as CargoModuleState;
+            }
+
+            return null;
+        }
+
+        private static void BuildBuyOrdersList(
+            System.Collections.Generic.Dictionary<int, OrderBy> orders,
+            CargoModuleState cargoState,
+            out string paramText,
+            out string valueText)
+        {
+            if (orders == null || orders.Count == 0)
+            {
+                paramText = "buy:";
+                valueText = "none";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            foreach (var pair in orders)
+            {
+                var order = pair.Value;
+                var name = GetGoodsName(order.ItemId);
+                int stock = GetStock(cargoState, order.ItemId);
+                paramList.Append(name).Append('\n');
+                valueList.Append($"{FormatCompactInt(order.Price)} / {FormatCompactInt(stock)}").Append('\n');
+            }
+
+            paramText = paramList.ToString();
+            valueText = valueList.ToString();
+        }
+
+        private static void BuildSellOrdersList(
+            System.Collections.Generic.Dictionary<int, OrderSell> orders,
+            CargoModuleState cargoState,
+            out string paramText,
+            out string valueText)
+        {
+            if (orders == null || orders.Count == 0)
+            {
+                paramText = "sell:";
+                valueText = "none";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            foreach (var pair in orders)
+            {
+                var order = pair.Value;
+                var name = GetGoodsName(order.ItemId);
+                int stock = GetStock(cargoState, order.ItemId);
+                paramList.Append(name).Append('\n');
+                valueList.Append($"{FormatCompactInt(order.Price)} / {FormatCompactInt(stock)}").Append('\n');
+            }
+
+            paramText = paramList.ToString();
+            valueText = valueList.ToString();
+        }
+
+        private static string GetGoodsName(int itemId)
+        {
+            if (CATALOG.GoodsById != null && CATALOG.GoodsById.TryGetValue(itemId, out var goods))
+                return string.IsNullOrWhiteSpace(goods.DisplayName) ? goods.Key : goods.DisplayName;
+
+            return $"goods {itemId}";
+        }
+
+        private static int GetStock(CargoModuleState cargoState, int itemId)
+        {
+            if (cargoState != null && cargoState.Stock.TryGetValue(itemId, out var stock))
+                return stock;
+
+            return 0;
+        }
+
+        private static string FormatCompactInt(int value)
+        {
+            if (value >= 1_000_000)
+                return (value / 1_000_000f).ToString("0.00") + "м";
+            if (value >= 1000)
+                return (value / 1000f).ToString("0") + "к";
+
+            return value.ToString();
         }
 
         private void BuildShipEquipmentInfo(_Project.Scripts.Ships.InstalledEquip equipment)
@@ -646,6 +787,8 @@ namespace _Project.Scripts.UI
 
             bool showPrimary = active == "star" || active == "info";
             bool showSecondary = active == "system" || active == "resources";
+            bool showBuy = active == "buy" || active == "by";
+            bool showSell = active == "sell" || active == "sells";
 
             if (_paramValueBlock == null || _paramLabel == null || _valueLabel == null)
                 return;
@@ -661,6 +804,18 @@ namespace _Project.Scripts.UI
                 _paramValueBlock.style.display = DisplayStyle.Flex;
                 _paramLabel.text = _systemParamText;
                 _valueLabel.text = _systemValueText;
+            }
+            else if (showBuy)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _buyParamText;
+                _valueLabel.text = _buyValueText;
+            }
+            else if (showSell)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _sellParamText;
+                _valueLabel.text = _sellValueText;
             }
             else
             {

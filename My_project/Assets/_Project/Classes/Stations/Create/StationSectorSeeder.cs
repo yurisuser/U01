@@ -11,7 +11,7 @@ namespace _Project.Scripts.Stations
         {
             Key = "station_test",
             PrefabKey = "station_test",
-            DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock },
+            DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock, EStationModuleType.Trade },
             BaseHull = 100f,
             BasePower = 50f,
         };
@@ -31,6 +31,7 @@ namespace _Project.Scripts.Stations
             if (fraction.HomeSector <= 0)
                 return;
 
+            var rng = new System.Random();
             for (int i = 0; i < galaxy.Length; i++)
             {
                 ref var sys = ref galaxy[i];
@@ -56,9 +57,18 @@ namespace _Project.Scripts.Stations
                             Data = new DockModuleData { Slots = 2, DockingRange = StarSysemConstants.PlanetOrbitUnit * 0.1f, Anchors = null },
                             State = new DockModuleState()
                         }
+                        ,
+                        new StationModule
+                        {
+                            Type = EStationModuleType.Trade,
+                            Level = 1,
+                            Data = new TradeModuleData(),
+                            State = new TradeModuleState()
+                        }
                     };
                 }
 
+                StationTradeBootstrap.InitForStation(ref station, rng);
                 sys.Stations = new[] { station };
             }
         }
