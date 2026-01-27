@@ -18,6 +18,7 @@ namespace _Project.Scripts.UI
         [SerializeField] private VisualTreeAsset sysPlanetObjectData;
         [SerializeField] private VisualTreeAsset sysMoonObjectData;
         [SerializeField] private VisualTreeAsset sysShipObjectData;
+        [SerializeField] private VisualTreeAsset sysStationObjectData;
 
         private UIDocument _doc;
         private VisualElement _root;
@@ -120,6 +121,12 @@ namespace _Project.Scripts.UI
                     else
                         ClearStarInfo();
                     break;
+                case ESelectedObjectType.Station:
+                    if (TryFindStation(system, data.Uid, out var station))
+                        _tabsController?.ApplyStationInfo(system, station);
+                    else
+                        ClearStarInfo();
+                    break;
                 default:
                     ClearStarInfo();
                     return;
@@ -213,6 +220,8 @@ namespace _Project.Scripts.UI
                     return sysPlanetObjectData != null ? sysPlanetObjectData : sysMoonObjectData;
                 case ESelectedObjectType.Ship:
                     return sysShipObjectData;
+                case ESelectedObjectType.Station:
+                    return sysStationObjectData;
                 default:
                     return null;
             }
@@ -230,9 +239,30 @@ namespace _Project.Scripts.UI
                     return ObjectInfoTabsController.ObjectInfoTabScope.SysMoon;
                 case ESelectedObjectType.Ship:
                     return ObjectInfoTabsController.ObjectInfoTabScope.SysShip;
+                case ESelectedObjectType.Station:
+                    return ObjectInfoTabsController.ObjectInfoTabScope.SysStation;
                 default:
                     return ObjectInfoTabsController.ObjectInfoTabScope.SysStar;
             }
+        }
+
+        private static bool TryFindStation(in StarSys system, UID uid, out _Project.Scripts.Stations.Station station)
+        {
+            if (system.Stations != null)
+            {
+                for (int i = 0; i < system.Stations.Length; i++)
+                {
+                    if (system.Stations[i].Uid.Type == uid.Type &&
+                        system.Stations[i].Uid.Id == uid.Id)
+                    {
+                        station = system.Stations[i];
+                        return true;
+                    }
+                }
+            }
+
+            station = default;
+            return false;
         }
 
         private bool TryFindStarSys(UID starUid)

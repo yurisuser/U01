@@ -76,6 +76,7 @@ MonoBehaviour:
   sysPlanetObjectData: {fileID: 0}
   sysMoonObjectData: {fileID: 0}
   sysShipObjectData: {fileID: 0}
+  sysStationObjectData: {fileID: 0}
 --- !u!114 &2885361994970379119
 MonoBehaviour:
   m_ObjectHideFlags: 0

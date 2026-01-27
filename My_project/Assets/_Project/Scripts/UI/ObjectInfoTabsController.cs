@@ -17,7 +17,8 @@ namespace _Project.Scripts.UI
             SysStar,
             SysPlanet,
             SysMoon,
-            SysShip
+            SysShip,
+            SysStation
         }
 
         [SerializeField] private string tabsContainerName = "buttons";
@@ -386,6 +387,84 @@ namespace _Project.Scripts.UI
             _starValueText = valueList.ToString();
             BuildPlanetResourceInfo(moon.ResourceDeposits);
             UpdateParamPanels(GetActiveTabTextOrDefault());
+        }
+
+        public void ApplyStationInfo(in StarSys system, in _Project.Scripts.Stations.Station station)
+        {
+            if (_root == null && !TryResolveElements())
+                return;
+
+            if (_objectNameLabel == null || _paramLabel == null || _valueLabel == null)
+                TryResolveElements();
+
+            if (_objectNameLabel != null)
+            {
+                var stationName = string.IsNullOrWhiteSpace(station.TypeKey) ? "Unknown station" : station.TypeKey;
+                _objectNameLabel.text = stationName;
+            }
+
+            if (_upStringObjectNameLabel != null)
+            {
+                var systemName = string.IsNullOrWhiteSpace(system.Name) ? "Unknown system" : system.Name;
+                _upStringObjectNameLabel.text = systemName;
+            }
+
+            if (_paramLabel == null || _valueLabel == null)
+                return;
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("type key:").Append('\n');
+            valueList.Append(string.IsNullOrWhiteSpace(station.TypeKey) ? "no info" : station.TypeKey).Append('\n');
+
+            paramList.Append("owner:").Append('\n');
+            valueList.Append(string.IsNullOrWhiteSpace(station.Owner.Name) ? "no info" : station.Owner.Name).Append('\n');
+
+            paramList.Append("hull:").Append('\n');
+            valueList.Append(FormatFloat2(station.Hull, treatZeroAsMissing: false)).Append('\n');
+
+            paramList.Append("power:").Append('\n');
+            valueList.Append($"{FormatFloat2(station.PowerStored, treatZeroAsMissing: false)}/{FormatFloat2(station.PowerCapacity, treatZeroAsMissing: false)}").Append('\n');
+
+            int modulesCount = station.Modules != null ? station.Modules.Length : 0;
+            paramList.Append("modules:").Append('\n');
+            valueList.Append(modulesCount).Append('\n');
+
+            _starParamText = paramList.ToString();
+            _starValueText = valueList.ToString();
+            BuildStationModulesInfo(station.Modules);
+
+            UpdateParamPanels(GetActiveTabTextOrDefault());
+        }
+
+        private void BuildStationModulesInfo(_Project.Scripts.Stations.StationModule[] modules)
+        {
+            if (modules == null || modules.Length == 0)
+            {
+                _systemParamText = "modules:";
+                _systemValueText = "none";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            for (int i = 0; i < modules.Length; i++)
+            {
+                var module = modules[i];
+                paramList.Append("<b>").Append(module.Type).Append("</b>").Append('\n');
+                valueList.Append($"lvl {module.Level}").Append('\n');
+
+                if (i < modules.Length - 1)
+                {
+                    paramList.Append('\n');
+                    valueList.Append('\n');
+                }
+            }
+
+            _systemParamText = paramList.ToString();
+            _systemValueText = valueList.ToString();
         }
 
         private string GetActiveTabTextOrDefault()

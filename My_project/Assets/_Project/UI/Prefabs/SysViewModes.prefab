@@ -76,6 +76,7 @@ MonoBehaviour:
   sysPlanetObjectData: {fileID: 9197481963319205126, guid: 7cc9bb5f2537478a87b4b8300fb0d60c, type: 3}
   sysMoonObjectData: {fileID: 9197481963319205126, guid: cfb853e7d491406b89f6d6ae655b3d90, type: 3}
   sysShipObjectData: {fileID: 9197481963319205126, guid: 2f74380061df4172a5ef6b60bb13ad8c, type: 3}
+  sysStationObjectData: {fileID: 9197481963319205126, guid: 20dae985559b46a4a5861905194968e3, type: 3}
 --- !u!114 &2885361994970379119
 MonoBehaviour:
   m_ObjectHideFlags: 0
