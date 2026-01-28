@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using _Project.Items;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
+using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Simulation.Ships;
 using UnityEngine;                      // для Vector3, Quaternion
 
@@ -23,6 +24,7 @@ namespace _Project.Scripts.Ships
         public bool IsActive;             // активен ли корабль в мире
         public InstalledEquip Equipment;  // установленное оборудование корабля
         public ShipTaskState TaskState;   // задачи корабля
+        public ShipAction CurrentAction;  // текущее действие (стыковка/торговля и т.д.)
         public int CargoCapacity;         // вместимость трюма
         public List<ItemStack> CargoList; // содержимое трюма
 
@@ -63,6 +65,7 @@ namespace _Project.Scripts.Ships
             PrefabKey = prefabKey;
             Equipment = default;          // инициализация позже
             TaskState = ShipTaskState.Default;
+            CurrentAction = default;
             CargoCapacity = cargo;
             CargoList = new List<ItemStack>();
         }
