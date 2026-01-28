@@ -70,7 +70,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 ship.CurrentSpeed = 0f;
                 ship.CurrentAction = default;
                 ship.LastActionFailReason = EShipActionFailReason.None;
-                ship.TaskState = ShipTaskState.Default;
+                ship.TaskState = ShipTaskStack.Default;
                 ship.Position = station.Position;
 
                 if (!dockState.Occupied.Contains(ship.Uid))
@@ -106,7 +106,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                     ship.CurrentSpeed = 0f;
                     ship.CurrentAction = default;
                     ship.LastActionFailReason = EShipActionFailReason.None;
-                    ship.TaskState = ShipTaskState.Default;
+                    ship.TaskState = ShipTaskStack.Default;
                     ship.Position = station.Position;
 
                     docked.RemoveAt(i);

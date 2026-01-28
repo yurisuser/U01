@@ -23,7 +23,7 @@ namespace _Project.Scripts.Ships
         public float CurrentSpeed;        // текущая скорость (ед/сек)
         public bool IsActive;             // активен ли корабль в мире
         public InstalledEquip Equipment;  // установленное оборудование корабля
-        public ShipTaskState TaskState;   // задачи корабля
+        public ShipTaskStack TaskState;   // задачи корабля
         public ShipAction CurrentAction;  // текущее действие (стыковка/торговля и т.д.)
         public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
         public int CargoCapacity;         // вместимость трюма
@@ -65,7 +65,7 @@ namespace _Project.Scripts.Ships
             PrefabSize = prefabSize;
             PrefabKey = prefabKey;
             Equipment = default;          // инициализация позже
-            TaskState = ShipTaskState.Default;
+            TaskState = ShipTaskStack.Default;
             CurrentAction = default;
             LastActionFailReason = EShipActionFailReason.None;
             CargoCapacity = cargo;

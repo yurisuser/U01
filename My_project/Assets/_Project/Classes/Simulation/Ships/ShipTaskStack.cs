@@ -2,11 +2,11 @@ using System.Collections.Generic;
 
 namespace _Project.Scripts.Simulation.Ships
 {
-    public struct ShipTaskState
+    public struct ShipTaskStack
     {
         private Stack<ShipTask> _tasks;
 
-        public static ShipTaskState Default => new ShipTaskState
+        public static ShipTaskStack Default => new ShipTaskStack
         {
             _tasks = new Stack<ShipTask>(4),
         };
