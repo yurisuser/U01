@@ -30,6 +30,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return;
 
             ProcessDockActions(ref system);
+            ProcessUndockActions(ref system);
+            ProcessTradeActions(ref system);
             galaxy[index] = system;
         }
 
@@ -76,6 +78,68 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 dockState.DockedShips.Add(ship);
 
                 ships.RemoveAt(i);
+            }
+        }
+
+        private static void ProcessUndockActions(ref StarSys system)
+        {
+            var runtime = system.State;
+            if (runtime == null)
+                return;
+
+            var ships = runtime.Ships;
+            var stations = system.Stations;
+
+            for (int s = 0; s < stations.Length; s++)
+            {
+                var station = stations[s];
+                if (!TryGetDockState(in station, out var dockState))
+                    continue;
+
+                var docked = dockState.DockedShips;
+                for (int i = docked.Count - 1; i >= 0; i--)
+                {
+                    var ship = docked[i];
+                    if (ship.CurrentAction.Type != EShipActionType.Undock)
+                        continue;
+
+                    ship.CurrentSpeed = 0f;
+                    ship.CurrentAction = default;
+                    ship.LastActionFailReason = EShipActionFailReason.None;
+                    ship.TaskState = ShipTaskState.Default;
+                    ship.Position = station.Position;
+
+                    docked.RemoveAt(i);
+                    dockState.Occupied.Remove(ship.Uid);
+                    ships.Add(ship);
+                }
+            }
+        }
+
+        private static void ProcessTradeActions(ref StarSys system)
+        {
+            var stations = system.Stations;
+            if (stations == null || stations.Length == 0)
+                return;
+
+            for (int s = 0; s < stations.Length; s++)
+            {
+                var station = stations[s];
+                if (!TryGetDockState(in station, out var dockState))
+                    continue;
+
+                var docked = dockState.DockedShips;
+                for (int i = 0; i < docked.Count; i++)
+                {
+                    var ship = docked[i];
+                    if (ship.CurrentAction.Type != EShipActionType.TradeBuy &&
+                        ship.CurrentAction.Type != EShipActionType.TradeSell)
+                        continue;
+
+                    ship.CurrentAction = default;
+                    ship.LastActionFailReason = EShipActionFailReason.None;
+                    docked[i] = ship;
+                }
             }
         }
 
