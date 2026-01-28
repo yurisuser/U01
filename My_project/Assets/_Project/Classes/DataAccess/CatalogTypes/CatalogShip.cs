@@ -13,7 +13,8 @@ namespace _Project.DataAccess
             float acceleration,
             float prefabSize,
             string prefabName,
-            byte weaponSlots)
+            byte weaponSlots,
+            int cargo)
         {
             Id = id;
             Key = key;
@@ -26,6 +27,7 @@ namespace _Project.DataAccess
             PrefabSize = prefabSize;
             PrefabName = prefabName;
             WeaponSlots = weaponSlots;
+            Cargo = cargo;
         }
 
         public int Id { get; }
@@ -39,5 +41,6 @@ namespace _Project.DataAccess
         public float PrefabSize { get; }
         public string PrefabName { get; }
         public byte WeaponSlots { get; }
+        public int Cargo { get; }
     }
 }

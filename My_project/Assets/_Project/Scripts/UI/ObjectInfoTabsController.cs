@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using _Project.DataAccess;
+using _Project.Items;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Galaxy.Constellations;
 using _Project.Scripts.Galaxy.Data;
@@ -43,6 +44,8 @@ namespace _Project.Scripts.UI
         private string _buyValueText = string.Empty;
         private string _sellParamText = string.Empty;
         private string _sellValueText = string.Empty;
+        private string _cargoParamText = string.Empty;
+        private string _cargoValueText = string.Empty;
         private string _activeTabText = string.Empty;
         private ObjectInfoTabScope _currentScope = ObjectInfoTabScope.GalaxyStar;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
@@ -484,9 +487,13 @@ namespace _Project.Scripts.UI
             paramList.Append("agility:").Append('\n');
             valueList.Append(FormatFloat2(ship.Stats.Agility, treatZeroAsMissing: false)).Append('\n');
 
+            paramList.Append("cargo:").Append('\n');
+            valueList.Append(FormatCompactInt(ship.CargoCapacity)).Append('\n');
+
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
             BuildShipEquipmentInfo(ship.Equipment);
+            BuildShipCargoInfo(ship);
 
             UpdateParamPanels(GetActiveTabTextOrDefault());
         }
@@ -690,6 +697,38 @@ namespace _Project.Scripts.UI
             _systemValueText = valueList.ToString();
         }
 
+        private void BuildShipCargoInfo(in _Project.Scripts.Ships.Ship ship)
+        {
+            if (ship.CargoList == null || ship.CargoList.Count == 0)
+            {
+                _cargoParamText = "cargo:";
+                _cargoValueText = "empty";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            for (int i = 0; i < ship.CargoList.Count; i++)
+            {
+                var stack = ship.CargoList[i];
+                var name = GetItemName(in stack);
+                paramList.Append(name).Append('\n');
+                valueList.Append(FormatCompactInt(stack.Quantity)).Append('\n');
+            }
+
+            _cargoParamText = paramList.ToString();
+            _cargoValueText = valueList.ToString();
+        }
+
+        private static string GetItemName(in ItemStack stack)
+        {
+            if (ItemCatalogService.TryGetInfo(stack.Type, stack.Id, out var info))
+                return string.IsNullOrWhiteSpace(info.DisplayName) ? info.Key : info.DisplayName;
+
+            return $"item {stack.Id}";
+        }
+
         private string GetActiveTabTextOrDefault()
         {
             if (!string.IsNullOrWhiteSpace(_activeTabText))
@@ -786,9 +825,10 @@ namespace _Project.Scripts.UI
                 : activeLabelText.ToLowerInvariant();
 
             bool showPrimary = active == "star" || active == "info";
-            bool showSecondary = active == "system" || active == "resources";
+            bool showSecondary = active == "system" || active == "resources" || active == "equip";
             bool showBuy = active == "buy" || active == "by";
             bool showSell = active == "sell" || active == "sells";
+            bool showCargo = active == "cargo";
 
             if (_paramValueBlock == null || _paramLabel == null || _valueLabel == null)
                 return;
@@ -816,6 +856,12 @@ namespace _Project.Scripts.UI
                 _paramValueBlock.style.display = DisplayStyle.Flex;
                 _paramLabel.text = _sellParamText;
                 _valueLabel.text = _sellValueText;
+            }
+            else if (showCargo)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _cargoParamText;
+                _valueLabel.text = _cargoValueText;
             }
             else
             {

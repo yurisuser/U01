@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using _Project.Items;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
 using _Project.Scripts.Simulation.Ships;
 using UnityEngine;                      // для Vector3, Quaternion
@@ -21,6 +23,8 @@ namespace _Project.Scripts.Ships
         public bool IsActive;             // активен ли корабль в мире
         public InstalledEquip Equipment;  // установленное оборудование корабля
         public ShipTaskState TaskState;   // задачи корабля
+        public int CargoCapacity;         // вместимость трюма
+        public List<ItemStack> CargoList; // содержимое трюма
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
@@ -36,7 +40,8 @@ namespace _Project.Scripts.Ships
             bool isActive,                // активность
             float acceleration,           // ускорение/торможение
             float prefabSize,             // масштаб префаба
-            string prefabKey              // ключ префаба
+            string prefabKey,             // ключ префаба
+            int cargo                    // вместимость трюма
         )
         {
             Uid = uid;                    // присваиваем уникальный ID
@@ -58,6 +63,8 @@ namespace _Project.Scripts.Ships
             PrefabKey = prefabKey;
             Equipment = default;          // инициализация позже
             TaskState = ShipTaskState.Default;
+            CargoCapacity = cargo;
+            CargoList = new List<ItemStack>();
         }
     }
 }
