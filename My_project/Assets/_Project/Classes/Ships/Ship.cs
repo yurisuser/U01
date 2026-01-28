@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using _Project.Items;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
 using _Project.Scripts.Ships.Actions;
+using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation.Ships;
 using UnityEngine;                      // для Vector3, Quaternion
 
@@ -26,6 +27,7 @@ namespace _Project.Scripts.Ships
         public ShipTaskStack TaskState;   // задачи корабля
         public ShipAction CurrentAction;  // текущее действие (стыковка/торговля и т.д.)
         public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
+        public TopShipOrder TopOrder;     // верхний приказ
         public int CargoCapacity;         // вместимость трюма
         public List<ItemStack> CargoList; // содержимое трюма
 
@@ -68,6 +70,7 @@ namespace _Project.Scripts.Ships
             TaskState = ShipTaskStack.Default;
             CurrentAction = default;
             LastActionFailReason = EShipActionFailReason.None;
+            TopOrder = default;
             CargoCapacity = cargo;
             CargoList = new List<ItemStack>();
         }
