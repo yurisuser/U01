@@ -25,6 +25,7 @@ namespace _Project.Scripts.Ships
         public InstalledEquip Equipment;  // установленное оборудование корабля
         public ShipTaskState TaskState;   // задачи корабля
         public ShipAction CurrentAction;  // текущее действие (стыковка/торговля и т.д.)
+        public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
         public int CargoCapacity;         // вместимость трюма
         public List<ItemStack> CargoList; // содержимое трюма
 
@@ -66,6 +67,7 @@ namespace _Project.Scripts.Ships
             Equipment = default;          // инициализация позже
             TaskState = ShipTaskState.Default;
             CurrentAction = default;
+            LastActionFailReason = EShipActionFailReason.None;
             CargoCapacity = cargo;
             CargoList = new List<ItemStack>();
         }
