@@ -21,7 +21,21 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                ShipTaskPlanner.EnsurePatrolTask(ref ship, patrolRadius);
+                if (ship.TopOrder.IsEmpty)
+                {
+                    ship.TopOrder = new _Project.Scripts.Ships.Orders.TopShipOrder
+                    {
+                        Type = _Project.Scripts.Ships.Orders.ETopShipOrderType.Patrol,
+                        Params = new _Project.Scripts.Ships.Orders.TopShipOrderParams
+                        {
+                            Center = Vector3.zero,
+                            Radius = patrolRadius,
+                            SystemIndex = context.GameState != null ? context.GameState.SelectedSystemIndex : -1
+                        }
+                    };
+                }
+
+                ShipTaskPlanner.EnsurePatrolTask(ref ship);
                 ships[i] = ship;
             }
         }
