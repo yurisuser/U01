@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "name": "Player",
+  "bio": "",
+  "politic": "",
+  "color": "#00FF00",
+  "homeSector": 0,
+  "homeConstellationId": 0,
+  "symbol": "P",
+  "description": "",
+  "fractionType": "Player"
+}

@@ -22,6 +22,7 @@ namespace _Project.DataAccess
 
             var list = new List<CatalogFraction>();
             var seenIds = new HashSet<int>();
+            var hasPlayerFolder = false;
 
             foreach (var file in Directory.EnumerateFiles(root, "fraction.json", SearchOption.AllDirectories))
             {
@@ -34,6 +35,20 @@ namespace _Project.DataAccess
                     throw new InvalidOperationException($"Дублирующийся id фракции {dto.id} в файле {file}");
 
                 var dir = Path.GetDirectoryName(file);
+                var dirName = Path.GetFileName(dir);
+                if (string.Equals(dirName, "Player", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (hasPlayerFolder)
+                        throw new InvalidOperationException($"Дублирующийся каталог Player для фракции игрока: {file}");
+
+                    if (dto.id != 1)
+                        throw new InvalidOperationException($"Фракция игрока должна иметь id=1 (Player/fraction.json), найдено {dto.id}: {file}");
+
+                    if (!string.Equals(dto.name, "Player", StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException($"Фракция игрока должна иметь name=Player, найдено '{dto.name}': {file}");
+
+                    hasPlayerFolder = true;
+                }
                 var starNames = ReadNames(dir, "stars");
                 var planetNames = ReadNames(dir, "planet");
                 var moonNames = ReadNames(dir, "moon");
@@ -55,6 +70,9 @@ namespace _Project.DataAccess
                     moonNames,
                     dir));
             }
+
+            if (!hasPlayerFolder)
+                throw new InvalidOperationException("Фракция игрока не найдена: ожидается каталог Player/fraction.json");
 
             if (list.Count == 0)
                 throw new InvalidOperationException("Не найдено ни одного fraction.json");
