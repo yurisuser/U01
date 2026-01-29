@@ -1,9 +1,26 @@
 namespace _Project.DataAccess
 {
-    /// <summary>Единица каталога ресурсов/товаров (SKU).</summary>
-    public readonly struct CatalogSku
+    /// <summary>Единица каталога предметов (items).</summary>
+    public readonly struct CatalogItem
     {
-        public CatalogSku(int id, string name, string description, string img, float price, bool isMineable, bool isIndustrial, bool isConsumable, bool isLootOnly, float peakOrbit, float orbitSpread, float metallicityFactor, float peakOrbitNorm, float orbitSpreadNorm)
+        public CatalogItem(
+            int id,
+            string name,
+            string description,
+            string img,
+            float price,
+            bool isMineable,
+            bool isIndustrial,
+            bool isConsumable,
+            bool isLootOnly,
+            float peakOrbit,
+            float orbitSpread,
+            float metallicityFactor,
+            float peakOrbitNorm,
+            float orbitSpreadNorm,
+            float weight,
+            bool stackable,
+            int maxStack)
         {
             Id = id;
             Name = name;
@@ -19,6 +36,9 @@ namespace _Project.DataAccess
             MetallicityFactor = metallicityFactor;
             PeakOrbitNorm = peakOrbitNorm;
             OrbitSpreadNorm = orbitSpreadNorm;
+            Weight = weight;
+            Stackable = stackable;
+            MaxStack = maxStack;
         }
 
         public int Id { get; }
@@ -35,5 +55,8 @@ namespace _Project.DataAccess
         public float MetallicityFactor { get; }
         public float PeakOrbitNorm { get; }
         public float OrbitSpreadNorm { get; }
+        public float Weight { get; }
+        public bool Stackable { get; }
+        public int MaxStack { get; }
     }
 }

@@ -17,29 +17,20 @@ namespace _Project.DataAccess
                         return true;
                     }
                     break;
-                case ItemType.Goods:
-                    if (CATALOG.GoodsById != null && CATALOG.GoodsById.TryGetValue(id, out var goods))
+                case ItemType.Item:
+                    if (CATALOG.ItemsById != null && CATALOG.ItemsById.TryGetValue(id, out var item))
                     {
+                        var key = string.IsNullOrWhiteSpace(item.Name) ? $"item_{item.Id}" : item.Name;
+                        var displayName = string.IsNullOrWhiteSpace(item.Name) ? $"item {item.Id}" : item.Name;
                         info = new CatalogItemInfo(
-                            goods.Id, goods.Key, goods.DisplayName, goods.Description,
-                            goods.Price, goods.Weight, goods.Stackable, goods.MaxStack);
-                        return true;
-                    }
-                    break;
-                case ItemType.Sku:
-                    if (CATALOG.SkuById != null && CATALOG.SkuById.TryGetValue(id, out var sku))
-                    {
-                        var key = string.IsNullOrWhiteSpace(sku.Name) ? $"sku_{sku.Id}" : sku.Name;
-                        var displayName = string.IsNullOrWhiteSpace(sku.Name) ? $"sku {sku.Id}" : sku.Name;
-                        info = new CatalogItemInfo(
-                            sku.Id,
+                            item.Id,
                             key,
                             displayName,
-                            sku.Description,
-                            (int)sku.Price,
-                            1f,
-                            true,
-                            100000);
+                            item.Description,
+                            (int)item.Price,
+                            item.Weight,
+                            item.Stackable,
+                            item.MaxStack);
                         return true;
                     }
                     break;

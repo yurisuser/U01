@@ -3,8 +3,8 @@
 Назначение: единые правила чтения профильных таблиц БД и выдачи данных в код.
 
 ## Базовая идея
-- Общей таблицы `items` нет.
-- Каждый тип хранится в своей таблице (eq-weapons/goods/quest/eq-engines/eq-scanners/eq-shields).
+- Общая таблица `items` есть и используется для всех торговых предметов.
+- Остальные типы хранятся в своих таблицах (eq-weapons/quest/eq-engines/eq-scanners/eq-shields).
 - Ридеры используются только CATALOG, наружу не торчат.
 - Оркестратор даёт базовую карточку предмета по `ItemType + Id`.
 - Источник истины: SQLite через `GameDatabaseLite` + ридеры. Других кешей/фасадов не плодим.
@@ -15,7 +15,7 @@
 ## Ридеры
 - Папка: `Assets/_Project/Classes/DataAccess/Readers`
 - `WeaponCatalogReader`
-- `GoodsCatalogReader`
+- `ItemCatalogReader`
 - `QuestCatalogReader`
 - `EngineCatalogReader`
 - `ScannerCatalogReader`
@@ -38,9 +38,10 @@
 - Для спец‑данных использовать профильные ридеры напрямую.
 - `ShipCatalogReader` используется для создания кораблей и берёт данные из таблицы `ships`.
 
-## Базовые поля таблиц предметов
-- `id`, `key`, `display_name`, `description`
+## Базовые поля таблицы items
+- `id`, `name`, `description`, `img`
 - `price`, `weight`, `stackable`, `max_stack`
+- флаги: `isMineable`, `isIndustrial`, `isConsumable`, `isLootOnly`
 - `stackable` хранится как 0/1 (BOOLEAN в SQLite).
 
 ## Спец‑поля

@@ -67,7 +67,7 @@ namespace _Project.Scripts.Trade.Services
             return Max(0, ship.CargoCapacity - used);
         }
 
-        private static int GetCargoAmount(in Ship ship, TypeTradeItem type, int itemId)
+        private static int GetCargoAmount(in Ship ship, ItemType type, int itemId)
         {
             var list = ship.CargoList;
             if (list == null)
@@ -75,58 +75,51 @@ namespace _Project.Scripts.Trade.Services
 
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i].Type == ConvertType(type) && list[i].Id == itemId)
+                if (list[i].Type == type && list[i].Id == itemId)
                     return list[i].Quantity;
             }
 
             return 0;
         }
 
-        private static void AddToCargo(ref Ship ship, TypeTradeItem type, int itemId, int amount)
+        private static void AddToCargo(ref Ship ship, ItemType type, int itemId, int amount)
         {
             if (ship.CargoList == null)
                 ship.CargoList = new System.Collections.Generic.List<ItemStack>();
 
             var list = ship.CargoList;
-            var itemType = ConvertType(type);
 
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i].Type == itemType && list[i].Id == itemId)
+                if (list[i].Type == type && list[i].Id == itemId)
                 {
-                    list[i] = new ItemStack(itemType, itemId, list[i].Quantity + amount);
+                    list[i] = new ItemStack(type, itemId, list[i].Quantity + amount);
                     return;
                 }
             }
 
-            list.Add(new ItemStack(itemType, itemId, amount));
+            list.Add(new ItemStack(type, itemId, amount));
         }
 
-        private static void RemoveFromCargo(ref Ship ship, TypeTradeItem type, int itemId, int amount)
+        private static void RemoveFromCargo(ref Ship ship, ItemType type, int itemId, int amount)
         {
             var list = ship.CargoList;
             if (list == null)
                 return;
 
-            var itemType = ConvertType(type);
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i].Type != itemType || list[i].Id != itemId)
+                if (list[i].Type != type || list[i].Id != itemId)
                     continue;
 
                 int left = list[i].Quantity - amount;
                 if (left <= 0)
                     list.RemoveAt(i);
                 else
-                    list[i] = new ItemStack(itemType, itemId, left);
+                    list[i] = new ItemStack(type, itemId, left);
 
                 return;
             }
-        }
-
-        private static ItemType ConvertType(TypeTradeItem type)
-        {
-            return type == TypeTradeItem.Goods ? ItemType.Goods : ItemType.Sku;
         }
 
         private static int Min(int a, int b, int c)

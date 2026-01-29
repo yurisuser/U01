@@ -15,9 +15,8 @@ namespace _Project.DataAccess
         private const string RelativePath = "Data/game.db";
         private const string SqliteHeader = "SQLite format 3\0";
         private static string _fullPath;
-        private static IReadOnlyList<CatalogSku> _sku;
+        private static IReadOnlyList<CatalogItem> _items;
         private static IReadOnlyList<CatalogWeapon> _weapons;
-        private static IReadOnlyList<CatalogGoods> _goods;
         private static IReadOnlyList<CatalogQuest> _quest;
         private static IReadOnlyList<CatalogEngine> _engines;
         private static IReadOnlyList<CatalogScanner> _scanners;
@@ -26,15 +25,15 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogFraction> _fractions;
         private static IReadOnlyList<CatalogConstellationName> _constellationNames;
 
-        /// <summary>Возвращает список SKU из базы (с кешированием).</summary>
-        public static IReadOnlyList<CatalogSku> GetSku(bool forceReload = false)
+        /// <summary>Возвращает список items из базы (с кешированием).</summary>
+        public static IReadOnlyList<CatalogItem> GetItems(bool forceReload = false)
         {
-            if (!forceReload && _sku != null) return _sku;
+            if (!forceReload && _items != null) return _items;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peak_orbit, orbit_spread, metallicity_factor, peak_orbit_norm, orbit_spread_norm FROM sku ORDER BY id";
+            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peak_orbit, orbit_spread, metallicity_factor, peak_orbit_norm, orbit_spread_norm, weight, stackable, max_stack FROM items ORDER BY id";
 
-            var list = new List<CatalogSku>();
+            var list = new List<CatalogItem>();
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
@@ -47,7 +46,7 @@ namespace _Project.DataAccess
                     var isMineable = reader.GetInt32(5) != 0;
                     var isIndustrial = reader.GetInt32(6) != 0;
                     if (isMineable && isIndustrial)
-                        throw new InvalidOperationException($"SKU #{id} \"{name}\" помечен и как добываемый, и как промышленный. Флаги должны быть взаимоисключающими.");
+                        throw new InvalidOperationException($"Item #{id} \"{name}\" помечен и как добываемый, и как промышленный. Флаги должны быть взаимоисключающими.");
                     var isConsumable = reader.GetInt32(7) != 0;
                     var isLootOnly = reader.GetInt32(8) != 0;
                     var peakOrbit = (float)reader.GetDouble(9);
@@ -55,11 +54,18 @@ namespace _Project.DataAccess
                     var metallicityFactor = (float)reader.GetDouble(11);
                     var peakOrbitNorm = reader.IsDBNull(12) ? 0f : (float)reader.GetDouble(12);
                     var orbitSpreadNorm = reader.IsDBNull(13) ? 0f : (float)reader.GetDouble(13);
-                    list.Add(new CatalogSku(id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peakOrbit, orbitSpread, metallicityFactor, peakOrbitNorm, orbitSpreadNorm));
+                    var weight = (float)reader.GetDouble(14);
+                    var stackable = reader.GetInt32(15) != 0;
+                    var maxStack = reader.GetInt32(16);
+                    list.Add(new CatalogItem(
+                        id, name, description, img, price,
+                        isMineable, isIndustrial, isConsumable, isLootOnly,
+                        peakOrbit, orbitSpread, metallicityFactor, peakOrbitNorm, orbitSpreadNorm,
+                        weight, stackable, maxStack));
                 }
             }
 
-            _sku = list;
+            _items = list;
             return list;
         }
 
@@ -98,34 +104,6 @@ namespace _Project.DataAccess
             return list;
         }
 
-        /// <summary>Возвращает список товаров из базы (с кешированием).</summary>
-        public static IReadOnlyList<CatalogGoods> GetGoods(bool forceReload = false)
-        {
-            if (!forceReload && _goods != null) return _goods;
-            using var conn = OpenConnection();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, price, weight, stackable, max_stack FROM goods ORDER BY id";
-
-            var list = new List<CatalogGoods>();
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    var id = reader.GetInt32(0);
-                    var key = reader.GetString(1);
-                    var displayName = reader.GetString(2);
-                    var description = reader.GetString(3);
-                    var price = reader.GetInt32(4);
-                    var weight = (float)reader.GetDouble(5);
-                    var stackable = reader.GetInt32(6) != 0;
-                    var maxStack = reader.GetInt32(7);
-                    list.Add(new CatalogGoods(id, key, displayName, description, price, weight, stackable, maxStack));
-                }
-            }
-
-            _goods = list;
-            return list;
-        }
 
         /// <summary>Возвращает список квестовых предметов из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogQuest> GetQuest(bool forceReload = false)
@@ -398,9 +376,9 @@ namespace _Project.DataAccess
             CreateSchema(connection);
             EnsureShipColumns(connection);
             EnsureWeaponsSchema(connection);
-            EnsureLegacyItemsRemoval(connection);
+            EnsureItemsTableRenamed(connection);
             EnsureEquipmentColumns(connection);
-            EnsureSkuColumns(connection);
+            EnsureItemColumns(connection);
             SeedDefaults(connection);
         }
 
@@ -478,16 +456,6 @@ CREATE TABLE IF NOT EXISTS ""eq-weapons"" (
     damage REAL NOT NULL,
     rate_per_second REAL NOT NULL,
     range REAL NOT NULL
-);
-CREATE TABLE IF NOT EXISTS goods (
-    id INTEGER PRIMARY KEY,
-    key TEXT NOT NULL UNIQUE,
-    display_name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    price INTEGER NOT NULL DEFAULT 0,
-    weight REAL NOT NULL DEFAULT 1,
-    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
-    max_stack INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS quest (
     id INTEGER PRIMARY KEY,
@@ -575,7 +543,7 @@ CREATE TABLE IF NOT EXISTS a_contellations_names (
     id INTEGER PRIMARY KEY,
     text TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS sku (
+CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
@@ -589,7 +557,10 @@ CREATE TABLE IF NOT EXISTS sku (
     orbit_spread REAL NOT NULL DEFAULT 0,
     metallicity_factor REAL NOT NULL DEFAULT 1,
     peak_orbit_norm REAL NOT NULL DEFAULT 0,
-    orbit_spread_norm REAL NOT NULL DEFAULT 0
+    orbit_spread_norm REAL NOT NULL DEFAULT 0,
+    weight REAL NOT NULL DEFAULT 1,
+    stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
+    max_stack INTEGER NOT NULL DEFAULT 1
 );
 ";
             cmd.ExecuteNonQuery();
@@ -650,17 +621,9 @@ CREATE TABLE IF NOT EXISTS sku (
             }
         }
 
-        private static void EnsureLegacyItemsRemoval(IDbConnection connection)
+        private static void EnsureItemsTableRenamed(IDbConnection connection)
         {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='items'";
-            using var reader = cmd.ExecuteReader();
-            if (!reader.Read())
-                return;
-
-            reader.Close();
-            cmd.CommandText = "DROP TABLE IF EXISTS items";
-            cmd.ExecuteNonQuery();
+            RenameTableIfNeeded(connection, "sku", "items");
         }
 
         private static void EnsureWeaponsSchema(IDbConnection connection)
@@ -863,16 +826,19 @@ FROM f_fractions;";
             tx.Commit();
         }
 
-        private static void EnsureSkuColumns(IDbConnection connection)
+        private static void EnsureItemColumns(IDbConnection connection)
         {
-            EnsureColumns(connection, "sku", new[]
+            EnsureColumns(connection, "items", new[]
             {
                 ("peak_orbit", "REAL NOT NULL DEFAULT 0"),
                 ("orbit_spread", "REAL NOT NULL DEFAULT 0"),
                 ("metallicity_factor", "REAL NOT NULL DEFAULT 1"),
                 ("peak_orbit_norm", "REAL NOT NULL DEFAULT 0"),
                 ("orbit_spread_norm", "REAL NOT NULL DEFAULT 0"),
-                ("isLootOnly", "INTEGER NOT NULL DEFAULT 0 CHECK (isLootOnly IN (0,1))")
+                ("isLootOnly", "INTEGER NOT NULL DEFAULT 0 CHECK (isLootOnly IN (0,1))"),
+                ("weight", "REAL NOT NULL DEFAULT 1"),
+                ("stackable", "BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1))"),
+                ("max_stack", "INTEGER NOT NULL DEFAULT 1")
             });
         }
 
@@ -907,9 +873,6 @@ FROM f_fractions;";
 INSERT OR IGNORE INTO ""eq-weapons"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, damage, rate_per_second, range) VALUES
     (1, 'laser_basic', 'Базовый лазер', 'Старый образец корабельного лазера.', 100, 1, 0, 1, 1, 5, 2, 12.0, 1.5, 50.0),
     (2, 'railgun_mk1', 'Рельсотрон MK1', 'Пробивает броню, но стреляет медленно.', 300, 1, 0, 1, 2, 8, 3, 35.0, 0.5, 120.0);
-
-INSERT OR IGNORE INTO goods (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
-    (1, 'test_goods', 'Тестовый товар', 'Тестовый груз для проверки.', 10, 1, 1, 50);
 
 INSERT OR IGNORE INTO quest (id, key, display_name, description, price, weight, stackable, max_stack) VALUES
     (1, 'test_quest', 'Тестовый квестовый предмет', 'Квестовый предмет для проверки.', 0, 0.5, 1, 10);

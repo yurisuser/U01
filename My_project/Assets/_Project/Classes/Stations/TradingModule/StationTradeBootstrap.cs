@@ -25,16 +25,16 @@ namespace _Project.Scripts.Stations
             if (tradeModule?.State is not TradeModuleState tradeState)
                 return;
 
-            var goods = CATALOG.Goods;
-            if (goods == null || goods.Count == 0)
+            var items = CATALOG.Items;
+            if (items == null || items.Count == 0)
                 return;
 
-            var ids = new List<int>(goods.Count);
-            for (int i = 0; i < goods.Count; i++)
+            var ids = new List<int>(items.Count);
+            for (int i = 0; i < items.Count; i++)
             {
-                var g = goods[i];
-                if (g.Id > 0)
-                    ids.Add(g.Id);
+                var item = items[i];
+                if (item.Id > 0)
+                    ids.Add(item.Id);
             }
 
             if (ids.Count == 0)
@@ -55,7 +55,7 @@ namespace _Project.Scripts.Stations
 
         private static void AddBuyOrder(int itemId, CargoModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
-            int limit = TradeLimits.GetMaxAmount(TypeTradeItem.Goods, itemId);
+            int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
             if (limit <= 0)
                 return;
 
@@ -69,7 +69,7 @@ namespace _Project.Scripts.Stations
 
             tradeState.OrdersBuy[itemId] = new OrderBy
             {
-                Type = TypeTradeItem.Goods,
+                Type = _Project.Items.ItemType.Item,
                 ItemId = itemId,
                 Price = price,
                 Amount = amount
@@ -78,7 +78,7 @@ namespace _Project.Scripts.Stations
 
         private static void AddSellOrder(int itemId, CargoModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
-            int limit = TradeLimits.GetMaxAmount(TypeTradeItem.Goods, itemId);
+            int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
             if (limit <= 0)
                 return;
 
@@ -92,7 +92,7 @@ namespace _Project.Scripts.Stations
 
             tradeState.OrdersSell[itemId] = new OrderSell
             {
-                Type = TypeTradeItem.Goods,
+                Type = _Project.Items.ItemType.Item,
                 ItemId = itemId,
                 Price = price,
                 Amount = amount
@@ -101,10 +101,10 @@ namespace _Project.Scripts.Stations
 
         private static int CalcPrice(int itemId, float fill)
         {
-            if (CATALOG.GoodsById == null || !CATALOG.GoodsById.TryGetValue(itemId, out var goods))
+            if (CATALOG.ItemsById == null || !CATALOG.ItemsById.TryGetValue(itemId, out var item))
                 return 0;
 
-            int basePrice = goods.Price;
+            int basePrice = (int)item.Price;
             if (basePrice <= 0)
                 return 0;
 

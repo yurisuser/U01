@@ -244,16 +244,16 @@ namespace _Project.Scripts.Galaxy.Generation
                 return;
 
             CATALOG.LoadAll();
-            var skuList = CATALOG.Sku;
+            var itemsList = CATALOG.Items;
             var ids = new List<int>();
             var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < skuList.Count; i++)
+            for (int i = 0; i < itemsList.Count; i++)
             {
-                var sku = skuList[i];
-                if (!map.ContainsKey(sku.Name))
-                    map[sku.Name] = sku.Id;
-                if (sku.IsMineable && !sku.IsLootOnly)
-                    ids.Add(sku.Id);
+                var item = itemsList[i];
+                if (!map.ContainsKey(item.Name))
+                    map[item.Name] = item.Id;
+                if (item.IsMineable && !item.IsLootOnly)
+                    ids.Add(item.Id);
             }
 
             _mineableIds = ids;

@@ -6,7 +6,7 @@ namespace _Project.Scripts.Stations
     /// <summary>Расчёт лимитов виртуального склада по базовой цене.</summary>
     public static class TradeLimits
     {
-        public static int GetMaxAmount(TypeTradeItem type, int itemId)
+        public static int GetMaxAmount(_Project.Items.ItemType type, int itemId)
         {
             float basePrice = GetBasePrice(type, itemId);
             if (basePrice <= 0f)
@@ -15,19 +15,10 @@ namespace _Project.Scripts.Stations
             return (int)(EconomyConstants.VirtualTradeBudget / basePrice);
         }
 
-        private static float GetBasePrice(TypeTradeItem type, int itemId)
+        private static float GetBasePrice(_Project.Items.ItemType type, int itemId)
         {
-            switch (type)
-            {
-                case TypeTradeItem.Goods:
-                    if (CATALOG.GoodsById != null && CATALOG.GoodsById.TryGetValue(itemId, out var goods))
-                        return goods.Price;
-                    break;
-                case TypeTradeItem.Sku:
-                    if (CATALOG.SkuById != null && CATALOG.SkuById.TryGetValue(itemId, out var sku))
-                        return sku.Price;
-                    break;
-            }
+            if (CATALOG.ItemsById != null && CATALOG.ItemsById.TryGetValue(itemId, out var item))
+                return item.Price;
 
             return 0f;
         }

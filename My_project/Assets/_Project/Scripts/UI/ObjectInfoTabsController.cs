@@ -638,10 +638,10 @@ namespace _Project.Scripts.UI
 
         private static string GetGoodsName(int itemId)
         {
-            if (CATALOG.GoodsById != null && CATALOG.GoodsById.TryGetValue(itemId, out var goods))
-                return string.IsNullOrWhiteSpace(goods.DisplayName) ? goods.Key : goods.DisplayName;
+            if (CATALOG.ItemsById != null && CATALOG.ItemsById.TryGetValue(itemId, out var item))
+                return string.IsNullOrWhiteSpace(item.Name) ? $"item_{item.Id}" : item.Name;
 
-            return $"goods {itemId}";
+            return $"item {itemId}";
         }
 
         private static int GetStock(CargoModuleState cargoState, int itemId)
@@ -778,10 +778,10 @@ namespace _Project.Scripts.UI
 
         private static string GetResourceName(int resourceId)
         {
-            if (CATALOG.SkuById != null && CATALOG.SkuById.TryGetValue(resourceId, out var sku))
+            if (CATALOG.ItemsById != null && CATALOG.ItemsById.TryGetValue(resourceId, out var item))
             {
-                if (!string.IsNullOrWhiteSpace(sku.Name))
-                    return sku.Name;
+                if (!string.IsNullOrWhiteSpace(item.Name))
+                    return item.Name;
             }
 
             return $"resource {resourceId}";
