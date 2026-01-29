@@ -26,6 +26,23 @@ namespace _Project.DataAccess
                         return true;
                     }
                     break;
+                case ItemType.Sku:
+                    if (CATALOG.SkuById != null && CATALOG.SkuById.TryGetValue(id, out var sku))
+                    {
+                        var key = string.IsNullOrWhiteSpace(sku.Name) ? $"sku_{sku.Id}" : sku.Name;
+                        var displayName = string.IsNullOrWhiteSpace(sku.Name) ? $"sku {sku.Id}" : sku.Name;
+                        info = new CatalogItemInfo(
+                            sku.Id,
+                            key,
+                            displayName,
+                            sku.Description,
+                            (int)sku.Price,
+                            1f,
+                            true,
+                            100000);
+                        return true;
+                    }
+                    break;
                 case ItemType.Quest:
                     if (CATALOG.QuestItemsById != null && CATALOG.QuestItemsById.TryGetValue(id, out var quest))
                     {

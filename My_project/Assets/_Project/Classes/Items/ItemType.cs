@@ -5,6 +5,7 @@ namespace _Project.Items
         None = 0,
         Goods = 1,
         Weapon = 2,
+        Sku = 3,
         Quest = 4,
         Engine = 5,
         Scanner = 6,
