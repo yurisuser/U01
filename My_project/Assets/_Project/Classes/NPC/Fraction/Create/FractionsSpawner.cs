@@ -43,6 +43,34 @@ namespace _Project.Scripts.NPC.Fraction.Create
                         var star = sys.Star;
                         star.Name = newName;
                         sys.Star = star;
+
+                        var planets = sys.PlanetSysArr;
+                        if (planets != null)
+                        {
+                            for (int p = 0; p < planets.Length; p++)
+                            {
+                                var planetSys = planets[p];
+                                var planet = planetSys.Planet;
+                                planet.Name = StarNameCatalog.ComposePlanetName(newName, p);
+                                planetSys.Planet = planet;
+
+                                var moons = planetSys.Moons;
+                                if (moons != null)
+                                {
+                                    for (int m = 0; m < moons.Length; m++)
+                                    {
+                                        var moon = moons[m];
+                                        moon.Name = StarNameCatalog.ComposeMoonName(newName, p, m);
+                                        moons[m] = moon;
+                                    }
+                                    planetSys.Moons = moons;
+                                }
+
+                                planets[p] = planetSys;
+                            }
+
+                            sys.PlanetSysArr = planets;
+                        }
                     }
                 }
                 galaxy[i] = sys;
