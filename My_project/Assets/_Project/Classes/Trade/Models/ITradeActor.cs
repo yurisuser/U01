@@ -1,3 +1,4 @@
+using _Project.Items;
 using _Project.Scripts.NPC.Fraction;
 
 namespace _Project.Scripts.Trade.Models
@@ -6,6 +7,6 @@ namespace _Project.Scripts.Trade.Models
     public interface ITradeActor
     {
         Fraction Owner { get; }
-        ITradeCargo Cargo { get; }
+        Cargo Cargo { get; }
     }
 }

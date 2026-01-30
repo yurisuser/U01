@@ -488,7 +488,7 @@ namespace _Project.Scripts.UI
             valueList.Append(FormatFloat2(ship.Stats.Agility, treatZeroAsMissing: false)).Append('\n');
 
             paramList.Append("cargo:").Append('\n');
-            valueList.Append(FormatCompactInt(ship.CargoCapacity)).Append('\n');
+            valueList.Append(FormatCompactInt(ship.Cargo.Capacity)).Append('\n');
 
             _starParamText = paramList.ToString();
             _starValueText = valueList.ToString();
@@ -646,10 +646,10 @@ namespace _Project.Scripts.UI
 
         private static int GetStock(StorageModuleState cargoState, int itemId)
         {
-            if (cargoState != null && cargoState.Stock.TryGetValue(itemId, out var stock))
-                return stock;
+            if (cargoState?.Cargo == null)
+                return 0;
 
-            return 0;
+            return cargoState.Cargo.GetAmount(_Project.Items.ItemType.Item, itemId);
         }
 
         private static string FormatCompactInt(int value)
@@ -699,7 +699,7 @@ namespace _Project.Scripts.UI
 
         private void BuildShipCargoInfo(in _Project.Scripts.Ships.Ship ship)
         {
-            if (ship.CargoList == null || ship.CargoList.Count == 0)
+            if (ship.Cargo == null || ship.Cargo.Stock.Count == 0)
             {
                 _cargoParamText = "cargo:";
                 _cargoValueText = "empty";
@@ -709,24 +709,15 @@ namespace _Project.Scripts.UI
             var paramList = new StringBuilder();
             var valueList = new StringBuilder();
 
-            for (int i = 0; i < ship.CargoList.Count; i++)
+            foreach (var pair in ship.Cargo.Stock)
             {
-                var stack = ship.CargoList[i];
-                var name = GetItemName(in stack);
+                var name = GetGoodsName(pair.Key);
                 paramList.Append(name).Append('\n');
-                valueList.Append(FormatCompactInt(stack.Quantity)).Append('\n');
+                valueList.Append(FormatCompactInt(pair.Value)).Append('\n');
             }
 
             _cargoParamText = paramList.ToString();
             _cargoValueText = valueList.ToString();
-        }
-
-        private static string GetItemName(in ItemStack stack)
-        {
-            if (ItemCatalogService.TryGetInfo(stack.Type, stack.Id, out var info))
-                return string.IsNullOrWhiteSpace(info.DisplayName) ? info.Key : info.DisplayName;
-
-            return $"item {stack.Id}";
         }
 
         private string GetActiveTabTextOrDefault()

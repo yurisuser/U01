@@ -61,7 +61,7 @@ namespace _Project.Scripts.Stations
 
             float fill = RandomRange(rng, MeanFill - FillSpread, MeanFill);
             int stock = (int)MathF.Round(limit * fill);
-            cargoState.Stock[itemId] = stock;
+            cargoState.Cargo.SetAmount(itemId, stock);
 
             int target = (int)MathF.Round(limit * MeanFill);
             int amount = Math.Max(1, target - stock);
@@ -84,7 +84,7 @@ namespace _Project.Scripts.Stations
 
             float fill = RandomRange(rng, MeanFill, MeanFill + FillSpread);
             int stock = (int)MathF.Round(limit * fill);
-            cargoState.Stock[itemId] = stock;
+            cargoState.Cargo.SetAmount(itemId, stock);
 
             int target = (int)MathF.Round(limit * MeanFill);
             int amount = Math.Max(1, stock - target);

@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+using _Project.Items;
 
 namespace _Project.Scripts.Stations
 {
     /// <summary>Состояние модуля хранилища.</summary>
     public sealed class StorageModuleState : IStationModuleState
     {
-        public readonly Dictionary<int, int> Stock = new(); // ItemId → количество
+        public Cargo Cargo = new();
     }
 }

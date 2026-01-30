@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using _Project.Items;
 using _Project.Scripts.NPC.Fraction;    // для Fraction
 using _Project.Scripts.Ships.Actions;
@@ -28,8 +27,7 @@ namespace _Project.Scripts.Ships
         public ShipAction CurrentAction;  // текущее действие (стыковка/торговля и т.д.)
         public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
         public TopShipOrder TopOrder;     // верхний приказ
-        public int CargoCapacity;         // вместимость трюма
-        public List<ItemStack> CargoList; // содержимое трюма
+        public Cargo Cargo;               // содержимое и вместимость трюма
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
@@ -71,8 +69,7 @@ namespace _Project.Scripts.Ships
             CurrentAction = default;
             LastActionFailReason = EShipActionFailReason.None;
             TopOrder = default;
-            CargoCapacity = cargo;
-            CargoList = new List<ItemStack>();
+            Cargo = new Cargo(cargo);
         }
     }
 }
