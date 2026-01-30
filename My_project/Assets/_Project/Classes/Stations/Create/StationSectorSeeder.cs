@@ -12,7 +12,7 @@ namespace _Project.Scripts.Stations
         {
             Key = "station_test",
             PrefabKey = "station_test",
-            DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock, EStationModuleType.Trade },
+            DefaultModules = new[] { EStationModuleType.Storage, EStationModuleType.Dock, EStationModuleType.Trade },
             BaseHull = 100f,
             BasePower = 50f,
         };
@@ -48,10 +48,10 @@ namespace _Project.Scripts.Stations
                     {
                         new StationModule
                         {
-                            Type = EStationModuleType.Cargo,
+                            Type = EStationModuleType.Storage,
                             Level = 1,
-                            Data = new CargoModuleData { Capacity = 100 },
-                            State = new CargoModuleState()
+                            Data = new StorageModuleData { Capacity = 100 },
+                            State = new StorageModuleState()
                         },
                         new StationModule
                         {

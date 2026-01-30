@@ -48,7 +48,7 @@ namespace _Project.Scripts.Stations
         {
             return type switch
             {
-                EStationModuleType.Cargo => new CargoModuleData(),
+                EStationModuleType.Storage => new StorageModuleData(),
                 EStationModuleType.Dock => new DockModuleData(),
                 EStationModuleType.Trade => new TradeModuleData(),
                 _ => null
@@ -59,7 +59,7 @@ namespace _Project.Scripts.Stations
         {
             return type switch
             {
-                EStationModuleType.Cargo => new CargoModuleState(),
+                EStationModuleType.Storage => new StorageModuleState(),
                 EStationModuleType.Dock => new DockModuleState(),
                 EStationModuleType.Trade => new TradeModuleState(),
                 _ => null

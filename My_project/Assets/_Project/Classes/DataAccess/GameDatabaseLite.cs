@@ -259,8 +259,8 @@ namespace _Project.DataAccess
                     var prefabSize = (float)reader.GetDouble(8);
                     var prefabName = reader.GetString(9);
                     var weaponSlots = Convert.ToByte(reader.GetInt32(10));
-                    var cargo = reader.IsDBNull(11) ? 0 : reader.GetInt32(11);
-                    list.Add(new CatalogShip(id, key, displayName, description, hp, maxSpeed, agility, acceleration, prefabSize, prefabName, weaponSlots, cargo));
+                    var cargoSize = reader.IsDBNull(11) ? 0 : reader.GetInt32(11);
+                    list.Add(new CatalogShip(id, key, displayName, description, hp, maxSpeed, agility, acceleration, prefabSize, prefabName, weaponSlots, cargoSize));
                 }
             }
 

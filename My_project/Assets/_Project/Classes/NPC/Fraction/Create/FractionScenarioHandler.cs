@@ -387,7 +387,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
             {
                 Key = "station_default",
                 PrefabKey = "station_default",
-                DefaultModules = new[] { EStationModuleType.Cargo, EStationModuleType.Dock, EStationModuleType.Trade },
+                DefaultModules = new[] { EStationModuleType.Storage, EStationModuleType.Dock, EStationModuleType.Trade },
                 BaseHull = 100f,
                 BasePower = 50f
             };

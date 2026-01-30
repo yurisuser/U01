@@ -28,7 +28,7 @@ namespace _Project.Scripts.Ships
                 catalog.Acceleration,
                 catalog.PrefabSize,
                 catalog.PrefabName,
-                catalog.Cargo
+                catalog.CargoSize
             );
             ship.Equipment = EquipService.BuildEquip(in catalog, 50); // тестовый уровень качества
             return ship;

@@ -9,7 +9,7 @@ Stations.md
 ## Блоки станции (модули)
 ### MVP (минимальный набор)
 - **Dock** — стыковка/очереди/слоты.
-- **Cargo** — склад ресурсов.
+- **Storage** — склад ресурсов.
 - **Trade** — покупка/продажа.
 - **Power** — энергия и баланс. // под вопросом. может вообще не нужно
 
@@ -36,9 +36,9 @@ Stations.md
 - **BlackMarket** — нелегальная торговля.
 
 ## Примеры конфигураций
-- **Orbital Lift (добыча)**: Dock + Cargo + Mining
+- **Orbital Lift (добыча)**: Dock + Storage + Mining
 - **Spaceport (обитаемая орбита)**: Dock + Trade + Hab + Repair
-- **Пром. станция**: Dock + Cargo + Refinery + Factory
+- **Пром. станция**: Dock + Storage + Refinery + Factory
 
 ## Замечания по реализации
 - **Инвентарь**: общий склад (MVP), модули проверяют свободное место.

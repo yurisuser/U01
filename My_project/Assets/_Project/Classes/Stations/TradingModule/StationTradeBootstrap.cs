@@ -17,10 +17,10 @@ namespace _Project.Scripts.Stations
             if (rng == null)
                 rng = new Random();
 
-            var cargoModule = EnsureModule(ref station, EStationModuleType.Cargo);
+            var cargoModule = EnsureModule(ref station, EStationModuleType.Storage);
             var tradeModule = EnsureModule(ref station, EStationModuleType.Trade);
 
-            if (cargoModule?.State is not CargoModuleState cargoState)
+            if (cargoModule?.State is not StorageModuleState cargoState)
                 return;
             if (tradeModule?.State is not TradeModuleState tradeState)
                 return;
@@ -53,7 +53,7 @@ namespace _Project.Scripts.Stations
                 AddSellOrder(ids[buyCount + i], cargoState, tradeState, rng);
         }
 
-        private static void AddBuyOrder(int itemId, CargoModuleState cargoState, TradeModuleState tradeState, Random rng)
+        private static void AddBuyOrder(int itemId, StorageModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
             int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
             if (limit <= 0)
@@ -76,7 +76,7 @@ namespace _Project.Scripts.Stations
             };
         }
 
-        private static void AddSellOrder(int itemId, CargoModuleState cargoState, TradeModuleState tradeState, Random rng)
+        private static void AddSellOrder(int itemId, StorageModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
             int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
             if (limit <= 0)
@@ -189,7 +189,7 @@ namespace _Project.Scripts.Stations
         {
             return type switch
             {
-                EStationModuleType.Cargo => new CargoModuleData(),
+                EStationModuleType.Storage => new StorageModuleData(),
                 EStationModuleType.Dock => new DockModuleData(),
                 EStationModuleType.Trade => new TradeModuleData(),
                 _ => null
@@ -200,7 +200,7 @@ namespace _Project.Scripts.Stations
         {
             return type switch
             {
-                EStationModuleType.Cargo => new CargoModuleState(),
+                EStationModuleType.Storage => new StorageModuleState(),
                 EStationModuleType.Dock => new DockModuleState(),
                 EStationModuleType.Trade => new TradeModuleState(),
                 _ => null

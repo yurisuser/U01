@@ -561,7 +561,7 @@ namespace _Project.Scripts.UI
             return null;
         }
 
-        private static CargoModuleState FindCargoState(_Project.Scripts.Stations.StationModule[] modules)
+        private static StorageModuleState FindCargoState(_Project.Scripts.Stations.StationModule[] modules)
         {
             if (modules == null)
                 return null;
@@ -569,10 +569,10 @@ namespace _Project.Scripts.UI
             for (int i = 0; i < modules.Length; i++)
             {
                 var module = modules[i];
-                if (module == null || module.Type != _Project.Scripts.Stations.EStationModuleType.Cargo)
+                if (module == null || module.Type != _Project.Scripts.Stations.EStationModuleType.Storage)
                     continue;
 
-                return module.State as CargoModuleState;
+                return module.State as StorageModuleState;
             }
 
             return null;
@@ -580,7 +580,7 @@ namespace _Project.Scripts.UI
 
         private static void BuildBuyOrdersList(
             System.Collections.Generic.Dictionary<int, OrderBy> orders,
-            CargoModuleState cargoState,
+            StorageModuleState cargoState,
             out string paramText,
             out string valueText)
         {
@@ -609,7 +609,7 @@ namespace _Project.Scripts.UI
 
         private static void BuildSellOrdersList(
             System.Collections.Generic.Dictionary<int, OrderSell> orders,
-            CargoModuleState cargoState,
+            StorageModuleState cargoState,
             out string paramText,
             out string valueText)
         {
@@ -644,7 +644,7 @@ namespace _Project.Scripts.UI
             return $"item {itemId}";
         }
 
-        private static int GetStock(CargoModuleState cargoState, int itemId)
+        private static int GetStock(StorageModuleState cargoState, int itemId)
         {
             if (cargoState != null && cargoState.Stock.TryGetValue(itemId, out var stock))
                 return stock;
