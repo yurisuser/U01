@@ -72,7 +72,7 @@ namespace _Project.Scripts.Trade.Services
             if (offer.UnitPrice < 0 || offer.Amount <= 0)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
 
-            float total = offer.UnitPrice * offer.Amount;
+            long total = (long)offer.UnitPrice * offer.Amount;
             if (offer.Buyer.Money < total)
                 return TradeResult.Fail(ETradeFailReason.NotEnougMoney);
 

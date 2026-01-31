@@ -35,7 +35,7 @@ namespace _Project.Scripts.Ships
 
         Cargo ITradeActor.Cargo => Cargo;
 
-        float ITradeActor.Money => MakerFraction.Money;
+        long ITradeActor.Money => MakerFraction.Money;
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля

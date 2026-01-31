@@ -8,6 +8,6 @@ namespace _Project.Scripts.Trade.Models
     {
         Fraction Owner { get; }
         Cargo Cargo { get; }
-        float Money { get; }
+        long Money { get; }
     }
 }
