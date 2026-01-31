@@ -1,4 +1,5 @@
 using _Project.Items;
+using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Trade.Models;
 
 namespace _Project.Scripts.Trade.Services
@@ -71,6 +72,9 @@ namespace _Project.Scripts.Trade.Services
         {
             if (offer.UnitPrice < 0 || offer.Amount <= 0)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
+
+            if (offer.Buyer?.Owner != null && offer.Buyer.Owner.FractionType != EFractionTypes.Player)
+                return TradeResult.Ok(offer.Amount);
 
             long total = (long)offer.UnitPrice * offer.Amount;
             if (offer.Buyer.Money < total)

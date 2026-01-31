@@ -1,6 +1,6 @@
 ﻿namespace _Project.Scripts.NPC.Fraction
 {
-    public struct Fraction
+    public class Fraction
     {
         public readonly int Id;
         public readonly string Name;
