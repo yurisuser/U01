@@ -5,11 +5,13 @@ using _Project.Scripts.NPC.Fraction;    // для Fraction
 using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Trade.Models;
 using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
 {
     public struct Ship
+        : ITradeActor
     {
         public readonly Core.UID Uid;     // уникальный ID корабля
         public Core.UID PilotUid;         // ID пилота-NPC или пустой UID, если корабль брошенный
@@ -28,6 +30,10 @@ namespace _Project.Scripts.Ships
         public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
         public TopShipOrder TopOrder;     // верхний приказ
         public Cargo Cargo;               // содержимое и вместимость трюма
+
+        public Fraction Owner => MakerFraction;
+
+        Cargo ITradeActor.Cargo => Cargo;
 
         /// <summary>Конструктор, инициализирующий все поля корабля.</summary>
         public Ship(                      // конструктор, инициализирующий все поля
