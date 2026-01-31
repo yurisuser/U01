@@ -24,6 +24,8 @@ namespace _Project.Scripts.Stations
 
         Fraction ITradeActor.Owner => Owner;
 
+        float ITradeActor.Money => Owner.Money;
+
         private StorageModuleState TryGetStorage()
         {
             if (Modules == null)

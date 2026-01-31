@@ -8,8 +8,11 @@
         public readonly int HomeConstellationId;
         public readonly string Color;
         public readonly EFractionTypes FractionType;
+
+        public float Money;
         
-        public Fraction(int id, string name, int homeSector = 0, int homeConstellationId = 0, string color = null, EFractionTypes fractionType = EFractionTypes.Regular)
+        public Fraction(int id, string name, int homeSector = 0, int homeConstellationId = 0, 
+        string color = null, EFractionTypes fractionType = EFractionTypes.Regular, float money = 0)
         {
             Id = id;
             Name = name;
@@ -17,6 +20,7 @@
             HomeConstellationId = homeConstellationId;
             Color = color;
             FractionType = fractionType;
+            Money = money;
         }
     }
 }
