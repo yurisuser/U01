@@ -51,7 +51,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                     continue;
 
                 var owner = systems[i].OwnerFrac;
-                if (owner.Id <= 0)
+                if (owner == null || owner.Id <= 0)
                     continue;
 
                 if (useFractionColoring && TryGetFractionColor(owner, constellationAlpha, out var ownerColor))
@@ -99,7 +99,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return false;
 
             var owner = systems[systemIndex].OwnerFrac;
-            if (owner.Id <= 0)
+            if (owner == null || owner.Id <= 0)
                 return false;
 
             if (!TryGetFractionColor(owner, constellationAlpha, out var parsed))

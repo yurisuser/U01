@@ -10,6 +10,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
         public void Run(in LocalSimulationContext context)
         {
             LocalTestShipSpawner.RunPatrolPrototype(in context, SimulationConsts.ShipsPerSystem, SimulationConsts.SpawnRadius);
+            ShipActionPlanner.EnsureTradeActions(in context);
             ShipActionPlanner.EnsureDockActions(in context);
         }
     }

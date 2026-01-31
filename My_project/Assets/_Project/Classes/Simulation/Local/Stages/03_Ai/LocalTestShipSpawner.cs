@@ -1,10 +1,12 @@
 using UnityEngine;
+using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Core;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Local;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Stations;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Ai
 {
@@ -25,7 +27,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                 {
                     ship.TopOrder = new _Project.Scripts.Ships.Orders.TopShipOrder
                     {
-                        Type = _Project.Scripts.Ships.Orders.ETopShipOrderType.Patrol,
+                        Type = _Project.Scripts.Ships.Orders.ETopShipOrderType.TradeInSystem,
                         Params = new _Project.Scripts.Ships.Orders.TopShipOrderParams
                         {
                             Center = Vector3.zero,
@@ -34,8 +36,6 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                         }
                     };
                 }
-
-                ShipTaskPlanner.EnsurePatrolTask(ref ship);
                 ships[i] = ship;
             }
         }
@@ -63,14 +63,15 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                 galaxy[index] = system;
             }
 
-            EnsureShipCount(runtime, shipTarget, spawnRadius);
+            EnsureShipCount(runtime, system.Stations, shipTarget, spawnRadius);
             return runtime;
         }
 
-        private static void EnsureShipCount(LocalSysRuntimeContext runtime, int shipTarget, float spawnRadius)
+        private static void EnsureShipCount(LocalSysRuntimeContext runtime, Station[] stations, int shipTarget, float spawnRadius)
         {
             var ships = runtime.Ships;
-            int deficit = shipTarget - ships.Count;
+            int dockedCount = CountDockedShips(stations);
+            int deficit = shipTarget - (ships.Count + dockedCount);
             if (deficit <= 0)
                 return;
 
@@ -81,6 +82,32 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                 ship.Rotation = SampleOrientation();
                 ships.Add(ship);
             }
+        }
+
+        private static int CountDockedShips(Station[] stations)
+        {
+            if (stations == null || stations.Length == 0)
+                return 0;
+
+            int total = 0;
+            for (int i = 0; i < stations.Length; i++)
+            {
+                var modules = stations[i].Modules;
+                if (modules == null)
+                    continue;
+
+                for (int m = 0; m < modules.Length; m++)
+                {
+                    var module = modules[m];
+                    if (module == null || module.Type != _Project.Scripts.Stations.EStationModuleType.Dock)
+                        continue;
+
+                    if (module.State is _Project.Scripts.Stations.DockModuleState dockState && dockState.DockedShips != null)
+                        total += dockState.DockedShips.Count;
+                }
+            }
+
+            return total;
         }
 
         private static Ship SpawnShip()

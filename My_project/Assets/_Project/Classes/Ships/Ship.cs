@@ -10,7 +10,7 @@ using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
 {
-    public struct Ship
+    public sealed class Ship
         : ITradeActor
     {
         public readonly Core.UID Uid;     // уникальный ID корабля
@@ -78,6 +78,12 @@ namespace _Project.Scripts.Ships
             LastActionFailReason = EShipActionFailReason.None;
             TopOrder = default;
             Cargo = new Cargo(cargo);
+        }
+
+        /// <summary>Клонирование для снапшотов (поверхностное, с общими ссылками).</summary>
+        public Ship Clone()
+        {
+            return (Ship)MemberwiseClone();
         }
     }
 }

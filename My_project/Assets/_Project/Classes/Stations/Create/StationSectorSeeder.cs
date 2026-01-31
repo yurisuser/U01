@@ -84,7 +84,7 @@ namespace _Project.Scripts.Stations
 
             var rng = new System.Random(1337);
             float orbitUnit = OrbitMath.PlanetOrbitIndexToUnits(1);
-            float baseRadius = OrbitMath.PlanetOrbitIndexToUnits(20) + orbitUnit;
+            float baseRadius = OrbitMath.PlanetOrbitIndexToUnits(10) + orbitUnit;
 
             for (int i = 0; i < galaxy.Length; i++)
             {

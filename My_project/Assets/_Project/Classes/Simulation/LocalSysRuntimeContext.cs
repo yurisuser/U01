@@ -57,7 +57,7 @@ namespace _Project.Scripts.Simulation
 
             target.Clear();
             for (int i = 0; i < count; i++)
-                target.Add(source[i]);
+                target.Add(source[i].Clone());
         }
     }
 }

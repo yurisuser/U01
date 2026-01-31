@@ -430,9 +430,11 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 emptyConstellationColor);
         }
 
-        private static bool TryGetFractionColor(in Fraction fraction, out Color color)
+        private static bool TryGetFractionColor(Fraction fraction, out Color color)
         {
             color = default;
+            if (fraction == null)
+                return false;
             if (string.IsNullOrWhiteSpace(fraction.Color))
                 return false;
 
@@ -469,7 +471,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 return false;
 
             var owner = _renderedGalaxy[systemIndex].OwnerFrac;
-            if (owner.Id <= 0)
+            if (owner == null || owner.Id <= 0)
                 return false;
 
             if (!TryGetFractionColor(owner, out var parsed))

@@ -1,4 +1,3 @@
-using _Project.Items;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Trade.Models;
@@ -14,9 +13,9 @@ namespace _Project.Scripts.Trade.Services
         /// </summary>
         public static bool TryFindBestInSystem(
             StarSys system,
-            out TradeOffer offer)
+            out TradeRoute route)
         {
-            offer = default;
+            route = default;
             if (system.Stations == null || system.Stations.Length == 0)
                 return false;
 
@@ -58,14 +57,13 @@ namespace _Project.Scripts.Trade.Services
                         if (!found || profit > bestProfit)
                         {
                             bestProfit = profit;
-                            offer = new TradeOffer(
-                                sellerStation,
-                                buyerStation,
-                                ItemType.Item,
+                            route = new TradeRoute(
+                                sellerStation.Uid,
+                                buyerStation.Uid,
                                 sell.ItemId,
                                 amount,
                                 sell.Price,
-                                system.Uid.Id);
+                                buy.Price);
                             found = true;
                         }
                     }
