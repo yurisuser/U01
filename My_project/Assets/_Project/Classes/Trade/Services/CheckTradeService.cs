@@ -1,5 +1,4 @@
 using _Project.Items;
-using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Trade.Models;
 
 namespace _Project.Scripts.Trade.Services
@@ -7,7 +6,7 @@ namespace _Project.Scripts.Trade.Services
     public static class CheckTradeService
     {
         /// <summary>Главная проверка сделки: тонкий оркестратор пайплайна.</summary>
-        public static TradeResult Check(TradeOffer offer)
+        public static TradeResult Check(TradeOffer offer) // общий вход проверки сделки
         {
             var result = CheckOffer(offer); //Базовая валидация входных данных сделки.
             if (!result.Success)
@@ -28,7 +27,7 @@ namespace _Project.Scripts.Trade.Services
             return TradeResult.Ok(offer.Amount);
         }
 
-        private static TradeResult CheckOffer(TradeOffer offer)
+        private static TradeResult CheckOffer(TradeOffer offer) // базовая валидность входа
         {
             if (offer.Seller == null || offer.Buyer == null)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
@@ -42,7 +41,7 @@ namespace _Project.Scripts.Trade.Services
             return TradeResult.Ok(offer.Amount);
         }
 
-        private static TradeResult CheckSellerStock(TradeOffer offer)
+        private static TradeResult CheckSellerStock(TradeOffer offer) // хватает ли товара у продавца
         {
             var cargo = offer.Seller.Cargo;
             if (cargo == null)
@@ -55,7 +54,7 @@ namespace _Project.Scripts.Trade.Services
             return TradeResult.Ok(offer.Amount);
         }
 
-        private static TradeResult CheckBuyerCapacity(TradeOffer offer)
+        private static TradeResult CheckBuyerCapacity(TradeOffer offer) // есть ли место у покупателя
         {
             var cargo = offer.Buyer.Cargo;
             if (cargo == null)
@@ -68,13 +67,10 @@ namespace _Project.Scripts.Trade.Services
         }
 
         /// <summary>Проверяет, что у покупателя хватает денег.</summary>
-        private static TradeResult CheckBuyerMoney(TradeOffer offer)
+        private static TradeResult CheckBuyerMoney(TradeOffer offer) // проверка денег покупателя
         {
             if (offer.UnitPrice < 0 || offer.Amount <= 0)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
-
-            if (offer.Buyer?.Owner != null && offer.Buyer.Owner.FractionType != EFractionTypes.Player)
-                return TradeResult.Ok(offer.Amount);
 
             long total = (long)offer.UnitPrice * offer.Amount;
             if (offer.Buyer.Money < total)

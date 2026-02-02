@@ -1,5 +1,4 @@
 using _Project.Items;
-using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Trade.Models;
 
 namespace _Project.Scripts.Trade.Services
@@ -8,7 +7,7 @@ namespace _Project.Scripts.Trade.Services
     public static class TradeService
     {
         /// <summary>Исполняет сделку: проверка, перенос товара, списание/начисление денег.</summary>
-        public static TradeResult Execute(TradeOffer offer)
+        public static TradeResult Execute(TradeOffer offer) // единая точка исполнения сделки
         {
             var check = CheckTradeService.Check(offer);
             if (!check.Success)
@@ -28,7 +27,7 @@ namespace _Project.Scripts.Trade.Services
         }
 
         /// <summary>Применяет оплату: всегда начисляем продавцу, у NPC- покупателя деньги безлимитные.</summary>
-        private static void ApplyMoney(TradeOffer offer)
+        private static void ApplyMoney(TradeOffer offer) // перенос денег между владельцами
         {
             var sellerOwner = offer.Seller?.Owner;
             var buyerOwner = offer.Buyer?.Owner;
@@ -39,9 +38,7 @@ namespace _Project.Scripts.Trade.Services
             if (total <= 0)
                 return;
 
-            if (buyerOwner.FractionType == EFractionTypes.Player)
-                buyerOwner.Money -= total;
-
+            buyerOwner.Money -= total;
             sellerOwner.Money += total;
         }
     }

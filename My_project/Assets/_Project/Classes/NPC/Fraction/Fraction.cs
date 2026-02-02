@@ -1,4 +1,6 @@
-﻿namespace _Project.Scripts.NPC.Fraction
+﻿using _Project.CONST;
+
+namespace _Project.Scripts.NPC.Fraction
 {
     public class Fraction
     {
@@ -9,7 +11,17 @@
         public readonly string Color;
         public readonly EFractionTypes FractionType;
 
-        public long Money;
+        private long _money;
+
+        public long Money
+        {
+            get => FractionType == EFractionTypes.Player ? _money : EconomyConstants.NpcInfiniteMoney; // деньги игрока реальные, у NPC фиктивный лимит
+            set
+            {
+                if (FractionType == EFractionTypes.Player) // менять деньги можно только у игрока
+                    _money = value;
+            }
+        }
         
         public Fraction(int id, string name, int homeSector = 0, int homeConstellationId = 0, 
         string color = null, EFractionTypes fractionType = EFractionTypes.Regular, long money = 0)
@@ -20,7 +32,7 @@
             HomeConstellationId = homeConstellationId;
             Color = color;
             FractionType = fractionType;
-            Money = money;
+            _money = money;
         }
     }
 }

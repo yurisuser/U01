@@ -118,8 +118,14 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                 fraction = new Fraction(0, "Default");
             else
             {
-                int fracIndex = Random.Range(0, fractions.Count);
-                fraction = fractions[fracIndex];
+                int attempts = 0;
+                fraction = fractions[Random.Range(0, fractions.Count)];
+                while (fraction.FractionType == EFractionTypes.Player && attempts < fractions.Count) // избегаем фракции игрока для NPC
+                {
+                    int fracIndex = Random.Range(0, fractions.Count);
+                    fraction = fractions[fracIndex];
+                    attempts++;
+                }
             }
 
             var pilotUid = UIDService.Create(EntityType.Individ);
