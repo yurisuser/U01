@@ -99,6 +99,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             }
         }
 
+
         private static void ApplyOrderSellDelta(ref TradeModuleState tradeState, int itemId, int amount) // уменьшение ордера продавца
         {
             if (!tradeState.OrdersSell.TryGetValue(itemId, out var order))
