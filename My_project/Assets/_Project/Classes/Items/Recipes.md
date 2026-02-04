@@ -20,24 +20,61 @@ Recipes.md - не удалять! имя файла для цитировани�
 
 ## L1 — Refined Feedstock (1–2 входа) (из L0)
 Рецепты L1 (фиксированные количества):
-- Metal Stock (1x): 3x Structural Metals (L0) + 2x Heavy Metals (L0)
-- Precision Alloy Stock (1x): 3x Alloys Ore (L0) + 3x High-Tech Metals (L0)
-- Chemical Feedstock (1x): 3x Reactive Metals (L0) + 2x Salts (L0)
-- Silicate Feedstock (1x): 3x Minerals (L0) + 2x Ice (L0)
-- Carbon Feedstock (1x): 3x Inorganic Carbon (L0) + 2x Hydrocarbons (L0)
-- Industrial Gases (1x): 2x Atmospheric Gases (L0) + 2x Reactive Gases (L0)
-- Isotope Feedstock (1x): 2x Noble Gases (L0) + 2x Radioactive Elements (L0)
+- 1x Metal Stock:
+    - 3x Structural Metals (L0)
+    - 2x Heavy Metals (L0)
+- 1x Precision Alloy Stock:
+    - 3x Alloys Ore (L0)
+    - 3x High-Tech Metals (L0)
+- 1x Chemical Feedstock:
+    - 3x Reactive Metals (L0)
+    - 2x Salts (L0)
+- 1x Silicate Feedstock:
+    - 3x Minerals (L0)
+    - 2x Ice (L0)
+- 1x Carbon Feedstock:
+    - 3x Inorganic Carbon (L0)
+    - 2x Hydrocarbons (L0)
+- 1x Industrial Gases:
+    - 2x Atmospheric Gases (L0)
+    - 2x Reactive Gases (L0)
+- 1x Isotope Feedstock:
+    - 2x Noble Gases (L0)
+    - 2x Radioactive Elements (L0)
 
 ## L2 — Materials (2–3 входа) (из L1)
 Рецепты L2 (фиксированные количества):
-- Structural Composites (1x): 3x Metal Stock (L1) + 2x Silicate Feedstock (L1) + 2x Chemical Feedstock (L1)
-- Ceramics (1x): 2x Silicate Feedstock (L1) + 2x Industrial Gases (L1) + 1x Precision Alloy Stock (L1) + 1x Chemical Feedstock (L1)
-- Polymers (1x): 3x Carbon Feedstock (L1) + 2x Chemical Feedstock (L1) + 1x Industrial Gases (L1)
-- Conductive Materials (1x): 2x Metal Stock (L1) + 3x Industrial Gases (L1) + 2x Isotope Feedstock (L1)
-- Magnetic Materials (1x): 3x Metal Stock (L1) + 2x Precision Alloy Stock (L1) + 2x Chemical Feedstock (L1)
-- Optical Materials (1x): 3x Silicate Feedstock (L1) + 2x Carbon Feedstock (L1) + 1x Isotope Feedstock (L1)
-- Semiconductors (1x): 2x Carbon Feedstock (L1) + 2x Silicate Feedstock (L1) + 3x Isotope Feedstock (L1)
-- Radiation Shielding Materials (1x): 3x Precision Alloy Stock (L1) + 2x Chemical Feedstock (L1)
+- 1x Structural Composites:
+    - 3x Metal Stock (L1)
+    - 2x Silicate Feedstock (L1)
+    - 2x Chemical Feedstock (L1)
+- 1x Ceramics:
+    - 2x Silicate Feedstock (L1)
+    - 2x Industrial Gases (L1)
+    - 1x Precision Alloy Stock (L1)
+- 1x Polymers:
+    - 3x Carbon Feedstock (L1)
+    - 2x Chemical Feedstock (L1)
+    - 1x Industrial Gases (L1)
+- 1x Conductive Materials:
+    - 2x Metal Stock (L1)
+    - 3x Industrial Gases (L1)
+    - 2x Isotope Feedstock (L1)
+- 1x Magnetic Materials:
+    - 3x Metal Stock (L1)
+    - 2x Precision Alloy Stock (L1)
+    - 2x Chemical Feedstock (L1)
+- 1x Optical Materials:
+    - 3x Silicate Feedstock (L1)
+    - 2x Carbon Feedstock (L1)
+    - 1x Isotope Feedstock (L1)
+- 1x Semiconductors:
+    - 2x Carbon Feedstock (L1)
+    - 2x Silicate Feedstock (L1)
+    - 3x Isotope Feedstock (L1)
+- 1x Radiation Shielding Materials:
+    - 3x Precision Alloy Stock (L1)
+    - 2x Chemical Feedstock (L1)
 
 ## L3 — Functional Components (2–4 входа) (из L1 L2)
 Рецепты L3 (фиксированные количества):
