@@ -1,5 +1,6 @@
 using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
+using _Project.Scripts.Simulation.Continuum;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Core
@@ -10,6 +11,7 @@ namespace _Project.Scripts.Simulation.Core
         private readonly GameStateService _gameState;
         private readonly SimulationClock _clock;
         private readonly SimulationEventBus _eventBus;
+        private readonly ContinuumService _continuumService;
         private float _globalAccumulator;
         private ERunMode? _nextRunMode; // отложенное переключение режима после хода
 
@@ -21,7 +23,8 @@ namespace _Project.Scripts.Simulation.Core
             _gameState = gameState;
             _clock = clock;
             _eventBus = new SimulationEventBus();
-            _globalPipeline = new NoopSimulationPipeline("GlobalNoop");
+            _continuumService = new ContinuumService(); // сервис Continuum для глобальных прыжков
+            _globalPipeline = new NoopSimulationPipeline("GlobalNoop"); // базовый глобальный пайплайн, будет расширен позже
             _localPipeline = new _Project.Scripts.Simulation.Local.LocalSimulationPipeline();
         }
 
@@ -77,7 +80,8 @@ namespace _Project.Scripts.Simulation.Core
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
             var day = _clock.NextDay();
             var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode, _eventBus);
-            _globalPipeline?.RunStep(in globalCtx);
+            _continuumService?.Tick(in globalCtx); // Continuum тикает каждый глобальный шаг
+            _globalPipeline?.RunStep(in globalCtx); // остальная глобальная логика
         }
 
         private void ApplyNextRunMode(ERunMode current)
