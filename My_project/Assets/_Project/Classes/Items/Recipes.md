@@ -1,0 +1,264 @@
+Recipes.md - не удалять! имя файла для цитирования
+
+## L0 — Raw Resources (Сырьё)
+Сырьё не крафтится, используется как вход для L1.
+- Structural Metals
+- Heavy Metals
+- Alloys Ore
+- High-Tech Metals
+- Precious Metals
+- Reactive Metals
+- Minerals
+- Salts
+- Inorganic Carbon
+- Hydrocarbons
+- Atmospheric Gases
+- Reactive Gases
+- Noble Gases
+- Ice
+- Radioactive Elements
+
+## L1 — Refined Feedstock (1–2 входа) (из L0)
+Рецепты L1 (фиксированные количества):
+- Metal Stock (1x):
+  - 3x Structural Metals (L0)
+  - 2x Heavy Metals (L0)
+- Precision Alloy Stock (1x):
+  - 3x Alloys Ore (L0)
+  - 3x High-Tech Metals (L0)
+- Chemical Feedstock (1x):
+  - 3x Reactive Metals (L0)
+  - 2x Salts (L0)
+- Silicate Feedstock (1x):
+  - 3x Minerals (L0)
+  - 2x Ice (L0)
+- Carbon Feedstock (1x):
+  - 3x Inorganic Carbon (L0)
+  - 2x Hydrocarbons (L0)
+- Industrial Gases (1x):
+  - 2x Atmospheric Gases (L0)
+  - 2x Reactive Gases (L0)
+- Isotope Feedstock (1x):
+  - 2x Noble Gases (L0)
+  - 2x Radioactive Elements (L0)
+
+## L2 — Materials (2–3 входа) (из L1)
+Рецепты L2 (фиксированные количества):
+- Structural Composites (1x):
+  - 1x Metal Stock (L1)
+  - 1x Silicate Feedstock (L1)
+  - 1x Chemical Feedstock (L1)
+- Ceramics (1x):
+  - 1x Silicate Feedstock (L1)
+  - 2x Industrial Gases (L1)
+  - 1x Chemical Feedstock (L1)
+- Polymers (1x):
+  - 2x Carbon Feedstock (L1)
+  - 1x Chemical Feedstock (L1)
+  - 1x Industrial Gases (L1)
+- Conductive Materials (1x):
+  - 1x Metal Stock (L1)
+  - 1x Industrial Gases (L1)
+  - 1x Isotope Feedstock (L1)
+- Magnetic Materials (1x):
+  - 2x Metal Stock (L1)
+  - 1x Precision Alloy Stock (L1)
+  - 1x Chemical Feedstock (L1)
+- Optical Materials (1x):
+  - 2x Silicate Feedstock (L1)
+  - 1x Carbon Feedstock (L1)
+  - 1x Isotope Feedstock (L1)
+- Semiconductors (1x):
+  - 1x Carbon Feedstock (L1)
+  - 1x Silicate Feedstock (L1)
+  - 2x Isotope Feedstock (L1)
+- Radiation Shielding Materials (1x):
+  - 3x Precision Alloy Stock (L1)
+  - 1x Chemical Feedstock (L1)
+
+## L3 — Functional Components (2–4 входа) (из L1 L2)
+Рецепты L3 (фиксированные количества):
+- Power Controller (1x):
+  - 1x Magnetic Materials (L2)
+  - 1x Semiconductors (L2)
+  - 1x Conductive Materials (L2)
+  - 1x Industrial Gases (L1)
+- Capacitor Bank (1x):
+  - 1x Conductive Materials (L2)
+  - 1x Polymers (L2)
+  - 1x Magnetic Materials (L2)
+  - 1x Carbon Feedstock (L1)
+- Heat Exchanger (1x):
+  - 1x Structural Composites (L2)
+  - 1x Radiation Shielding Materials (L2)
+  - 1x Polymers (L2)
+  - 1x Metal Stock (L1)
+- Nozzle Assembly (1x):
+  - 2x Structural Composites (L2)
+  - 1x Magnetic Materials (L2)
+  - 1x Ceramics (L2)
+  - 1x Chemical Feedstock (L1)
+- Pump / Compressor (1x):
+  - 1x Optical Materials (L2)
+  - 2x Ceramics (L2)
+  - 1x Polymers (L2)
+  - 1x Industrial Gases (L1)
+- Gyro / IMU (1x):
+  - 1x Magnetic Materials (L2)
+  - 1x Semiconductors (L2)
+  - 1x Conductive Materials (L2)
+  - 1x Chemical Feedstock (L1)
+- Sensor Array (1x):
+  - 2x Optical Materials (L2)
+  - 1x Semiconductors (L2)
+  - 1x Radiation Shielding Materials (L2)
+  - 1x Isotope Feedstock (L1)
+- Guidance Computer (1x):
+  - 2x Semiconductors (L2)
+  - 1x Conductive Materials (L2)
+  - 1x Polymers (L2)
+  - 1x Industrial Gases (L1)
+- Field Emitter (1x):
+  - 1x Conductive Materials (L2)
+  - 1x Magnetic Materials (L2)
+  - 2x Optical Materials (L2)
+  - 1x Carbon Feedstock (L1)
+- Armor Module (1x):
+  - 2x Structural Composites (L2)
+  - 2x Radiation Shielding Materials (L2)
+  - 1x Ceramics (L2)
+  - 1x Metal Stock (L1)
+
+## L4 — Subsystems (3–5 входа) (из L1 L2 L3)
+Рецепты L4 (фиксированные количества):
+- Power Core (1x):
+  - 1x Power Controller (L3)
+  - 1x Capacitor Bank (L3)
+  - 1x Heat Exchanger (L3)
+  - 1x Field Emitter (L3)
+  - 1x Magnetic Materials (L2)
+- Propulsion Core (1x):
+  - 2x Gyro / IMU (L3)
+  - 1x Nozzle Assembly (L3)
+  - 1x Pump / Compressor (L3)
+  - 1x Heat Exchanger (L3)
+  - 1x Metal Stock (L1)
+  - 1x Industrial Gases (L1)
+- Defense Core (1x):
+  - 1x Armor Module (L3)
+  - 1x Field Emitter (L3)
+  - 1x Power Controller (L3)
+  - 1x Capacitor Bank (L3)
+  - 1x Radiation Shielding Materials (L2)
+- Weapon Core (1x):
+  - 1x Guidance Computer (L3)
+  - 1x Field Emitter (L3)
+  - 1x Power Controller (L3)
+  - 1x Gyro / IMU (L3)
+  - 1x Conductive Materials (L2)
+- Sensor Core (1x):
+  - 2x Sensor Array (L3)
+  - 1x Guidance Computer (L3)
+  - 1x Capacitor Bank (L3)
+  - 1x Semiconductors (L2)
+  - 1x Carbon Feedstock (L1)
+- Engineering Core (1x):
+  - 1x Heat Exchanger (L3)
+  - 1x Pump / Compressor (L3)
+  - 1x Armor Module (L3)
+  - 1x Nozzle Assembly (L3)
+  - 1x Chemical Feedstock (L1)
+
+## L5 — Equipment (4–6 входов) (из L1 L2 L3 L4)
+Финальные изделия (фиксированные количества):
+### Питание
+- Reactor (1x):
+  - 2x Power Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Sensor Core (L4)
+- Energy Buffer (1x):
+  - 2x Power Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Defense Core (L4)
+### Движение
+- Main Thruster (1x):
+  - 2x Propulsion Core (L4)
+  - 1x Power Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Defense Core (L4)
+- Maneuver Thruster (1x):
+  - 2x Propulsion Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Power Core (L4)
+### Защита
+- Shield Generator (1x):
+  - 2x Defense Core (L4)
+  - 1x Power Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Engineering Core (L4)
+- Directed Field Generator (1x):
+  - 2x Defense Core (L4)
+  - 1x Weapon Core (L4)
+  - 1x Power Core (L4)
+  - 1x Sensor Core (L4)
+### Оружие
+- Laser System (1x):
+  - 2x Weapon Core (L4)
+  - 1x Propulsion Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Engineering Core (L4)
+- Gauss Gun (1x):
+  - 2x Weapon Core (L4)
+  - 2x Propulsion Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Power Core (L4)
+- Kinetic Weapon (1x):
+  - 2x Weapon Core (L4)
+  - 2x Propulsion Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Power Core (L4)
+- Missile System (1x):
+  - 2x Weapon Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Power Core (L4)
+### Сенсоры и управление
+- Sensor Suite (1x):
+  - 2x Sensor Core (L4)
+  - 1x Power Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Defense Core (L4)
+- CPU (1x):
+  - 2x Sensor Core (L4)
+  - 1x Propulsion Core (L4)
+  - 1x Engineering Core (L4)
+  - 1x Weapon Core (L4)
+- Targeting System (1x):
+  - 2x Sensor Core (L4)
+  - 1x Weapon Core (L4)
+  - 1x Power Core (L4)
+  - 1x Engineering Core (L4)
+### Инженерные
+- Heat Radiator (1x):
+  - 2x Engineering Core (L4)
+  - 1x Propulsion Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Sensor Core (L4)
+- Heat Dump System (1x):
+  - 2x Engineering Core (L4)
+  - 1x Power Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Weapon Core (L4)
+- Interdictor (1x):
+  - 2x Weapon Core (L4)
+  - 1x Sensor Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Power Core (L4)
+- Jammer (1x):
+  - 2x Sensor Core (L4)
+  - 1x Weapon Core (L4)
+  - 1x Defense Core (L4)
+  - 1x Engineering Core (L4)
