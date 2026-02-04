@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
+using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Core;
 using UnityEngine;
 
@@ -41,7 +42,7 @@ namespace _Project.Scripts.Simulation.Continuum
                             SimulationEventType.ShipArrived,
                             transit.ToSystemIndex,
                             context.Day,
-                            transit.ShipUid);
+                            transit.Ship.Uid);
                         eventBus.Add(in evt);
                     }
 
@@ -57,6 +58,28 @@ namespace _Project.Scripts.Simulation.Continuum
         public void Enqueue(in ContinuumTransit transit)
         {
             _transits.Add(transit);
+        }
+
+        /// <summary>Создать транзит и выставить кораблю ориентацию/скорость по линии прыжка.</summary>
+        public ContinuumTransit CreateTransit(Ship ship, int fromSystemIndex, int toSystemIndex, StarSys[] galaxy)
+        {
+            if (ship != null && galaxy != null &&
+                IsValidSystemIndex(fromSystemIndex, galaxy) &&
+                IsValidSystemIndex(toSystemIndex, galaxy))
+            {
+                var dir = (galaxy[toSystemIndex].GalaxyPosition - galaxy[fromSystemIndex].GalaxyPosition).normalized;
+                if (dir.sqrMagnitude > 0.0001f)
+                {
+                    ship.Rotation = Quaternion.LookRotation(dir);
+                    ship.CurrentSpeed = ship.Stats.MaxSpeed;
+                }
+            }
+
+            return ContinuumTransit.Create(
+                ship,
+                fromSystemIndex,
+                toSystemIndex,
+                ContinuumConsts.JumpDurationTurns);
         }
 
         /// <summary>Пересчитать зоны, если изменилась галактика или список гиперлинков.</summary>
