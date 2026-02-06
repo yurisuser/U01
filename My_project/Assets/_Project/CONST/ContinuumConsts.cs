@@ -8,5 +8,7 @@ namespace _Project.Scripts.Const
         public const int JumpDurationTurns = 3;              // Длительность прыжка в ходах
         public const int ArrivalMinOrbitIndex = 1;           // Минимальный номер орбиты для выхода
         public const int ArrivalMaxOrbitIndex = 3;           // Максимальный номер орбиты для выхода
+        public const int ApproachTurns = 2;                   // Подлёты в системе: до зоны и от выхода до станции (упрощённо)
+        public const int JumpExitOrbitIndex = 3;              // Орбита выхода по умолчанию
     }
 }
