@@ -55,5 +55,17 @@ namespace _Project.Scripts.Simulation.Ships
                 }
             });
         }
+
+        public static ShipTask JumpToSystem(int targetSystemIndex)
+        {
+            return new ShipTask(ShipTaskType.JumpToSystem, new ShipTaskParams
+            {
+                TypeTask = ShipTaskType.JumpToSystem,
+                JumpToSystemParams = new JumpToSystemParams
+                {
+                    TargetSystemIndex = targetSystemIndex
+                }
+            });
+        }
     }
 }

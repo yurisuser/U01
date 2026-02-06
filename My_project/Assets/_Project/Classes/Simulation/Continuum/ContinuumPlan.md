@@ -21,7 +21,7 @@ ContinuumPlan.md
 3. **Прилёт (глобальная симуляция, ContinuumService.Tick)**  
    - `RemainingTurns--`; на 0:  
      - `dirBA = normalize(fromPos - toPos)` для точки появления.  
-     - Радиус появления: случайный в диапазоне орбит 1–3 вокруг целевой звезды, позиция = звезда + `dirBA * radius`.  
+     - Радиус появления: фиксированная 3-я орбита целевой звезды, позиция = звезда + `dirBA * orbit3`.  
      - `Rotation`/скорость оставляем как были (по линии прыжка); всегда форсим `CurrentSpeed = MaxSpeed`.  
      - Добавить корабль в `targetStarSys.State.Ships`.
 
@@ -33,8 +33,8 @@ ContinuumPlan.md
    - Добавить `ShipTask.JumpToSystem(targetSystemId)`. Планнер разворачивает: `MoveToPoint(zone.Center, tolerance=EntryZoneRadius) -> Jump`.  
    - После прилёта AI сам выберет следующую задачу (например, `MoveToPoint` из сохранённого приказа).
 
-6. **UI**  
-   - Всегда отображать `ContinuumZone` текущей активной системы, как тонкий линийный круг (ring outline), брать из `ContinuumService.ZonesBySystem`.  
+6. **Отрисовка зон (сцена)**  
+   - Всегда отображать `ContinuumZone` активной системы в сцене через `LineRenderer` (loop) как тонкий контур круга, данные — из `ContinuumService.ZonesBySystem`.  
    - Цвет линии = цвет гиперлинка/системы назначения.
 
 7. **Расширение для торговли**  

@@ -3,6 +3,7 @@ using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Core;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ namespace _Project.Scripts.Simulation.Continuum
     /// <summary>Сервис Continuum: хранит зоны и активные транзиты, тикается в глобальной симуляции.</summary>
     public sealed class ContinuumService
     {
+        public static ContinuumService Instance { get; private set; }
+
         private readonly List<ContinuumTransit> _transits = new(32); // Активные прыжки
         private readonly Dictionary<int, List<ContinuumZone>> _zonesBySystem = new(); // Зоны на систему
         private int _cachedGalaxyVersion = -1; // Кэш для пересчёта зон
@@ -18,6 +21,11 @@ namespace _Project.Scripts.Simulation.Continuum
 
         public IReadOnlyList<ContinuumTransit> Transits => _transits;
         public IReadOnlyDictionary<int, List<ContinuumZone>> ZonesBySystem => _zonesBySystem;
+
+        public ContinuumService()
+        {
+            Instance ??= this;
+        }
 
         /// <summary>Тик глобальной симуляции: уменьшает таймеры и шлёт события прибытия.</summary>
         public void Tick(in SimulationStepContext context)
@@ -35,17 +43,7 @@ namespace _Project.Scripts.Simulation.Continuum
 
                 if (transit.RemainingTurns <= 0)
                 {
-                    // TODO: фактическое перемещение корабля между системами добавим, когда появится связь с Ship/контекстом.
-                    if (eventBus != null)
-                    {
-                        var evt = new SimulationEvent(
-                            SimulationEventType.ShipArrived,
-                            transit.ToSystemIndex,
-                            context.Day,
-                            transit.Ship.Uid);
-                        eventBus.Add(in evt);
-                    }
-
+                    TryPlaceArrivedShip(in transit, in context);
                     _transits.RemoveAt(i);
                     continue;
                 }
@@ -80,6 +78,23 @@ namespace _Project.Scripts.Simulation.Continuum
                 fromSystemIndex,
                 toSystemIndex,
                 ContinuumConsts.JumpDurationTurns);
+        }
+
+        public bool TryGetZone(int fromSystemIndex, int toSystemIndex, out ContinuumZone zone)
+        {
+            zone = default;
+            if (_zonesBySystem.TryGetValue(fromSystemIndex, out var list))
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (list[i].TargetSystemIndex == toSystemIndex)
+                    {
+                        zone = list[i];
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>Пересчитать зоны, если изменилась галактика или список гиперлинков.</summary>
@@ -180,6 +195,46 @@ namespace _Project.Scripts.Simulation.Continuum
         private static bool IsValidSystemIndex(int index, StarSys[] galaxy)
         {
             return index >= 0 && index < galaxy.Length;
+        }
+
+        private void TryPlaceArrivedShip(in ContinuumTransit transit, in SimulationStepContext context)
+        {
+            var gameState = context.GameState;
+            var galaxy = gameState?.Galaxy;
+            if (galaxy == null)
+                return;
+
+            int toIndex = transit.ToSystemIndex;
+            int fromIndex = transit.FromSystemIndex;
+            if (!IsValidSystemIndex(toIndex, galaxy) || !IsValidSystemIndex(fromIndex, galaxy))
+                return;
+
+            var targetSys = galaxy[toIndex];
+            var fromSys = galaxy[fromIndex];
+
+            var runtime = targetSys.State ?? new LocalSysRuntimeContext();
+            var ship = transit.Ship;
+
+            Vector3 dirBA = (fromSys.GalaxyPosition - targetSys.GalaxyPosition).normalized;
+            if (dirBA.sqrMagnitude <= 0f)
+                dirBA = Vector3.up;
+
+            float radius = GetOrbitRadius(targetSys, 3);
+            ship.Position = dirBA * radius;
+            ship.CurrentSpeed = ship.Stats.MaxSpeed;
+            runtime.Ships.Add(ship);
+
+            targetSys.State = runtime;
+            galaxy[toIndex] = targetSys;
+        }
+
+        private static float GetOrbitRadius(in StarSys system, int orbitIndex)
+        {
+            var orbits = system.PlanetOrbits;
+            if (orbits != null && orbits.Length >= orbitIndex && orbits[orbitIndex - 1] > 0f)
+                return orbits[orbitIndex - 1];
+
+            return Mathf.Max(system.Star.radius, ContinuumConsts.EntryZoneOffset * orbitIndex);
         }
     }
 }

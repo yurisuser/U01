@@ -1,6 +1,7 @@
 using UnityEngine; // вектора, Mathf, Quaternion
 using _Project.Scripts.Ships; // структура Ship
 using _Project.Scripts.Simulation.Ships; // ShipTask + параметры
+using _Project.Scripts.Simulation.Continuum; // ContinuumService
 
 namespace _Project.Scripts.Simulation.Local.Stages.Movement // пространство имён стадии движения
 {
@@ -32,12 +33,18 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                ProcessShip(ref ship, delta);
+                if (TryProcessJump(ref ship, in context, ships, i))
+                {
+                    i--; // компенсируем RemoveAt внутри
+                    continue;
+                }
+
+                ProcessMove(ref ship, delta);
                 ships[i] = ship; // сохраняем изменения
             }
         }
 
-        private static void ProcessShip(ref Ship ship, float deltaTime) //обрабатываем конкретный корабль
+        private static void ProcessMove(ref Ship ship, float deltaTime) //обрабатываем конкретный корабль
         {
             ClearLocalVariables();
             if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.MoveToPoint)
@@ -117,6 +124,39 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
             if (!move.KeepSpeed) // если требуется остановка
                 ship.CurrentSpeed = 0f; // обнуляем скорость
             ship.TaskState.Pop(); // удаляем задачу из стека
+        }
+
+        private static bool TryProcessJump(ref Ship ship, in LocalSimulationContext context, System.Collections.Generic.List<Ship> ships, int index)
+        {
+            if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.JumpToSystem)
+                return false;
+
+            var service = ContinuumService.Instance;
+            var gameState = context.GameState;
+            if (service == null || gameState == null)
+                return false;
+
+            int fromIndex = gameState.SelectedSystemIndex;
+            int toIndex = task.Params.JumpToSystemParams.TargetSystemIndex;
+            var galaxy = gameState.Galaxy;
+            if (galaxy == null || fromIndex < 0 || fromIndex >= galaxy.Length || toIndex < 0 || toIndex >= galaxy.Length)
+                return false;
+
+            if (!service.TryGetZone(fromIndex, toIndex, out var zone))
+                return false;
+
+            float distance = Vector3.Distance(ship.Position, zone.Center);
+            if (distance > zone.Radius)
+                return false;
+
+            // Вышли в Continuum
+            ships.RemoveAt(index);
+
+            var transit = service.CreateTransit(ship, fromIndex, toIndex, galaxy);
+            service.Enqueue(in transit);
+
+            ship.TaskState.Pop();
+            return true;
         }
     }
 }

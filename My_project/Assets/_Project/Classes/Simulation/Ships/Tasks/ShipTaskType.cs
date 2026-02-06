@@ -4,6 +4,7 @@ namespace _Project.Scripts.Simulation.Ships
     {
         None = 0,
         MoveToPoint,
+        JumpToSystem,
         TradeBuy,
         TradeSell,
     }

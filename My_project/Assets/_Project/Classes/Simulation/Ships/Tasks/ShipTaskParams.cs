@@ -6,6 +6,7 @@ namespace _Project.Scripts.Simulation.Ships
     {
         public ShipTaskType TypeTask;
         public MoveToPointParams MoveToPointParams;
+        public JumpToSystemParams JumpToSystemParams;
         public TradeBuyParams TradeBuyParams;
         public TradeSellParams TradeSellParams;
     }
@@ -30,5 +31,10 @@ namespace _Project.Scripts.Simulation.Ships
         public _Project.Scripts.Core.UID StationUid;
         public int ItemId;
         public int Amount;
+    }
+
+    public struct JumpToSystemParams
+    {
+        public int TargetSystemIndex;
     }
 }
