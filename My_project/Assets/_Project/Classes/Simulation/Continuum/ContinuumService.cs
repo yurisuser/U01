@@ -176,20 +176,10 @@ namespace _Project.Scripts.Simulation.Continuum
 
         private static float ComputeZoneOffset(in StarSys system)
         {
-            float outerOrbit = 0f;
-            var orbits = system.PlanetOrbits;
-            if (orbits != null && orbits.Length > 0)
-            {
-                for (int i = 0; i < orbits.Length; i++)
-                    if (orbits[i] > outerOrbit)
-                        outerOrbit = orbits[i];
-            }
-            else
-            {
-                outerOrbit = Mathf.Max(outerOrbit, system.Star.radius);
-            }
-
-            return outerOrbit + ContinuumConsts.EntryZoneOffset;
+            // Орбиты — фиксированные слоты 1..OrbitSlots, даже если планет нет.
+            float outerOrbitUnits = StarSysemConstants.OrbitSlots * StarSysemConstants.PlanetOrbitUnit;
+            float starRadius = system.Star.radius;
+            return Mathf.Max(outerOrbitUnits, starRadius) + ContinuumConsts.EntryZoneOffset;
         }
 
         private static bool IsValidSystemIndex(int index, StarSys[] galaxy)
@@ -232,7 +222,7 @@ namespace _Project.Scripts.Simulation.Continuum
         {
             var orbits = system.PlanetOrbits;
             if (orbits != null && orbits.Length >= orbitIndex && orbits[orbitIndex - 1] > 0f)
-                return orbits[orbitIndex - 1];
+                return orbits[orbitIndex - 1] * StarSysemConstants.PlanetOrbitUnit;
 
             return Mathf.Max(system.Star.radius, ContinuumConsts.EntryZoneOffset * orbitIndex);
         }

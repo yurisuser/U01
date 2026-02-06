@@ -5,6 +5,8 @@ using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState.GameStateMembers.SelectedObj;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Selection;
+using _Project.Scripts.Simulation.Continuum;
+using _Project.Scripts.GalaxyMap.Runtime;
 using UnityEngine;
 
 namespace _Project.Scripts.SystemMap
@@ -20,6 +22,7 @@ namespace _Project.Scripts.SystemMap
         [SerializeField] private Material orbitMaterial;
         [SerializeField] private Color planetOrbitColor = new(0.6f, 0.8f, 1f, 0.35f);
         [SerializeField] private Color moonOrbitColor = new(1f, 1f, 1f, 0.18f);
+        [SerializeField] private Color continuumZoneColor = new(0.3f, 0.9f, 1f, 0.45f);
 
         [Header("Orbit geometry")]
         private int segments = 128;
@@ -40,8 +43,10 @@ namespace _Project.Scripts.SystemMap
         private Transform _moonOrbitsRoot;
         private Transform _planetsRoot;
         private Transform _deadZoneRoot;
+        private Transform _continuumZonesRoot;
 
         private readonly List<LineRenderer> _allOrbitLines = new();
+        private readonly List<LineRenderer> _continuumLines = new();
         private float _starScaleOverride = 1f;
         private float _planetScaleOverride = 1f;
         private float _moonScaleOverride = 1f;
@@ -60,6 +65,7 @@ namespace _Project.Scripts.SystemMap
                 _moonOrbitsRoot = CreateRoot("MoonOrbits", _layerRoot);
                 _planetsRoot = CreateRoot("Planets", _layerRoot);
                 _deadZoneRoot = CreateRoot("DeadZones", _layerRoot);
+                _continuumZonesRoot = CreateRoot("ContinuumZones", _layerRoot);
             }
 
             EnsureMaterial();
@@ -75,6 +81,7 @@ namespace _Project.Scripts.SystemMap
             DrawStar(system);
             DrawDeadZones();
             DrawPlanetsAndMoons(system);
+            DrawContinuumZones();
             UpdateLineWidthsImmediate();
         }
 
@@ -259,10 +266,13 @@ namespace _Project.Scripts.SystemMap
         private void ClearAll()
         {
             _allOrbitLines.Clear();
+            _continuumLines.Clear();
             ClearChildren(_starRoot);
             ClearChildren(_planetOrbitsRoot);
             ClearChildren(_moonOrbitsRoot);
             ClearChildren(_planetsRoot);
+            ClearChildren(_deadZoneRoot);
+            ClearChildren(_continuumZonesRoot);
         }
 
         private static void ClearChildren(Transform target)
@@ -345,6 +355,44 @@ namespace _Project.Scripts.SystemMap
             lr.endColor = color;
 
             return lr;
+        }
+
+        private void DrawContinuumZones()
+        {
+            if (_continuumZonesRoot == null || orbitMaterial == null)
+                return;
+
+            ClearChildren(_continuumZonesRoot);
+            _continuumLines.Clear();
+
+            var svc = ContinuumService.Instance;
+            var gameState = GameBootstrap.GameState;
+            if (svc == null || gameState == null)
+                return;
+
+            int sysIndex = gameState.SelectedSystemIndex;
+            if (sysIndex < 0)
+                return;
+
+            // гарантия, что зоны посчитаны (если SetGalaxy уже вызывал EnsureZones, этот вызов быструю)
+            svc.EnsureZones(gameState);
+
+            if (!svc.ZonesBySystem.TryGetValue(sysIndex, out var zones) || zones == null)
+                return;
+
+            var galaxy = gameState.Galaxy;
+
+            for (int i = 0; i < zones.Count; i++)
+            {
+                var zone = zones[i];
+                var color = continuumZoneColor;
+                if (galaxy != null && GalaxyMapColorProvider.TryGetSystemFractionColor(galaxy, zone.TargetSystemIndex, continuumZoneColor.a, out var fracColor))
+                    color = fracColor;
+
+                var line = CreateCircle(_continuumZonesRoot, zone.Center, zone.Radius, color);
+                _continuumLines.Add(line);
+                _allOrbitLines.Add(line); // ширина линий обновляется вместе с орбитами
+            }
         }
 
         private static float Hash01(int seed)

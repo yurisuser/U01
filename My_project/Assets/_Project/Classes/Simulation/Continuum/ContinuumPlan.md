@@ -26,8 +26,8 @@ ContinuumPlan.md
      - Добавить корабль в `targetStarSys.State.Ships`.
 
 4. **Зоны**  
-   - Строить по `HyperlinkEdge`: направление берём с галкарты (A→B), центр = позиция звезды + `dirAB * (outerOrbit + EntryZoneOffset)` в локальных координатах системы, радиус `EntryZoneRadius` (20), отступ 30.  
-   - Уточнение: `outerOrbit` = max(PlanetOrbits, Star.radius). Пересчитывать при смене галактики/линков.
+   - Строить по `HyperlinkEdge`: направление берём с галкарты (A→B), центр = позиция звезды + `dirAB * (OrbitSlots * PlanetOrbitUnit + EntryZoneOffset)` в локальных координатах системы, радиус `EntryZoneRadius` (20), отступ 30.  
+   - Орбитальная сетка фиксирована (20 слотов), даже если планет нет; зона всегда за пределом этой сетки.
 
 5. **Задачи корабля**  
    - Добавить `ShipTask.JumpToSystem(targetSystemId)`. Планнер разворачивает: `MoveToPoint(zone.Center, tolerance=EntryZoneRadius) -> Jump`.  

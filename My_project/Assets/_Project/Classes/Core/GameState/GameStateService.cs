@@ -2,6 +2,7 @@ using System;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Galaxy.Generation;
+using _Project.Scripts.Simulation.Continuum;
 using _Project.Scripts.Core.GameState.GameStateMembers;
 
 namespace _Project.Scripts.Core.GameState
@@ -57,6 +58,7 @@ namespace _Project.Scripts.Core.GameState
             _galaxy = galaxy ?? Array.Empty<StarSys>();
             _selectedService.SelectedSystemService.OnGalaxySet(_galaxy);
             _hyperlinkEdges = ConstellationCreator.BuildHyperlinkEdges(_galaxy);
+            ContinuumService.Instance?.EnsureZones(this);
             NotifyChanged();
         }
 
