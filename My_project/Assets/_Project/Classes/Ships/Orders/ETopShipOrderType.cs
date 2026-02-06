@@ -5,5 +5,6 @@ namespace _Project.Scripts.Ships.Orders
         None = 0,
         Patrol,
         TradeInSystem,
+        TradeGalaxy,
     }
 }
