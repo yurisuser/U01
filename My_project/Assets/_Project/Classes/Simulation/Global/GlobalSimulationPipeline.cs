@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using _Project.Scripts.Simulation.Core;
-using _Project.Scripts.Simulation.Global.Debug;
 
 namespace _Project.Scripts.Simulation.Global
 {
@@ -23,10 +22,8 @@ namespace _Project.Scripts.Simulation.Global
 
         public void RunStep(in SimulationStepContext context)
         {
-            GlobalTradeDebugProbe.BeginTurn(context.Day, context.GameState); // Выбор корабля и старт лога хода.
             for (int i = 0; i < _stages.Count; i++)
                 _stages[i].Run(in context);
-            GlobalTradeDebugProbe.EndTurn(); // Сброс буфера лога в файл.
         }
     }
 }

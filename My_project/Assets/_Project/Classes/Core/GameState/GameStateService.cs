@@ -3,6 +3,7 @@ using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Galaxy.Generation;
 using _Project.Scripts.Simulation.Continuum;
+using _Project.Scripts.Simulation.Global.Debug;
 using _Project.Scripts.Core.GameState.GameStateMembers;
 
 namespace _Project.Scripts.Core.GameState
@@ -99,6 +100,7 @@ namespace _Project.Scripts.Core.GameState
 
         public bool SelectSystemByIndex(int index)
         {
+            GlobalSyncDebugLog.Log("GameState", "select-by-index request target=" + index + " current=" + SelectedSystemIndex + " mode=" + _runMode);
             if (!PauseAndWaitGlobalForSelection())
                 return false; // Не прошли handshake с global worker.
 
@@ -106,12 +108,14 @@ namespace _Project.Scripts.Core.GameState
             if (changed)
                 NotifyChanged(); // Уведомляем UI о смене selected системы.
 
+            GlobalSyncDebugLog.Log("GameState", "select-by-index applied target=" + index + " success=" + success + " changed=" + changed + " selected=" + SelectedSystemIndex);
             RestoreRunModeAfterSelection(); // Возвращаем run mode после handshake.
             return success;
         }
 
         public bool SelectSystemByUid(UID uid)
         {
+            GlobalSyncDebugLog.Log("GameState", "select-by-uid request uid=" + uid.Id + " current=" + SelectedSystemIndex + " mode=" + _runMode);
             if (!PauseAndWaitGlobalForSelection())
                 return false; // Не прошли handshake с global worker.
 
@@ -119,18 +123,21 @@ namespace _Project.Scripts.Core.GameState
             if (changed)
                 NotifyChanged(); // Уведомляем UI о смене selected системы.
 
+            GlobalSyncDebugLog.Log("GameState", "select-by-uid applied uid=" + uid.Id + " success=" + success + " changed=" + changed + " selected=" + SelectedSystemIndex);
             RestoreRunModeAfterSelection(); // Возвращаем run mode после handshake.
             return success;
         }
 
         public void ClearSelectedSystem()
         {
+            GlobalSyncDebugLog.Log("GameState", "clear-selected request current=" + SelectedSystemIndex + " mode=" + _runMode);
             if (!PauseAndWaitGlobalForSelection())
                 return; // Не прошли handshake с global worker.
 
             if (_selectedService.SelectedSystemService.ClearSelectedSystem())
                 NotifyChanged(); // Уведомляем UI о сбросе selected системы.
 
+            GlobalSyncDebugLog.Log("GameState", "clear-selected applied selected=" + SelectedSystemIndex);
             RestoreRunModeAfterSelection(); // Возвращаем run mode после handshake.
         }
 
@@ -153,16 +160,23 @@ namespace _Project.Scripts.Core.GameState
             if (_runMode != ERunMode.Paused)
                 SetRunMode(ERunMode.Paused); // Смена активной системы допустима только из паузы.
 
+            GlobalSyncDebugLog.Log("GameState", "handshake start runModeBefore=" + _runModeBeforeSelection + " current=" + _runMode);
             _selectionHandshakeActive = true; // Помечаем начало handshake.
             if (_waitGlobalIdle == null)
+            {
+                GlobalSyncDebugLog.Log("GameState", "handshake skip-wait (worker waiter is null)");
                 return true; // В тестовом контуре без worker просто продолжаем.
+            }
 
-            if (_waitGlobalIdle.Invoke())
+            bool idle = _waitGlobalIdle.Invoke();
+            GlobalSyncDebugLog.Log("GameState", "handshake wait-global-idle result=" + idle);
+            if (idle)
                 return true; // Global worker подтвердил idle.
 
             _selectionHandshakeActive = false; // Сбрасываем флаг при таймауте ожидания.
             if (_runModeBeforeSelection == ERunMode.Auto && _runMode == ERunMode.Paused)
                 SetRunMode(ERunMode.Auto); // Не удалось дождаться idle — возвращаем исходный режим.
+            GlobalSyncDebugLog.Log("GameState", "handshake failed; runMode restored to " + _runMode);
             return false;
         }
 
@@ -174,6 +188,7 @@ namespace _Project.Scripts.Core.GameState
             _selectionHandshakeActive = false; // Завершаем handshake.
             if (_runModeBeforeSelection == ERunMode.Auto && _runMode == ERunMode.Paused)
                 SetRunMode(ERunMode.Auto); // Возвращаем автопрогон после безопасной смены системы.
+            GlobalSyncDebugLog.Log("GameState", "handshake done; runMode=" + _runMode + " selected=" + SelectedSystemIndex);
         }
     }
 }

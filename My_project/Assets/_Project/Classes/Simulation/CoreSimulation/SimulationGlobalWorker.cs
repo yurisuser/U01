@@ -4,6 +4,7 @@ using System.Threading;
 using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Simulation.Continuum;
+using _Project.Scripts.Simulation.Global.Debug;
 
 namespace _Project.Scripts.Simulation.Core
 {
@@ -42,6 +43,7 @@ namespace _Project.Scripts.Simulation.Core
                 Name = "SimulationGlobalWorker" // Имя для диагностики/профайлера.
             };
             _thread.Start();
+            GlobalSyncDebugLog.Log("GlobalWorker", "started");
         }
 
         public void EnqueueRunStep(int day, ERunMode mode, int activeSystemIndex)
@@ -49,6 +51,7 @@ namespace _Project.Scripts.Simulation.Core
             if (!_running || _disposed)
                 return; // В остановленном состоянии новые шаги не принимаем.
 
+            int queued;
             lock (_queueLock)
             {
                 _queue.Enqueue(new WorkItem
@@ -57,10 +60,12 @@ namespace _Project.Scripts.Simulation.Core
                     Mode = mode, // Режим симуляции на момент постановки шага.
                     ActiveSystemIndex = activeSystemIndex // Снимок active system на границе хода.
                 });
+                queued = _queue.Count;
             }
 
             _idle.Reset(); // Появилась работа — worker больше не idle.
             _signal.Set();
+            GlobalSyncDebugLog.Log("GlobalWorker", "enqueue day=" + day + " mode=" + mode + " active=" + activeSystemIndex + " queue=" + queued);
         }
 
         public bool WaitForIdle(int timeoutMs)
@@ -71,7 +76,9 @@ namespace _Project.Scripts.Simulation.Core
             if (timeoutMs <= 0)
                 timeoutMs = 1; // Защита от некорректного таймаута.
 
-            return _idle.Wait(timeoutMs);
+            bool ok = _idle.Wait(timeoutMs);
+            GlobalSyncDebugLog.Log("GlobalWorker", "wait-idle timeoutMs=" + timeoutMs + " result=" + ok);
+            return ok;
         }
 
         public void Dispose()
@@ -89,6 +96,7 @@ namespace _Project.Scripts.Simulation.Core
 
             _signal.Dispose();
             _idle.Dispose();
+            GlobalSyncDebugLog.Log("GlobalWorker", "disposed");
         }
 
         private void ThreadLoop()
@@ -102,6 +110,8 @@ namespace _Project.Scripts.Simulation.Core
                     continue;
                 }
 
+                GlobalSyncDebugLog.Log("GlobalWorker", "step-start day=" + item.Day + " mode=" + item.Mode + " active=" + item.ActiveSystemIndex);
+
                 var bus = new SimulationEventBus();
                 var context = new SimulationStepContext(
                     _gameState,
@@ -113,6 +123,7 @@ namespace _Project.Scripts.Simulation.Core
 
                 _continuumService?.Tick(in context);
                 _globalPipeline?.RunStep(in context);
+                GlobalSyncDebugLog.Log("GlobalWorker", "step-end day=" + item.Day);
 
                 lock (_queueLock)
                 {

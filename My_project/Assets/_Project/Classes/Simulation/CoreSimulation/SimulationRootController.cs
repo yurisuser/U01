@@ -1,6 +1,7 @@
 using _Project.Scripts.Const;
 using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Simulation.Continuum;
+using _Project.Scripts.Simulation.Global.Debug;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Core
@@ -85,6 +86,7 @@ namespace _Project.Scripts.Simulation.Core
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds; // Потребили один слот глобального шага.
             var day = _clock.NextDay(); // Инкремент игрового дня привязан к global tick.
             int activeSystemIndex = _gameState?.SelectedSystemIndex ?? -1; // Снимок active index для worker-задачи.
+            GlobalSyncDebugLog.Log("Root", "run-global day=" + day + " mode=" + mode + " active=" + activeSystemIndex);
             _globalWorker.EnqueueRunStep(day, mode, activeSystemIndex); // Фиксируем параметры шага на границе тика и отдаем в очередь worker.
         }
 
