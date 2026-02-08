@@ -1,4 +1,7 @@
+using System;
+using System.Threading;
 using UnityEngine;
+using SysRandom = System.Random;
 using _Project.Scripts.Const;
 using _Project.Scripts.Core;
 using _Project.Scripts.Core.GameState;
@@ -15,6 +18,9 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
     /// <summary>Глобальный спавнер: поддерживает флот в фракционных системах.</summary>
     internal static class GlobalFractionShipSpawner
     {
+        private static readonly ThreadLocal<SysRandom> Rng = new ThreadLocal<SysRandom>(() =>
+            new SysRandom(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId)));
+
         public static void EnsureShipsInFactionSystems(GameStateService gameState, int shipTarget, float spawnRadius)
         {
             if (gameState == null)
@@ -120,13 +126,23 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
 
         private static Vector3 SamplePosition(float radius)
         {
-            var offset = Random.insideUnitCircle * Mathf.Max(0f, radius);
-            return new Vector3(offset.x, offset.y, 0f);
+            float r = Mathf.Max(0f, radius);
+            var rng = Rng.Value;
+            if (rng == null || r <= 0f)
+                return Vector3.zero;
+
+            // Равномерное распределение по кругу без UnityEngine.Random (worker-safe).
+            double angle = rng.NextDouble() * Math.PI * 2d;
+            double distance = Math.Sqrt(rng.NextDouble()) * r;
+            float x = (float)(Math.Cos(angle) * distance);
+            float y = (float)(Math.Sin(angle) * distance);
+            return new Vector3(x, y, 0f);
         }
 
         private static Quaternion SampleOrientation()
         {
-            float yaw = Random.Range(0f, 360f);
+            var rng = Rng.Value;
+            float yaw = rng == null ? 0f : (float)(rng.NextDouble() * 360d);
             return Quaternion.Euler(0f, 0f, yaw);
         }
     }

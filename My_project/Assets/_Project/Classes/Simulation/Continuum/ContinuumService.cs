@@ -13,6 +13,7 @@ namespace _Project.Scripts.Simulation.Continuum
     public sealed class ContinuumService
     {
         public static ContinuumService Instance { get; private set; }
+        private readonly object _sync = new object(); // Единый lock для транзитов и зон континуума.
 
         private readonly List<ContinuumTransit> _transits = new(32); // Активные прыжки
         private readonly Dictionary<int, List<ContinuumZone>> _zonesBySystem = new(); // Зоны на систему
@@ -35,27 +36,33 @@ namespace _Project.Scripts.Simulation.Continuum
 
             EnsureZones(context.GameState);
 
-            var eventBus = context.EventBus;
-            for (int i = _transits.Count - 1; i >= 0; i--)
+            lock (_sync)
             {
-                var transit = _transits[i];
-                transit.RemainingTurns -= 1;
-
-                if (transit.RemainingTurns <= 0)
+                var eventBus = context.EventBus;
+                for (int i = _transits.Count - 1; i >= 0; i--)
                 {
-                    TryPlaceArrivedShip(in transit, in context);
-                    _transits.RemoveAt(i);
-                    continue;
-                }
+                    var transit = _transits[i];
+                    transit.RemainingTurns -= 1;
 
-                _transits[i] = transit;
+                    if (transit.RemainingTurns <= 0)
+                    {
+                        TryPlaceArrivedShip(in transit, in context);
+                        _transits.RemoveAt(i);
+                        continue;
+                    }
+
+                    _transits[i] = transit;
+                }
             }
         }
 
         /// <summary>Поставить прыжок в очередь.</summary>
         public void Enqueue(in ContinuumTransit transit)
         {
-            _transits.Add(transit);
+            lock (_sync)
+            {
+                _transits.Add(transit);
+            }
         }
 
         /// <summary>Создать транзит и выставить кораблю ориентацию/скорость по линии прыжка.</summary>
@@ -83,14 +90,17 @@ namespace _Project.Scripts.Simulation.Continuum
         public bool TryGetZone(int fromSystemIndex, int toSystemIndex, out ContinuumZone zone)
         {
             zone = default;
-            if (_zonesBySystem.TryGetValue(fromSystemIndex, out var list))
+            lock (_sync)
             {
-                for (int i = 0; i < list.Count; i++)
+                if (_zonesBySystem.TryGetValue(fromSystemIndex, out var list))
                 {
-                    if (list[i].TargetSystemIndex == toSystemIndex)
+                    for (int i = 0; i < list.Count; i++)
                     {
-                        zone = list[i];
-                        return true;
+                        if (list[i].TargetSystemIndex == toSystemIndex)
+                        {
+                            zone = list[i];
+                            return true;
+                        }
                     }
                 }
             }
@@ -106,14 +116,17 @@ namespace _Project.Scripts.Simulation.Continuum
             if (galaxy == null || galaxy.Length == 0 || edges == null)
                 return;
 
-            int version = galaxy.Length;
-            int edgesCount = edges.Length;
-            if (version == _cachedGalaxyVersion && edgesCount == _cachedHyperEdgeCount)
-                return;
+            lock (_sync)
+            {
+                int version = galaxy.Length;
+                int edgesCount = edges.Length;
+                if (version == _cachedGalaxyVersion && edgesCount == _cachedHyperEdgeCount)
+                    return;
 
-            RebuildZones(galaxy, edges);
-            _cachedGalaxyVersion = version;
-            _cachedHyperEdgeCount = edgesCount;
+                RebuildZones(galaxy, edges);
+                _cachedGalaxyVersion = version;
+                _cachedHyperEdgeCount = edgesCount;
+            }
         }
 
         private void RebuildZones(StarSys[] galaxy, HyperlinkEdge[] edges)

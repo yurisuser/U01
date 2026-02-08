@@ -6,12 +6,13 @@ using UnityEngine;
 namespace _Project.Scripts.Simulation.Core
 {
     /// <summary>Оркестратор симуляции: дергает пайплайны по режиму выполнения.</summary>
-    public sealed class SimulationRootController
+    public sealed class SimulationRootController : System.IDisposable
     {
         private readonly GameStateService _gameState;
         private readonly SimulationClock _clock;
         private readonly SimulationEventBus _eventBus;
         private readonly ContinuumService _continuumService;
+        private readonly SimulationGlobalWorker _globalWorker;
         private float _globalAccumulator;
         private ERunMode? _nextRunMode; // отложенное переключение режима после хода
 
@@ -26,6 +27,8 @@ namespace _Project.Scripts.Simulation.Core
             _continuumService = new ContinuumService(); // сервис Continuum для глобальных прыжков
             _globalPipeline = new _Project.Scripts.Simulation.Global.GlobalSimulationPipeline();
             _localPipeline = new _Project.Scripts.Simulation.Local.LocalSimulationPipeline();
+            _globalWorker = new SimulationGlobalWorker(_gameState, _globalPipeline, _continuumService);
+            _globalWorker.Start();
         }
 
         /// <summary>Выполнить шаг из FixedUpdate с заданным fixedDeltaTime.</summary>
@@ -79,9 +82,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
             var day = _clock.NextDay();
-            var globalCtx = new SimulationStepContext(_gameState, day, SimulationConsts.GlobalStepSeconds, mode, _eventBus);
-            _continuumService?.Tick(in globalCtx); // Continuum тикает каждый глобальный шаг
-            _globalPipeline?.RunStep(in globalCtx); // остальная глобальная логика
+            _globalWorker.EnqueueRunStep(day, mode); // Глобальный ход выполняется в отдельном потоке.
         }
 
         private void ApplyNextRunMode(ERunMode current)
@@ -97,6 +98,11 @@ namespace _Project.Scripts.Simulation.Core
 
             _gameState?.SetRunMode(next);
             Debug.Log($"[Simulation] RunMode: {current} -> {next}");
+        }
+
+        public void Dispose()
+        {
+            _globalWorker?.Dispose();
         }
     }
 }

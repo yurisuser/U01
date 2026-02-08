@@ -9,6 +9,7 @@ namespace _Project.DataAccess
     internal static class ShipCatalogReader
     {
         private static readonly Random Rng = new Random();
+        private static readonly object RngSync = new object();
         private static CatalogShip[] _cache;
 
         public static IReadOnlyList<CatalogShip> GetAll()
@@ -29,7 +30,11 @@ namespace _Project.DataAccess
             if (all == null || all.Count == 0)
                 throw new InvalidOperationException("Ship catalog database is empty or unavailable.");
 
-            var index = Rng.Next(0, all.Count);
+            int index;
+            lock (RngSync)
+            {
+                index = Rng.Next(0, all.Count);
+            }
             return all[index];
         }
     }
