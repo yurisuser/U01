@@ -33,8 +33,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return;
 
             DockingInteraction.ProcessDockActions(ref system);
-            DockingInteraction.ProcessUndockActions(ref system);
             TradeInteraction.ProcessTradeActions(ref system);
+            DockingInteraction.ProcessUndockActions(ref system);
             galaxy[index] = system;
         }
     }

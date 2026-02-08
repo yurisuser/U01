@@ -24,8 +24,8 @@ namespace _Project.Scripts.Simulation.Global.Stages.Interaction
                     continue; // Нет контекста или станций для взаимодействия.
 
                 DockingInteraction.ProcessDockActions(ref system);
-                DockingInteraction.ProcessUndockActions(ref system);
                 TradeInteraction.ProcessTradeActions(ref system);
+                DockingInteraction.ProcessUndockActions(ref system);
 
                 galaxy[systemIndex] = system;
             }
