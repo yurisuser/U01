@@ -18,7 +18,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             if (gameState == null || galaxy == null || galaxy.Length == 0)
                 return; // Нет данных для глобального движения.
 
-            int activeSystemIndex = gameState.SelectedSystemIndex;
+            int activeSystemIndex = context.ActiveSystemIndex;
             for (int systemIndex = 0; systemIndex < galaxy.Length; systemIndex++)
             {
                 if (systemIndex == activeSystemIndex)

@@ -43,7 +43,7 @@ namespace _Project.Scripts.Simulation.Core
             _thread.Start();
         }
 
-        public void EnqueueRunStep(int day, ERunMode mode)
+        public void EnqueueRunStep(int day, ERunMode mode, int activeSystemIndex)
         {
             if (!_running || _disposed)
                 return;
@@ -53,7 +53,8 @@ namespace _Project.Scripts.Simulation.Core
                 _queue.Enqueue(new WorkItem
                 {
                     Day = day,
-                    Mode = mode
+                    Mode = mode,
+                    ActiveSystemIndex = activeSystemIndex
                 });
             }
 
@@ -93,7 +94,8 @@ namespace _Project.Scripts.Simulation.Core
                     item.Day,
                     SimulationConsts.GlobalStepSeconds,
                     item.Mode,
-                    bus);
+                    bus,
+                    item.ActiveSystemIndex);
 
                 _continuumService?.Tick(in context);
                 _globalPipeline?.RunStep(in context);
@@ -119,6 +121,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             public int Day;
             public ERunMode Mode;
+            public int ActiveSystemIndex;
         }
     }
 }

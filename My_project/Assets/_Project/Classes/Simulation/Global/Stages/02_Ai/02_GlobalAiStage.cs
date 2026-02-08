@@ -21,7 +21,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
                 SimulationConsts.ShipsPerSystem,
                 SimulationConsts.SpawnRadius); // Поддерживаем флот в фракционных системах.
 
-            int activeSystemIndex = gameState.SelectedSystemIndex;
+            int activeSystemIndex = context.ActiveSystemIndex;
             for (int systemIndex = 0; systemIndex < galaxy.Length; systemIndex++)
             {
                 if (systemIndex == activeSystemIndex)

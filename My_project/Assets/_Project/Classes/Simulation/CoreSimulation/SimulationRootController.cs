@@ -68,7 +68,8 @@ namespace _Project.Scripts.Simulation.Core
 
         private void RunLocal(float deltaTime, ERunMode mode)
         {
-            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus);
+            int activeSystemIndex = _gameState?.SelectedSystemIndex ?? -1;
+            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus, activeSystemIndex);
             _localPipeline?.RunStep(in localCtx);
         }
 
@@ -82,7 +83,8 @@ namespace _Project.Scripts.Simulation.Core
         {
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds;
             var day = _clock.NextDay();
-            _globalWorker.EnqueueRunStep(day, mode); // Глобальный ход выполняется в отдельном потоке.
+            int activeSystemIndex = _gameState?.SelectedSystemIndex ?? -1;
+            _globalWorker.EnqueueRunStep(day, mode, activeSystemIndex); // Индекс активной системы фиксируем на границе глобального шага.
         }
 
         private void ApplyNextRunMode(ERunMode current)
