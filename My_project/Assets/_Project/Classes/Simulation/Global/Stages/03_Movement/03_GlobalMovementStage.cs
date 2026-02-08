@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Continuum;
 using _Project.Scripts.Simulation.Core;
+using _Project.Scripts.Simulation.Global.Debug;
 using _Project.Scripts.Simulation.Ships;
 using UnityEngine;
 
@@ -32,13 +33,21 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                 for (int i = 0; i < ships.Count; i++)
                 {
                     var ship = ships[i];
-                    if (TryProcessJump(ref ship, gameState, systemIndex, ships, i))
+                    if (TryProcessJump(ref ship, gameState, systemIndex, ships, i, context.Day))
                     {
                         i--; // Компенсация RemoveAt при уходе в континуум.
                         continue;
                     }
 
-                    ProcessMoveTo(ref ship);
+                    if (ProcessMoveTo(ref ship))
+                    {
+                        GlobalTradeDebugProbe.LogShip(
+                            context.Day,
+                            systemIndex,
+                            in ship,
+                            "Move",
+                            "MoveToPoint completed; pos=" + ship.Position);
+                    }
                     ships[i] = ship;
                 }
 
@@ -46,16 +55,17 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             }
         }
 
-        private static void ProcessMoveTo(ref Ship ship)
+        private static bool ProcessMoveTo(ref Ship ship)
         {
             if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.MoveToPoint)
-                return; // Текущая задача не относится к перемещению.
+                return false; // Текущая задача не относится к перемещению.
 
             var move = task.Params.MoveToPointParams;
             ship.Position = move.Destination;
             if (!move.KeepSpeed)
                 ship.CurrentSpeed = 0f;
             ship.TaskState.Pop();
+            return true;
         }
 
         private static bool TryProcessJump(
@@ -63,7 +73,8 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             _Project.Scripts.Core.GameState.GameStateService gameState,
             int fromSystemIndex,
             List<Ship> ships,
-            int shipIndex)
+            int shipIndex,
+            int day)
         {
             if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.JumpToSystem)
                 return false; // Верхняя задача не прыжок.
@@ -85,6 +96,13 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             float distance = Vector3.Distance(ship.Position, zone.Center);
             if (distance > zone.Radius)
                 return false; // Корабль ещё не дошёл до зоны.
+
+            GlobalTradeDebugProbe.LogShip(
+                day,
+                fromSystemIndex,
+                in ship,
+                "Move",
+                "jump queued; toSystem=" + toSystemIndex + ";distance=" + distance);
 
             ships.RemoveAt(shipIndex);
             var transit = service.CreateTransit(ship, fromSystemIndex, toSystemIndex, galaxy);
