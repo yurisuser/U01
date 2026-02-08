@@ -10,17 +10,18 @@ namespace _Project.Scripts.Simulation.Core
     /// <summary>Отдельный поток глобальной симуляции: принимает команды хода и выполняет pipeline вне main thread.</summary>
     public sealed class SimulationGlobalWorker : IDisposable
     {
-        private readonly object _queueLock = new object();
-        private readonly Queue<WorkItem> _queue = new Queue<WorkItem>(8);
-        private readonly AutoResetEvent _signal = new AutoResetEvent(false);
+        private readonly object _queueLock = new object(); // Мьютекс на очередь задач worker-потока.
+        private readonly Queue<WorkItem> _queue = new Queue<WorkItem>(8); // Очередь глобальных шагов, поставленных с main thread.
+        private readonly AutoResetEvent _signal = new AutoResetEvent(false); // Будит поток, когда в очереди появилась новая задача.
+        private readonly ManualResetEventSlim _idle = new ManualResetEventSlim(true); // Сигнал "worker простаивает" для handshake выбора системы.
 
-        private readonly GameStateService _gameState;
-        private readonly ISimulationPipeline _globalPipeline;
-        private readonly ContinuumService _continuumService;
+        private readonly GameStateService _gameState; // Общее состояние игры, читается при сборке контекста шага.
+        private readonly ISimulationPipeline _globalPipeline; // Глобальный конвейер стадий.
+        private readonly ContinuumService _continuumService; // Глобальный сервис межсистемных транзитов.
 
-        private Thread _thread;
-        private bool _running;
-        private bool _disposed;
+        private Thread _thread; // Выделенный поток исполнения глобальной симуляции.
+        private bool _running; // Флаг жизненного цикла потока.
+        private bool _disposed; // Защита от повторного Dispose.
 
         public SimulationGlobalWorker(GameStateService gameState, ISimulationPipeline globalPipeline, ContinuumService continuumService)
         {
@@ -32,13 +33,13 @@ namespace _Project.Scripts.Simulation.Core
         public void Start()
         {
             if (_running)
-                return;
+                return; // Уже запущено.
 
             _running = true;
             _thread = new Thread(ThreadLoop)
             {
-                IsBackground = true,
-                Name = "SimulationGlobalWorker"
+                IsBackground = true, // Не блокируем завершение процесса.
+                Name = "SimulationGlobalWorker" // Имя для диагностики/профайлера.
             };
             _thread.Start();
         }
@@ -46,35 +47,48 @@ namespace _Project.Scripts.Simulation.Core
         public void EnqueueRunStep(int day, ERunMode mode, int activeSystemIndex)
         {
             if (!_running || _disposed)
-                return;
+                return; // В остановленном состоянии новые шаги не принимаем.
 
             lock (_queueLock)
             {
                 _queue.Enqueue(new WorkItem
                 {
-                    Day = day,
-                    Mode = mode,
-                    ActiveSystemIndex = activeSystemIndex
+                    Day = day, // Игровой день, который должен посчитать worker.
+                    Mode = mode, // Режим симуляции на момент постановки шага.
+                    ActiveSystemIndex = activeSystemIndex // Снимок active system на границе хода.
                 });
             }
 
+            _idle.Reset(); // Появилась работа — worker больше не idle.
             _signal.Set();
+        }
+
+        public bool WaitForIdle(int timeoutMs)
+        {
+            if (_disposed)
+                return true; // После Dispose считаем worker неактивным.
+
+            if (timeoutMs <= 0)
+                timeoutMs = 1; // Защита от некорректного таймаута.
+
+            return _idle.Wait(timeoutMs);
         }
 
         public void Dispose()
         {
             if (_disposed)
-                return;
+                return; // Повторный вызов игнорируем.
 
             _disposed = true;
-            _running = false;
-            _signal.Set();
+            _running = false; // Просим цикл ThreadLoop завершиться.
+            _signal.Set(); // Будим поток, если он ждёт signal.
 
             var thread = _thread;
             if (thread != null && thread.IsAlive)
-                thread.Join(1000);
+                thread.Join(1000); // Даем время на мягкую остановку.
 
             _signal.Dispose();
+            _idle.Dispose();
         }
 
         private void ThreadLoop()
@@ -84,7 +98,7 @@ namespace _Project.Scripts.Simulation.Core
                 WorkItem item;
                 if (!TryDequeue(out item))
                 {
-                    _signal.WaitOne(50);
+                    _signal.WaitOne(50); // Периодическое ожидание новых задач.
                     continue;
                 }
 
@@ -95,10 +109,16 @@ namespace _Project.Scripts.Simulation.Core
                     SimulationConsts.GlobalStepSeconds,
                     item.Mode,
                     bus,
-                    item.ActiveSystemIndex);
+                    item.ActiveSystemIndex); // Контекст глобального шага из snapshot-параметров WorkItem.
 
                 _continuumService?.Tick(in context);
                 _globalPipeline?.RunStep(in context);
+
+                lock (_queueLock)
+                {
+                    if (_queue.Count == 0)
+                        _idle.Set(); // Очередь пуста, worker вернулся в idle.
+                }
             }
         }
 
@@ -109,19 +129,19 @@ namespace _Project.Scripts.Simulation.Core
                 if (_queue.Count == 0)
                 {
                     item = default;
-                    return false;
+                    return false; // Нечего исполнять.
                 }
 
-                item = _queue.Dequeue();
+                item = _queue.Dequeue(); // Берём следующую задачу FIFO.
                 return true;
             }
         }
 
         private struct WorkItem
         {
-            public int Day;
-            public ERunMode Mode;
-            public int ActiveSystemIndex;
+            public int Day; // День симуляции для этого глобального шага.
+            public ERunMode Mode; // Режим (Auto/Step/Paused) на момент постановки.
+            public int ActiveSystemIndex; // Индекс активной системы, которую глобал должен пропустить.
         }
     }
 }
