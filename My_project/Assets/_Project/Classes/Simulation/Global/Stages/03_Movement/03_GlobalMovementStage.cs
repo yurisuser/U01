@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using _Project.Scripts.Ships;
+using _Project.Scripts.Const;
 using _Project.Scripts.Simulation.Continuum;
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
@@ -38,7 +39,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                         continue;
                     }
 
-                    ProcessMoveTo(ref ship);
+                    ProcessMoveTo(ref ship, context.DeltaTime);
                     ships[i] = ship;
                 }
 
@@ -46,17 +47,49 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             }
         }
 
-        private static bool ProcessMoveTo(ref Ship ship)
+        private static bool ProcessMoveTo(ref Ship ship, float deltaTime)
         {
             if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.MoveToPoint)
                 return false; // Текущая задача не относится к перемещению.
 
             var move = task.Params.MoveToPointParams;
+            var toTarget = move.Destination - ship.Position;
+            float distance = toTarget.magnitude;
+            if (distance <= move.Tolerance)
+            {
+                CompleteMoveTask(ref ship, in move);
+                return true;
+            }
+
+            // В глобале двигаем дискретно на дистанцию, которую корабль проходит за ход.
+            float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
+            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            if (speed <= 0f || stepSeconds <= 0f)
+                return false; // Некорректные параметры движения: оставляем задачу на следующий ход.
+
+            float stepDistance = speed * stepSeconds;
+            if (stepDistance >= distance)
+            {
+                ship.Position = move.Destination;
+                CompleteMoveTask(ref ship, in move);
+                return true;
+            }
+
+            Vector3 dir = toTarget / distance;
+            ship.Position += dir * stepDistance;
+            ship.CurrentSpeed = speed;
+            if (dir.sqrMagnitude > 0f)
+                ship.Rotation = Quaternion.LookRotation(Vector3.forward, dir);
+
+            return true;
+        }
+
+        private static void CompleteMoveTask(ref Ship ship, in MoveToPointParams move)
+        {
             ship.Position = move.Destination;
             if (!move.KeepSpeed)
                 ship.CurrentSpeed = 0f;
             ship.TaskState.Pop();
-            return true;
         }
 
         private static bool TryProcessJump(
