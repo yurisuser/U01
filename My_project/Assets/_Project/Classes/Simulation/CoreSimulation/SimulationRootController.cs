@@ -24,7 +24,7 @@ namespace _Project.Scripts.Simulation.Core
             _clock = clock;
             _eventBus = new SimulationEventBus();
             _continuumService = new ContinuumService(); // сервис Continuum для глобальных прыжков
-            _globalPipeline = new NoopSimulationPipeline("GlobalNoop"); // базовый глобальный пайплайн, будет расширен позже
+            _globalPipeline = new _Project.Scripts.Simulation.Global.GlobalSimulationPipeline();
             _localPipeline = new _Project.Scripts.Simulation.Local.LocalSimulationPipeline();
         }
 

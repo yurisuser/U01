@@ -42,6 +42,32 @@ namespace _Project.Scripts.Simulation.Ships
             }
         }
 
+        public static void EnsureTradeActionsForSystem(GameStateService gameState, int currentSystemIndex, ref StarSys system)
+        {
+            if (gameState == null)
+                return;
+
+            var runtime = system.State;
+            if (runtime == null)
+                return;
+
+            var ships = runtime.Ships;
+            for (int i = 0; i < ships.Count; i++)
+            {
+                var ship = ships[i];
+                if (ship.TopOrder.Type == ETopShipOrderType.TradeInSystem)
+                {
+                    HandleTradeInSystem(ref ship, system);
+                }
+                else if (ship.TopOrder.Type == ETopShipOrderType.TradeGalaxy)
+                {
+                    HandleTradeGalaxy(ref ship, gameState, currentSystemIndex);
+                }
+
+                ships[i] = ship;
+            }
+        }
+
         private static void HandleTradeInSystem(ref Ship ship, in StarSys system)
         {
             if (!ship.TaskState.HasTasks)
@@ -93,16 +119,20 @@ namespace _Project.Scripts.Simulation.Ships
 
         private static void HandleTradeGalaxy(ref Ship ship, in LocalSimulationContext context)
         {
-            if (ship.TaskState.HasTasks)
-                return;
-
             var gameState = context.GameState;
             if (gameState == null)
                 return;
 
+            HandleTradeGalaxy(ref ship, gameState, gameState.SelectedSystemIndex);
+        }
+
+        private static void HandleTradeGalaxy(ref Ship ship, GameStateService gameState, int currentSystemIndex)
+        {
+            if (ship.TaskState.HasTasks)
+                return;
+
             var galaxy = gameState.Galaxy;
             var edges = gameState.HyperlinkEdges;
-            int currentSystemIndex = gameState.SelectedSystemIndex;
 
             var candidates = GalacticTradeFinder.FindCandidates(galaxy, edges, avgYield: 0f, currentSystemIndex: currentSystemIndex, maxResults: 1);
             if (candidates == null || candidates.Count == 0)
