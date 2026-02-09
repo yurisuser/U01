@@ -100,7 +100,7 @@ namespace _Project.Scripts.SystemMap.Debug
 
         private static bool TryResolveTarget(in Ship ship, out Vector3 target)
         {
-            if (ship.TaskState.TryPeek(out var task) && task.Type == ShipTaskType.MoveToPoint)
+            if (ship.TaskState.TryPeek(out var task) && task.Type == EShipTaskType.MoveToPoint)
             {
                 target = task.Params.MoveToPointParams.Destination;
                 return true;

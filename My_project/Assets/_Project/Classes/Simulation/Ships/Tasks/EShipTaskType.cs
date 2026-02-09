@@ -1,6 +1,6 @@
 namespace _Project.Scripts.Simulation.Ships
 {
-    public enum ShipTaskType
+    public enum EShipTaskType
     {
         None = 0,
         MoveToPoint,

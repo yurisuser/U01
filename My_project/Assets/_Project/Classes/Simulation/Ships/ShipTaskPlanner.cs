@@ -17,7 +17,7 @@ namespace _Project.Scripts.Simulation.Ships
 
             float radius = ship.TopOrder.Params.Radius;
             var target = SamplePatrolPoint(radius, ship.TopOrder.Params.Center);
-            ship.TaskState.PushTask(ShipTask.MoveTo(target, SimulationConsts.DestinationPointTolerance, keepSpeed: true));
+            ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(target, SimulationConsts.DestinationPointTolerance, keepSpeed: true));
         }
 
         private static Vector3 SamplePatrolPoint(float radius, Vector3 center)

@@ -47,7 +47,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
         private static void ProcessMove(ref Ship ship, float deltaTime) //обрабатываем конкретный корабль
         {
             ClearLocalVariables();
-            if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.MoveToPoint)
+            if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.MoveToPoint)
                 return;
 
             var moveTaskParams = task.Params.MoveToPointParams;
@@ -128,7 +128,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement // простран�
 
         private static bool TryProcessJump(ref Ship ship, in LocalSimulationContext context, System.Collections.Generic.List<Ship> ships, int index)
         {
-            if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.JumpToSystem)
+            if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.JumpToSystem)
                 return false;
 
             var service = ContinuumService.Instance;

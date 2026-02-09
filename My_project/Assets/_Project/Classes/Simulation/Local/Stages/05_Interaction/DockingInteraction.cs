@@ -60,14 +60,14 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 if (ship.TopOrder.Type == ETopShipOrderType.TradeInSystem &&
                     ship.TaskState.TryPeek(out var task))
                 {
-                    if (task.Type == ShipTaskType.MoveToPoint &&
+                    if (task.Type == EShipTaskType.MoveToPoint &&
                         task.Params.MoveToPointParams.TargetUid.Id == station.Uid.Id)
                     {
                         ship.TaskState.Pop();
                         ship.TaskState.TryPeek(out task);
                     }
 
-                    if (task.Type == ShipTaskType.TradeBuy &&
+                    if (task.Type == EShipTaskType.TradeBuy &&
                         task.Params.TradeBuyParams.StationUid.Id == station.Uid.Id)
                     {
                         ship.CurrentAction = new ShipAction
@@ -78,7 +78,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                             Amount = task.Params.TradeBuyParams.Amount
                         };
                     }
-                    else if (task.Type == ShipTaskType.TradeSell &&
+                    else if (task.Type == EShipTaskType.TradeSell &&
                         task.Params.TradeSellParams.StationUid.Id == station.Uid.Id)
                     {
                         ship.CurrentAction = new ShipAction

@@ -90,8 +90,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestSellerInSystem(system, order.ItemId, out var sellerUid) &&
                 TradeInteraction.TryGetStation(in system, sellerUid, out var nextSeller))
             {
-                ship.TaskState.PushTask(ShipTask.TradeBuy(sellerUid, order.ItemId, remaining));
-                ship.TaskState.PushTask(ShipTask.MoveTo(
+                ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(sellerUid, order.ItemId, remaining));
+                ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                     nextSeller.Position,
                     SimulationConsts.DestinationPointTolerance,
                     keepSpeed: true,

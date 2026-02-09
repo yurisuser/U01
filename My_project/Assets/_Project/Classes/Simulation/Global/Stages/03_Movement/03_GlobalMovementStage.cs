@@ -49,7 +49,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
 
         private static bool ProcessMoveTo(ref Ship ship, float deltaTime)
         {
-            if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.MoveToPoint)
+            if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.MoveToPoint)
                 return false; // Текущая задача не относится к перемещению.
 
             var move = task.Params.MoveToPointParams;
@@ -99,7 +99,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             List<Ship> ships,
             int shipIndex)
         {
-            if (!ship.TaskState.TryPeek(out var task) || task.Type != ShipTaskType.JumpToSystem)
+            if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.JumpToSystem)
                 return false; // Верхняя задача не прыжок.
 
             var service = ContinuumService.Instance;

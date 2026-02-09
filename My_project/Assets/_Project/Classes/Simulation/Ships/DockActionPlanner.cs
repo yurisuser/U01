@@ -38,7 +38,7 @@ namespace _Project.Scripts.Simulation.Ships
                     Type = EShipActionType.Dock,
                     TargetUid = station.Uid,
                 };
-                ship.TaskState.PushTask(ShipTask.MoveTo(
+                ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                     station.Position,
                     SimulationConsts.DestinationPointTolerance,
                     keepSpeed: true));

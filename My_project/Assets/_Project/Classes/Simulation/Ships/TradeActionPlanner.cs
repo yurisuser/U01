@@ -88,14 +88,14 @@ namespace _Project.Scripts.Simulation.Ships
                                 amount = free;
                         }
 
-                        ship.TaskState.PushTask(ShipTask.TradeSell(route.BuyerUid, route.ItemId, amount));
-                        ship.TaskState.PushTask(ShipTask.MoveTo(
+                        ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(route.BuyerUid, route.ItemId, amount));
+                        ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                             buyer.Position,
                             SimulationConsts.DestinationPointTolerance,
                             keepSpeed: true,
                             targetUid: route.BuyerUid));
-                        ship.TaskState.PushTask(ShipTask.TradeBuy(route.SellerUid, route.ItemId, amount));
-                        ship.TaskState.PushTask(ShipTask.MoveTo(
+                        ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(route.SellerUid, route.ItemId, amount));
+                        ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                             seller.Position,
                             SimulationConsts.DestinationPointTolerance,
                             keepSpeed: true,
@@ -106,7 +106,7 @@ namespace _Project.Scripts.Simulation.Ships
 
             if (ship.CurrentAction.IsEmpty &&
                 ship.TaskState.TryPeek(out var task) &&
-                task.Type == ShipTaskType.MoveToPoint &&
+                task.Type == EShipTaskType.MoveToPoint &&
                 task.Params.MoveToPointParams.TargetUid.Id != 0)
             {
                 ship.CurrentAction = new ShipAction
@@ -166,28 +166,28 @@ namespace _Project.Scripts.Simulation.Ships
                     amount = free;
             }
 
-            ship.TaskState.PushTask(ShipTask.TradeSell(candidate.BuyerUid, candidate.ItemId, amount));
-            ship.TaskState.PushTask(ShipTask.MoveTo(
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(candidate.BuyerUid, candidate.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 buyer.Position,
                 SimulationConsts.DestinationPointTolerance,
                 keepSpeed: true,
                 targetUid: candidate.BuyerUid));
 
-            ship.TaskState.PushTask(ShipTask.JumpToSystem(candidate.BuyerSystemIndex));
-            ship.TaskState.PushTask(ShipTask.MoveTo(
+            ship.TaskState.PushTask(ShipTaskBuilder.JumpToSystem(candidate.BuyerSystemIndex));
+            ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 zoneSellerToBuyer.Center,
                 ContinuumConsts.EntryZoneRadius,
                 keepSpeed: true));
 
-            ship.TaskState.PushTask(ShipTask.TradeBuy(candidate.SellerUid, candidate.ItemId, amount));
-            ship.TaskState.PushTask(ShipTask.MoveTo(
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(candidate.SellerUid, candidate.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 seller.Position,
                 SimulationConsts.DestinationPointTolerance,
                 keepSpeed: true,
                 targetUid: candidate.SellerUid));
 
-            ship.TaskState.PushTask(ShipTask.JumpToSystem(candidate.SellerSystemIndex));
-            ship.TaskState.PushTask(ShipTask.MoveTo(
+            ship.TaskState.PushTask(ShipTaskBuilder.JumpToSystem(candidate.SellerSystemIndex));
+            ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 zoneToSeller.Center,
                 ContinuumConsts.EntryZoneRadius,
                 keepSpeed: true));

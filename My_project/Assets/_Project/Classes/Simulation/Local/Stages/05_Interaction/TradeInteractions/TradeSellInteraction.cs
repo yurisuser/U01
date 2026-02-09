@@ -23,8 +23,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 if (TryReplanSell(in system, in ship, out var buyerUid, out var buyerStation)) // ищем другого покупателя
                 {
                     ship.TaskState = ShipTaskStack.Default;
-                    ship.TaskState.PushTask(ShipTask.TradeSell(buyerUid, ship.CurrentAction.ItemId, ship.CurrentAction.Amount));
-                    ship.TaskState.PushTask(ShipTask.MoveTo(
+                    ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(buyerUid, ship.CurrentAction.ItemId, ship.CurrentAction.Amount));
+                    ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                         buyerStation.Position,
                         SimulationConsts.DestinationPointTolerance,
                         keepSpeed: true,
