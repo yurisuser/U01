@@ -7,6 +7,7 @@ using _Project.Scripts.Core.Scene;
 using _Project.Scripts.Galaxy.Generation;
 using _Project.Scripts.Simulation.Core;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace _Project.Scripts.Core
 {
@@ -56,10 +57,12 @@ namespace _Project.Scripts.Core
 
             var galaxy = GalaxyCreator.Create();
             _gameState.SetGalaxy(galaxy);
+            _gameState.DeactivateLocalSystem(); // До входа в SystemMap локальная симуляция всегда отключена.
 
             // Стартуем минимальный каркас симуляции: пока заглушки.
             _simulationClock = new SimulationClock(Time.fixedDeltaTime);
             _simulation = new SimulationRootController(_gameState, _simulationClock);
+            SceneManager.sceneLoaded += OnSceneLoaded;
 
             StartCoroutine(LoadMainMenuDelayed());
         }
@@ -76,6 +79,22 @@ namespace _Project.Scripts.Core
 
         private void OnDestroy()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            _simulation?.Dispose();
+        }
+
+        private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
+        {
+            if (_gameState == null)
+                return;
+
+            if (scene.name == "SystemMap")
+            {
+                _gameState.ActivateLocalFromSelectedSystem(); // Локал активен только в сцене системы.
+                return;
+            }
+
+            _gameState.DeactivateLocalSystem(); // Во всех прочих сценах локал не тикается.
         }
 
         private IEnumerator LoadMainMenuDelayed()

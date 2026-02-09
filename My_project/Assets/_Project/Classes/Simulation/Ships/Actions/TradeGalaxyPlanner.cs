@@ -51,7 +51,8 @@ namespace _Project.Scripts.Simulation.Ships
                 edges,
                 avgYield: 0f,
                 currentSystemIndex: currentSystemIndex,
-                maxResults: 1); // Берем только лучший маршрут.
+                maxResults: 1,
+                maxHops: 1); // Временный режим: отбор маршрутов только через соседние системы (1 hop).
 
             if (candidates == null || candidates.Count == 0)
                 return false;

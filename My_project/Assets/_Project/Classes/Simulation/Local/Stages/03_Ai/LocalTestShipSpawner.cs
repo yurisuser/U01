@@ -9,7 +9,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
                 return; // Контекст невалиден для спавна.
 
             LocalSpawnPopulation.EnsureShipCount(runtime, stations, shipTarget, patrolRadius);                // Доводим население до цели.
-            LocalSpawnTopOrderAssigner.EnsureTradeInSystemOrders(runtime, systemIndex, patrolRadius);         // Пустым кораблям выдаем локальный trade-order.
+            LocalSpawnTopOrderAssigner.EnsureTradeGalaxyOrders(runtime, systemIndex, patrolRadius);           // Пустым кораблям выдаем межсистемный trade-order.
         }
     }
 }

@@ -16,6 +16,7 @@ namespace _Project.Scripts.Core.GameState
         private int[][] _constellationList = Array.Empty<int[]>(); // Группировка систем по созвездиям.
         private ERunMode _runMode = ERunMode.Paused; // Текущий режим симуляции (Paused/Step/Auto).
         private readonly SelectedService _selectedService = new SelectedService(); // Сервис текущего выбора в UI.
+        private int _activeLocalSystemIndex = -1; // Система, которая реально тикается локальным пайплайном (SystemMap).
         private bool _showHyperlinks = true; // Флаг показа гиперлинков в представлении.
         private bool _useHyperlinkColoring = true; // Флаг раскраски по гиперлинкам.
         private bool _useFractionColoring = true; // Флаг раскраски по фракциям.
@@ -36,7 +37,8 @@ namespace _Project.Scripts.Core.GameState
         public StarSys[] Galaxy => _galaxy; // Публичный доступ к массиву систем.
         public HyperlinkEdge[] HyperlinkEdges => _hyperlinkEdges; // Публичный доступ к графу гиперсвязей.
         public int[][] ConstellationList => _constellationList; // Публичный доступ к списку созвездий.
-        public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex; // Индекс активной системы.
+        public int SelectedSystemIndex => _selectedService.SelectedSystemService.SelectedSystemIndex; // Индекс системы, выбранной в UI (галактическая карта).
+        public int ActiveLocalSystemIndex => _activeLocalSystemIndex; // Индекс системы, активной для локальной симуляции.
         public bool ShowHyperlinks => _showHyperlinks; // UI-флаг показа гиперлинков.
         public bool UseHyperlinkColoring => _useHyperlinkColoring; // UI-флаг раскраски по гиперлинкам.
         public bool UseFractionColoring => _useFractionColoring; // UI-флаг раскраски по фракциям.
@@ -46,6 +48,16 @@ namespace _Project.Scripts.Core.GameState
         public StarSys? GetSelectedSystem()
         {
             return _selectedService.SelectedSystemService.GetSelectedSystem(_galaxy); // Безопасно вернуть выбранную систему или null.
+        }
+
+        public StarSys? GetActiveLocalSystem()
+        {
+            if (_galaxy == null || _galaxy.Length == 0)
+                return null;
+            if (_activeLocalSystemIndex < 0 || _activeLocalSystemIndex >= _galaxy.Length)
+                return null;
+
+            return _galaxy[_activeLocalSystemIndex];
         }
 
         public void SetRunMode(ERunMode mode)
@@ -61,6 +73,8 @@ namespace _Project.Scripts.Core.GameState
         {
             _galaxy = galaxy ?? Array.Empty<StarSys>(); // Обновляем базовый state галактики.
             _selectedService.SelectedSystemService.OnGalaxySet(_galaxy); // Нормализуем текущий selected index.
+            if (_activeLocalSystemIndex >= _galaxy.Length)
+                _activeLocalSystemIndex = -1; // Если галактика пересоздана и индекс вышел за границы.
             _hyperlinkEdges = ConstellationCreator.BuildHyperlinkEdges(_galaxy); // Пересчитываем граф переходов.
             ContinuumService.Instance?.EnsureZones(this); // Перестраиваем зоны континуума под новый граф.
             NotifyChanged(); // Отдаем единое уведомление о смене state.
@@ -141,6 +155,20 @@ namespace _Project.Scripts.Core.GameState
             RestoreRunModeAfterSelection(); // Возвращаем run mode после handshake.
         }
 
+        public bool ActivateLocalFromSelectedSystem()
+        {
+            int selected = SelectedSystemIndex;
+            if (selected < 0 || selected >= _galaxy.Length)
+                return false; // В UI ничего не выбрано, локал активировать нельзя.
+
+            return SetActiveLocalSystemIndex(selected);
+        }
+
+        public bool DeactivateLocalSystem()
+        {
+            return SetActiveLocalSystemIndex(-1);
+        }
+
         internal void SetGlobalIdleWaiter(Func<bool> waitGlobalIdle)
         {
             _waitGlobalIdle = waitGlobalIdle; // Инжект из SimulationRootController.
@@ -149,6 +177,26 @@ namespace _Project.Scripts.Core.GameState
         private void NotifyChanged()
         {
             StateChanged?.Invoke(); // Единая точка рассылки уведомлений.
+        }
+
+        private bool SetActiveLocalSystemIndex(int index)
+        {
+            if (index < -1)
+                return false;
+            if (index >= _galaxy.Length)
+                return false;
+            if (_activeLocalSystemIndex == index)
+                return true; // Уже в нужном состоянии.
+
+            GlobalSyncDebugLog.Log("GameState", "set-active-local request target=" + index + " current=" + _activeLocalSystemIndex + " mode=" + _runMode);
+            if (!PauseAndWaitGlobalForSelection())
+                return false; // Границу переключения держим только при idle global worker.
+
+            _activeLocalSystemIndex = index;
+            NotifyChanged();
+            GlobalSyncDebugLog.Log("GameState", "set-active-local applied active=" + _activeLocalSystemIndex + " selected=" + SelectedSystemIndex);
+            RestoreRunModeAfterSelection();
+            return true;
         }
 
         private bool PauseAndWaitGlobalForSelection()

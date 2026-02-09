@@ -47,7 +47,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 ship.CurrentSpeed = 0f;
                 ship.CurrentAction = default;
                 ship.LastActionFailReason = EShipActionFailReason.None;
-                if (ship.TopOrder.Type != ETopShipOrderType.TradeInSystem)
+                if (ship.TopOrder.Type != ETopShipOrderType.TradeInSystem &&
+                    ship.TopOrder.Type != ETopShipOrderType.TradeGalaxy)
                     ship.TaskState = ShipTaskStack.Default;
                 ship.Position = station.Position;
 
@@ -57,8 +58,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                     dockState.Occupied.Add(ship.Uid);
                 dockState.DockedShips.Add(ship);
 
-                if (ship.TopOrder.Type == ETopShipOrderType.TradeInSystem &&
-                    ship.TaskState.TryPeek(out var task))
+                if (ship.TaskState.TryPeek(out var task))
                 {
                     if (task.Type == EShipTaskType.MoveToPoint &&
                         task.Params.MoveToPointParams.TargetUid.Id == station.Uid.Id)
@@ -120,7 +120,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                     ship.CurrentSpeed = 0f;
                     ship.CurrentAction = default;
                     ship.LastActionFailReason = EShipActionFailReason.None;
-                    if (ship.TopOrder.Type != ETopShipOrderType.TradeInSystem)
+                    if (ship.TopOrder.Type != ETopShipOrderType.TradeInSystem &&
+                        ship.TopOrder.Type != ETopShipOrderType.TradeGalaxy)
                         ship.TaskState = ShipTaskStack.Default;
                     ship.Position = station.Position;
 

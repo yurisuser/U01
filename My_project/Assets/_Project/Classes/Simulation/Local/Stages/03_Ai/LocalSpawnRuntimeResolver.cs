@@ -24,7 +24,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             if (galaxy == null || galaxy.Length == 0)
                 return false; // Пустая галактика.
 
-            int index = gameState.SelectedSystemIndex;
+            int index = gameState.ActiveLocalSystemIndex;
             if (index < 0 || index >= galaxy.Length)
                 return false; // Индекс активной системы вне диапазона.
 

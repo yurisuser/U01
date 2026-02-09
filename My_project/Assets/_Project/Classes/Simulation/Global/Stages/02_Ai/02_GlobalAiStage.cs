@@ -13,9 +13,13 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
             if (gameState == null || galaxy == null || galaxy.Length == 0)
                 return; // Нет данных для обхода систем.
 
-            // Спавн кораблей выполняется только локальным пайплайном активной системы.
-
             int activeSystemIndex = context.ActiveSystemIndex;
+            GlobalFractionShipSpawner.EnsureShipsInFactionSystems(
+                gameState,
+                _Project.Scripts.Const.SimulationConsts.ShipsPerSystem,
+                _Project.Scripts.Const.SimulationConsts.SpawnRadius,
+                activeSystemIndex); // Поддерживаем флот во всех фракционных системах, кроме active.
+
             for (int systemIndex = 0; systemIndex < galaxy.Length; systemIndex++)
             {
                 if (systemIndex == activeSystemIndex)

@@ -128,11 +128,12 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 var sys = System.Value;
                 if (!GameBootstrap.GameState.SelectSystemByUid(sys.Uid))
-                    GameBootstrap.GameState.SelectSystemByIndex(0);
+                    return; // Не перекидываем в фиктивную "0" систему.
             }
             else
             {
                 GameBootstrap.GameState.ClearSelectedSystem();
+                return;
             }
 
             SceneController.Load(SceneId.SystemMap);

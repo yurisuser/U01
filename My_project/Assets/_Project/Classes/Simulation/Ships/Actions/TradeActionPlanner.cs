@@ -32,7 +32,7 @@ namespace _Project.Scripts.Simulation.Ships
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                ApplyTradeOrder(ref ship, context.GameState, context.GameState.SelectedSystemIndex, in system, ref galaxyCache); // Маршрутизация по типу top-order.
+                ApplyTradeOrder(ref ship, context.GameState, context.GameState.ActiveLocalSystemIndex, in system, ref galaxyCache); // Маршрутизация по типу top-order.
                 ships[i] = ship;
             }
         }
@@ -72,7 +72,10 @@ namespace _Project.Scripts.Simulation.Ships
             if (ship.TopOrder.Type == ETopShipOrderType.TradeGalaxy)
             {
                 if (ship.TaskState.HasTasks)
+                {
+                    TradeDockActionAssigner.TryAssignFromTopMoveTask(ref ship); // При подходе к станции ставим Dock, даже если стек уже собран.
                     return; // Для занятых кораблей кэш кандидата не нужен.
+                }
 
                 if (!galaxyCache.IsResolved)
                 {
@@ -82,6 +85,8 @@ namespace _Project.Scripts.Simulation.Ships
 
                 if (galaxyCache.HasCandidate)
                     TradeGalaxyPlanner.TryPlanWithCandidate(ref ship, gameState, currentSystemIndex, in galaxyCache.Candidate); // Межсистемный маршрут с jump-задачами.
+
+                TradeDockActionAssigner.TryAssignFromTopMoveTask(ref ship); // После планирования сразу подхватываем первый док-этап.
             }
         }
     }

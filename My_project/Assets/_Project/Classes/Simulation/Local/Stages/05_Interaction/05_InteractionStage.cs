@@ -24,7 +24,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (galaxy == null || galaxy.Length == 0)
                 return;
 
-            int index = gameState.SelectedSystemIndex;
+            int index = gameState.ActiveLocalSystemIndex;
             if (index < 0 || index >= galaxy.Length)
                 return;
 

@@ -1,7 +1,6 @@
 using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Trade.Models;
 using _Project.Scripts.Trade.Services;
 
@@ -15,17 +14,7 @@ namespace _Project.Scripts.Simulation.Ships
             if (!ship.TaskState.HasTasks)
                 TryBuildTaskStack(ref ship, in system); // Стек заполняем только когда он пуст.
 
-            if (ship.CurrentAction.IsEmpty &&
-                ship.TaskState.TryPeek(out var task) &&
-                task.Type == EShipTaskType.MoveToPoint &&
-                task.Params.MoveToPointParams.TargetUid.Id != 0)
-            {
-                ship.CurrentAction = new ShipAction
-                {
-                    Type = EShipActionType.Dock,                             // Запрашиваем док при подходе к станции.
-                    TargetUid = task.Params.MoveToPointParams.TargetUid,    // Берем UID из верхней move-задачи.
-                };
-            }
+            TradeDockActionAssigner.TryAssignFromTopMoveTask(ref ship); // Запрашиваем док при подходе к станции.
         }
 
         private static void TryBuildTaskStack(ref Ship ship, in StarSys system)

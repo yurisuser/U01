@@ -93,7 +93,7 @@ namespace _Project.Scripts.Core.GameState.GameStateMembers.SelectedSystem
                 return -1;
 
             if (_selectedSystemIndex < 0 || _selectedSystemIndex >= galaxy.Length)
-                return 0;
+                return -1;
 
             return _selectedSystemIndex;
         }

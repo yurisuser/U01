@@ -63,14 +63,14 @@ namespace _Project.Scripts.Simulation.Core
             ApplyNextRunMode(mode); // Применяем отложенные переключения режима.
         }
 
-        private bool CheckRunLocal() // Локальная симуляция крутится только если есть выбранная система.
+        private bool CheckRunLocal() // Локальная симуляция крутится только если в SystemMap активирована локальная система.
         {
-            return _gameState?.GetSelectedSystem() != null; // null => локал пропускаем.
+            return _gameState?.GetActiveLocalSystem() != null; // null => локал пропускаем.
         }
 
         private void RunLocal(float deltaTime, ERunMode mode)
         {
-            int activeSystemIndex = _gameState?.SelectedSystemIndex ?? -1; // Снимок active index на границе локального шага.
+            int activeSystemIndex = _gameState?.ActiveLocalSystemIndex ?? -1; // Снимок реально активной локальной системы.
             var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus, activeSystemIndex); // Контекст локального тика.
             _localPipeline?.RunStep(in localCtx); // Локальный конвейер.
         }
@@ -85,7 +85,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds; // Потребили один слот глобального шага.
             var day = _clock.NextDay(); // Инкремент игрового дня привязан к global tick.
-            int activeSystemIndex = _gameState?.SelectedSystemIndex ?? -1; // Снимок active index для worker-задачи.
+            int activeSystemIndex = _gameState?.ActiveLocalSystemIndex ?? -1; // Снимок реально активной локальной системы.
             GlobalSyncDebugLog.Log("Root", "run-global day=" + day + " mode=" + mode + " active=" + activeSystemIndex);
             _globalWorker.EnqueueRunStep(day, mode, activeSystemIndex); // Фиксируем параметры шага на границе тика и отдаем в очередь worker.
         }

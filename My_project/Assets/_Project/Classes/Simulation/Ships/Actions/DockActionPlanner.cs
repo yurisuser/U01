@@ -25,8 +25,9 @@ namespace _Project.Scripts.Simulation.Ships
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                if (ship.TopOrder.Type == ETopShipOrderType.TradeInSystem)
-                    continue; // Локальный трейд сам управляет докингом.
+                if (ship.TopOrder.Type == ETopShipOrderType.TradeInSystem ||
+                    ship.TopOrder.Type == ETopShipOrderType.TradeGalaxy)
+                    continue; // Торговые top-order сами управляют докингом.
                 if (!ship.CurrentAction.IsEmpty)
                     continue; // Не перезаписываем уже выбранное действие.
 

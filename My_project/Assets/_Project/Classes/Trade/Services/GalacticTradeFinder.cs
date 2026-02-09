@@ -29,8 +29,22 @@ namespace _Project.Scripts.Trade.Services
             int systemsCount = galaxy.Length;
             if (currentSystemIndex < 0 || currentSystemIndex >= systemsCount)
                 currentSystemIndex = 0;
+            bool oneHopMode = maxHops == 1;
+            List<int>[] adjacency = oneHopMode ? BuildAdjacency(edges, systemsCount) : null;
+
+            if (oneHopMode && (adjacency == null || adjacency[currentSystemIndex].Count == 0))
+                return result; // В радиусе 1 перехода нет систем-кандидатов.
+
             for (int sellerSys = 0; sellerSys < systemsCount; sellerSys++)
             {
+                if (oneHopMode)
+                {
+                    if (sellerSys == currentSystemIndex)
+                        continue; // В 1-hop режиме рассматриваем только соседние системы.
+                    if (!ContainsNeighbor(adjacency[currentSystemIndex], sellerSys))
+                        continue;
+                }
+
                 var sellerStations = galaxy[sellerSys].Stations;
                 if (sellerStations == null || sellerStations.Length == 0)
                     continue;
@@ -40,17 +54,32 @@ namespace _Project.Scripts.Trade.Services
                     if (buyerSys == sellerSys)
                         continue;
 
-                    int hopsSellerToBuyer = GalacticRouteFinder.GetHops(sellerSys, buyerSys, edges, systemsCount);
-                    if (hopsSellerToBuyer < 0)
-                        continue;
-                    if (maxHops >= 0 && hopsSellerToBuyer > maxHops)
-                        continue;
+                    int hopsToSeller;
+                    int hopsSellerToBuyer;
+                    if (oneHopMode)
+                    {
+                        // Временный быстрый режим:
+                        // current -> seller = 1 hop (seller уже сосед current),
+                        // seller -> buyer = 1 hop (buyer сосед seller).
+                        if (!ContainsNeighbor(adjacency[sellerSys], buyerSys))
+                            continue;
+                        hopsToSeller = 1;
+                        hopsSellerToBuyer = 1;
+                    }
+                    else
+                    {
+                        hopsSellerToBuyer = GalacticRouteFinder.GetHops(sellerSys, buyerSys, edges, systemsCount);
+                        if (hopsSellerToBuyer < 0)
+                            continue;
+                        if (maxHops >= 0 && hopsSellerToBuyer > maxHops)
+                            continue;
 
-                    int hopsToSeller = GalacticRouteFinder.GetHops(currentSystemIndex, sellerSys, edges, systemsCount);
-                    if (hopsToSeller < 0)
-                        continue;
-                    if (maxHops >= 0 && hopsToSeller > maxHops)
-                        continue;
+                        hopsToSeller = GalacticRouteFinder.GetHops(currentSystemIndex, sellerSys, edges, systemsCount);
+                        if (hopsToSeller < 0)
+                            continue;
+                        if (maxHops >= 0 && hopsToSeller > maxHops)
+                            continue;
+                    }
 
                     var buyerStations = galaxy[buyerSys].Stations;
                     if (buyerStations == null || buyerStations.Length == 0)
@@ -114,6 +143,42 @@ namespace _Project.Scripts.Trade.Services
                 result.RemoveRange(maxResults, result.Count - maxResults);
 
             return result;
+        }
+
+        private static List<int>[] BuildAdjacency(HyperlinkEdge[] edges, int systemsCount)
+        {
+            var adjacency = new List<int>[systemsCount];
+            for (int i = 0; i < systemsCount; i++)
+                adjacency[i] = new List<int>(4);
+
+            if (edges == null)
+                return adjacency;
+
+            for (int i = 0; i < edges.Length; i++)
+            {
+                var edge = edges[i];
+                if (edge.A < 0 || edge.A >= systemsCount || edge.B < 0 || edge.B >= systemsCount || edge.A == edge.B)
+                    continue;
+
+                adjacency[edge.A].Add(edge.B);
+                adjacency[edge.B].Add(edge.A);
+            }
+
+            return adjacency;
+        }
+
+        private static bool ContainsNeighbor(List<int> neighbors, int systemIndex)
+        {
+            if (neighbors == null || neighbors.Count == 0)
+                return false;
+
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                if (neighbors[i] == systemIndex)
+                    return true;
+            }
+
+            return false;
         }
 
         private static TradeModuleState FindTradeState(StationModule[] modules)

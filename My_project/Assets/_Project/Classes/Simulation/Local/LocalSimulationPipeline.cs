@@ -32,7 +32,7 @@ namespace _Project.Scripts.Simulation.Local
             var gameState = context.GameState;
             var localCtx = new LocalSimulationContext(
                 gameState,
-                gameState?.GetSelectedSystem(),
+                gameState?.GetActiveLocalSystem(),
                 context.Day,
                 context.DeltaTime);
 
@@ -55,7 +55,7 @@ namespace _Project.Scripts.Simulation.Local
             if (galaxy == null || galaxy.Length == 0)
                 return null;
 
-            int index = gameState.SelectedSystemIndex;
+            int index = gameState.ActiveLocalSystemIndex;
             if (index < 0 || index >= galaxy.Length)
                 return null;
 

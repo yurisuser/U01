@@ -19,7 +19,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             if (service == null || gameState == null)
                 return false; // Нет сервиса или состояния мира.
 
-            int fromIndex = gameState.SelectedSystemIndex;
+            int fromIndex = gameState.ActiveLocalSystemIndex;
             int toIndex = task.Params.JumpToSystemParams.TargetSystemIndex;
             var galaxy = gameState.Galaxy;
             if (galaxy == null || fromIndex < 0 || fromIndex >= galaxy.Length || toIndex < 0 || toIndex >= galaxy.Length)

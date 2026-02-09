@@ -8,7 +8,6 @@ using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction;
 using _Project.Scripts.Ships;
-using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Stations;
@@ -21,7 +20,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
         private static readonly ThreadLocal<SysRandom> Rng = new ThreadLocal<SysRandom>(() =>
             new SysRandom(unchecked(Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId)));
 
-        public static void EnsureShipsInFactionSystems(GameStateService gameState, int shipTarget, float spawnRadius)
+        public static void EnsureShipsInFactionSystems(GameStateService gameState, int shipTarget, float spawnRadius, int activeSystemIndex)
         {
             if (gameState == null)
                 return; // Без game state нет доступа к галактике.
@@ -32,6 +31,9 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
 
             for (int systemIndex = 0; systemIndex < galaxy.Length; systemIndex++)
             {
+                if (systemIndex == activeSystemIndex)
+                    continue; // Активную систему не трогаем в worker-потоке, ее ведет локальный пайплайн на main thread.
+
                 var system = galaxy[systemIndex];
                 if (!IsFactionSystem(in system))
                     continue; // Отсекаем нефракционные системы.
@@ -106,20 +108,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
             var ship = ShipCreator.CreateShip(ownerFraction, pilotUid);
             ship.Position = SamplePosition(spawnRadius);
             ship.Rotation = SampleOrientation();
-
-            if (ship.TopOrder.IsEmpty)
-            {
-                ship.TopOrder = new TopShipOrder
-                {
-                    Type = ETopShipOrderType.TradeInSystem,
-                    Params = new TopShipOrderParams
-                    {
-                        Center = Vector3.zero,
-                        Radius = spawnRadius,
-                        SystemIndex = systemIndex
-                    }
-                };
-            }
+            TradeTopOrderAssigner.EnsureTradeGalaxyOrder(ref ship, systemIndex, spawnRadius); // Единое правило назначения top-order.
 
             return ship;
         }
