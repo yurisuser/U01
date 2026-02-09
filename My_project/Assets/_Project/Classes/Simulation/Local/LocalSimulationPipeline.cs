@@ -16,6 +16,7 @@ namespace _Project.Scripts.Simulation.Local
         {
             _stages.Add(new Stages.Input.LocalInputStage());
             _stages.Add(new Stages.Perception.LocalPerceptionStage());
+            _stages.Add(new Stages.Ai.LocalSpawnStage());
             _stages.Add(new Stages.Ai.LocalAiStage());
             _stages.Add(new Stages.Movement.LocalMovementStage());
             _stages.Add(new Stages.Interaction.LocalInteractionStage());
