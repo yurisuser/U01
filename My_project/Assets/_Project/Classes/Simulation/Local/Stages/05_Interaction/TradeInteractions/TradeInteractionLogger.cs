@@ -20,5 +20,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
         {
             Debug.Log($"[Trade] {side} order missing. ship={shipId} station={stationId} item={itemId}"); // Ордер удалился между планированием и исполнением.
         }
+
+        internal static void LogTradeForcedSell(int shipId, int stationId, int itemId, int amount, int unitPrice) // forced-sell без buy-ордера
+        {
+            Debug.Log($"[Trade] forced sell. ship={shipId} station={stationId} item={itemId} amount={amount} price={unitPrice}");
+        }
     }
 }

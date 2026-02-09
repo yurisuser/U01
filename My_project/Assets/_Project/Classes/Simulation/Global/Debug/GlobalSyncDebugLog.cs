@@ -48,11 +48,8 @@ namespace _Project.Scripts.Simulation.Global.Debug
 
             try
             {
-                var root = Directory.GetCurrentDirectory();
-                if (string.IsNullOrWhiteSpace(root))
-                    root = ".";
-
-                var dir = Path.Combine(root, "Assets", "_Project", "Logs");
+                // Важно: пишем вне Assets, чтобы не провоцировать Unity reimport во время playmode.
+                var dir = Path.Combine(Path.GetTempPath(), "U01", "Logs");
                 Directory.CreateDirectory(dir);
                 _logPath = Path.Combine(dir, "global_sync_debug.log");
                 _writer = new StreamWriter(_logPath, append: true, Encoding.UTF8);

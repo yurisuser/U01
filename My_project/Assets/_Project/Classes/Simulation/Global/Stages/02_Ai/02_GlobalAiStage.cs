@@ -1,5 +1,3 @@
-using _Project.Scripts.Ships;
-using _Project.Scripts.Const;
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
 
@@ -15,10 +13,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
             if (gameState == null || galaxy == null || galaxy.Length == 0)
                 return; // Нет данных для обхода систем.
 
-            GlobalFractionShipSpawner.EnsureShipsInFactionSystems(
-                gameState,
-                SimulationConsts.ShipsPerSystem,
-                SimulationConsts.SpawnRadius); // Поддерживаем флот в фракционных системах.
+            // Спавн кораблей выполняется только локальным пайплайном активной системы.
 
             int activeSystemIndex = context.ActiveSystemIndex;
             for (int systemIndex = 0; systemIndex < galaxy.Length; systemIndex++)

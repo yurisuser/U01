@@ -7,6 +7,7 @@ namespace _Project.Scripts.Trade.Services
     public static class GalacticRouteFinder
     {
         private static readonly Dictionary<(int, int), int> Cache = new();
+        private static readonly Dictionary<(int, int), int[]> PathCache = new();
 
         /// <summary>Возвращает число прыжков между системами, либо -1 если пути нет.</summary>
         public static int GetHops(int fromSystem, int toSystem, HyperlinkEdge[] edges, int systemsCount)
@@ -24,6 +25,28 @@ namespace _Project.Scripts.Trade.Services
             int hops = Bfs(fromSystem, toSystem, adj);
             Cache[key] = hops;
             return hops;
+        }
+
+        /// <summary>Возвращает путь по системам (включая start/target), либо null если пути нет.</summary>
+        public static List<int> GetPath(int fromSystem, int toSystem, HyperlinkEdge[] edges, int systemsCount)
+        {
+            if (fromSystem < 0 || toSystem < 0 || systemsCount <= 0)
+                return null;
+            if (fromSystem >= systemsCount || toSystem >= systemsCount)
+                return null;
+            if (fromSystem == toSystem)
+                return new List<int> { fromSystem };
+
+            var key = (fromSystem, toSystem);
+            if (PathCache.TryGetValue(key, out var cached))
+                return new List<int>(cached);
+
+            var adj = BuildAdjacency(edges, systemsCount);
+            var path = BfsPath(fromSystem, toSystem, adj);
+            if (path != null)
+                PathCache[key] = path.ToArray();
+
+            return path;
         }
 
         private static (int, int) NormalizeKey(int a, int b)
@@ -76,6 +99,47 @@ namespace _Project.Scripts.Trade.Services
             }
 
             return -1;
+        }
+
+        private static List<int> BfsPath(int start, int target, List<int>[] adj)
+        {
+            var visited = new bool[adj.Length];
+            var parent = new int[adj.Length];
+            for (int i = 0; i < parent.Length; i++)
+                parent[i] = -1;
+
+            var queue = new Queue<int>();
+            queue.Enqueue(start);
+            visited[start] = true;
+
+            while (queue.Count > 0)
+            {
+                int node = queue.Dequeue();
+                if (node == target)
+                    break;
+
+                var neighbors = adj[node];
+                for (int i = 0; i < neighbors.Count; i++)
+                {
+                    int next = neighbors[i];
+                    if (visited[next])
+                        continue;
+
+                    visited[next] = true;
+                    parent[next] = node;
+                    queue.Enqueue(next);
+                }
+            }
+
+            if (!visited[target])
+                return null;
+
+            var path = new List<int>(8);
+            for (int node = target; node >= 0; node = parent[node])
+                path.Add(node);
+
+            path.Reverse();
+            return path;
         }
     }
 }

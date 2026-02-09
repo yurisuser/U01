@@ -4,7 +4,7 @@ namespace _Project.Scripts.Const
     public static class SimulationConsts
     {
         // --- Спавн ---
-        public const int ShipsPerSystem = 5;
+        public const int ShipsPerSystem = 1;
         public const float SpawnRadius = 200f;
 
         // --- Ship tasks ---

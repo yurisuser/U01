@@ -8,8 +8,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             if (!LocalSpawnRuntimeResolver.TryResolve(in context, out var runtime, out var stations, out var systemIndex))
                 return; // Контекст невалиден для спавна.
 
-            LocalSpawnPopulation.EnsureShipCount(runtime, stations, shipTarget, patrolRadius);                 // Доводим население до цели.
-            LocalSpawnTopOrderAssigner.EnsureTradeInSystemOrders(runtime, systemIndex, patrolRadius);         // Пустым кораблям выдаем базовый top-order.
+            LocalSpawnPopulation.EnsureShipCount(runtime, stations, shipTarget, patrolRadius);                // Доводим население до цели.
+            LocalSpawnTopOrderAssigner.EnsureTradeInSystemOrders(runtime, systemIndex, patrolRadius);         // Пустым кораблям выдаем локальный trade-order.
         }
     }
 }

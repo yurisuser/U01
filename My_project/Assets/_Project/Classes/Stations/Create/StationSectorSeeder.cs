@@ -92,17 +92,11 @@ namespace _Project.Scripts.Stations
                 if (sys.Stations == null || sys.Stations.Length == 0)
                     continue;
 
-                var fractionA = fractions[0];
-                var fractionB = fractions.Count > 1 ? fractions[1] : fractions[0];
+                var ownerFraction = fractions[rng.Next(0, fractions.Count)];
+                var station = StationCreator.Create(DefaultDef, ownerFraction, new UnityEngine.Vector3(0f, baseRadius, 0f)); // 12 часов
 
-                var stationA = StationCreator.Create(DefaultDef, fractionA, new UnityEngine.Vector3(0f, baseRadius, 0f)); // 12 часов
-                var stationB = StationCreator.Create(DefaultDef, fractionB, new UnityEngine.Vector3(0f, -baseRadius, 0f)); // 6 часов
-
-                StationTradeBootstrap.InitForStation(ref stationA, rng);
-                StationTradeBootstrap.InitForStation(ref stationB, rng);
-
-                AppendStation(ref sys, stationA);
-                AppendStation(ref sys, stationB);
+                StationTradeBootstrap.InitForStation(ref station, rng);
+                AppendStation(ref sys, station);
             }
         }
 
