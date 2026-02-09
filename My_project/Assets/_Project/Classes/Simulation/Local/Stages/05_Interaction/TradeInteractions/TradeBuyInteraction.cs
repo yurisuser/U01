@@ -9,6 +9,7 @@ using _Project.Scripts.Trade.Models;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
+    /// <summary>Исполнение action TradeBuy на станции-цели.</summary>
     internal static class TradeBuyInteraction
     {
         public static void Process( // обработка покупки
@@ -27,7 +28,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             int amount = CalcBuyAmount(in ship, in targetStation, in order);
             if (amount <= 0) // нечего покупать
             {
-                TradeInteractionHelpers.FailAndResetTrade(ref ship);
+                TradeInteractionHelpers.FailAndResetTrade(ref ship); // Сценарий потерял актуальность.
                 return;
             }
 
@@ -47,16 +48,16 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             {
                 TradeInteractionLogger.LogTradeFailed("Buy", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, result.FailReason);
                 if (result.FailReason == ETradeFailReason.NotEnoughCargoSpace) // нет места
-                    TradeInteractionHelpers.DropCurrentTaskAndUndock(ref ship);
+                    TradeInteractionHelpers.DropCurrentTaskAndUndock(ref ship); // Пропускаем текущую buy-задачу и продолжаем стек.
                 else
-                    TradeInteractionHelpers.FailAndResetTrade(ref ship);
+                    TradeInteractionHelpers.FailAndResetTrade(ref ship); // Для остальных ошибок лучше полный сброс.
                 return;
             }
 
-            ship.TaskState.Pop();
-            HandlePartialBuy(ref ship, ref system, in order, amount);
-            ApplyOrderSellDelta(ref tradeState, order.ItemId, amount);
-            TradeInteractionHelpers.UndockSuccess(ref ship);
+            ship.TaskState.Pop(); // Текущая buy-задача выполнена.
+            HandlePartialBuy(ref ship, ref system, in order, amount); // Если купили не всё — пробуем найти следующего продавца.
+            ApplyOrderSellDelta(ref tradeState, order.ItemId, amount); // Синхронизируем ордер станции-продавца.
+            TradeInteractionHelpers.UndockSuccess(ref ship); // Возвращаем корабль в полет.
         }
 
         private static int CalcBuyAmount(in Ship ship, in Station targetStation, in OrderSell order) // расчет объема покупки
@@ -67,11 +68,11 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             var sellerCargo = targetStation.Cargo;
             if (sellerCargo == null)
-                return 0;
+                return 0; // Нет грузового модуля/состояния.
 
             int available = sellerCargo.GetAmount(_Project.Items.ItemType.Item, order.ItemId);
             if (available < amount) // ограничение склада
-                amount = available;
+                amount = available; // Режем объем по фактическому остатку товара.
 
             return amount;
         }
@@ -84,12 +85,13 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
         {
             int requested = ship.CurrentAction.Amount;
             if (boughtAmount >= requested)
-                return;
+                return; // Полная покупка, допланирование не нужно.
 
             int remaining = requested - boughtAmount;
             if (_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestSellerInSystem(system, order.ItemId, out var sellerUid) &&
                 TradeInteraction.TryGetStation(in system, sellerUid, out var nextSeller))
             {
+                // LIFO: пушим сначала торговое действие, затем move к найденному продавцу.
                 ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(sellerUid, order.ItemId, remaining));
                 ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                     nextSeller.Position,
@@ -107,9 +109,9 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             order.Amount -= amount;
             if (order.Amount <= 0)
-                tradeState.OrdersSell.Remove(itemId);
+                tradeState.OrdersSell.Remove(itemId); // Ордер закрыт.
             else
-                tradeState.OrdersSell[itemId] = order;
+                tradeState.OrdersSell[itemId] = order; // Ордер остался частично активным.
         }
     }
 }

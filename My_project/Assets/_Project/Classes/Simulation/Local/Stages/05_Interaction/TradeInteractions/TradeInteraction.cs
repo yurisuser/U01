@@ -9,6 +9,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
+    /// <summary>Общий проход по докнутым кораблям с торговыми action.</summary>
     internal static class TradeInteraction
     {
         public static void ProcessTradeActions(ref StarSys system) // торговые действия докнутых кораблей в системе
@@ -21,7 +22,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             {
                 var station = stations[s];
                 if (!TryGetDockState(in station, out var dockState))
-                    continue;
+                    continue; // На станции нет dock-модуля.
 
                 var docked = dockState.DockedShips;
                 for (int i = 0; i < docked.Count; i++) // перебор докнутых кораблей
@@ -33,15 +34,15 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
                     if (!TryGetStation(in system, ship.CurrentAction.TargetUid, out var targetStation)) // ищем целевую станцию
                     {
-                        ship.CurrentAction = default;
-                        ship.LastActionFailReason = EShipActionFailReason.TargetNotFound;
+                        ship.CurrentAction = default; // Сбрасываем действие, цель недоступна.
+                        ship.LastActionFailReason = EShipActionFailReason.TargetNotFound; // Для дебага/аналитики причины.
                         docked[i] = ship;
                         continue;
                     }
 
                     if (!TryGetTradeState(in targetStation, out var tradeState)) // требуется торговый модуль
                     {
-                        ship.CurrentAction = default;
+                        ship.CurrentAction = default; // Целевая станция найдена, но торговать нельзя.
                         ship.LastActionFailReason = EShipActionFailReason.TargetNotFound;
                         docked[i] = ship;
                         continue;
@@ -68,12 +69,12 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                     if (module == null || module.Type != EStationModuleType.Trade)
                         continue;
 
-                    tradeState = module.State as TradeModuleState;
+                    tradeState = module.State as TradeModuleState; // Берем runtime-состояние trade-модуля.
                     return tradeState != null;
                 }
             }
 
-            tradeState = null;
+            tradeState = null; // На станции нет рабочего trade-модуля.
             return false;
         }
 
@@ -84,7 +85,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             {
                 if (stations[i].Uid.Id == stationUid.Id) // совпадение по UID
                 {
-                    station = stations[i];
+                    station = stations[i]; // Возвращаем value-type станции из массива системы.
                     return true;
                 }
             }
@@ -98,7 +99,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             var modules = station.Modules;
             if (modules == null)
             {
-                dockState = null;
+                dockState = null; // Нет модулей вообще.
                 return false;
             }
 
@@ -108,11 +109,11 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 if (module == null || module.Type != EStationModuleType.Dock)
                     continue;
 
-                dockState = module.State as DockModuleState;
+                dockState = module.State as DockModuleState; // В dock-состоянии лежит список DockedShips.
                 return dockState != null;
             }
 
-            dockState = null;
+            dockState = null; // На станции нет dock-модуля.
             return false;
         }
     }

@@ -9,6 +9,7 @@ using _Project.Scripts.Trade.Models;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
+    /// <summary>Исполнение action TradeSell на станции-покупателе.</summary>
     internal static class TradeSellInteraction
     {
         public static void Process( // обработка продажи
@@ -22,7 +23,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 TradeInteractionLogger.LogTradeOrderMissing("Buy", ship.Uid.Id, targetStation.Uid.Id, ship.CurrentAction.ItemId);
                 if (TryReplanSell(in system, in ship, out var buyerUid, out var buyerStation)) // ищем другого покупателя
                 {
-                    ship.TaskState = ShipTaskStack.Default;
+                    ship.TaskState = ShipTaskStack.Default; // Сбрасываем неактуальный стек.
                     ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(buyerUid, ship.CurrentAction.ItemId, ship.CurrentAction.Amount));
                     ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                         buyerStation.Position,
@@ -32,17 +33,17 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 }
                 else
                 {
-                    ship.TaskState = ShipTaskStack.Default;
+                    ship.TaskState = ShipTaskStack.Default; // Переход в idle до следующего планирования.
                 }
 
-                TradeInteractionHelpers.UndockSuccess(ref ship);
+                TradeInteractionHelpers.UndockSuccess(ref ship); // Всегда уходим из дока после обработки missing-order.
                 return;
             }
 
             int amount = CalcSellAmount(in ship, in order);
             if (amount <= 0) // нечего продавать
             {
-                TradeInteractionHelpers.FailAndResetTrade(ref ship);
+                TradeInteractionHelpers.FailAndResetTrade(ref ship); // Нет товара/объема для сделки.
                 return;
             }
 
@@ -61,13 +62,13 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (!result.Success) // сделка не прошла
             {
                 TradeInteractionLogger.LogTradeFailed("Sell", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, result.FailReason);
-                TradeInteractionHelpers.FailAndResetTrade(ref ship);
+                TradeInteractionHelpers.FailAndResetTrade(ref ship); // Ошибку продажи не лечим частично.
                 return;
             }
 
-            ApplyOrderBuyDelta(ref tradeState, order.ItemId, amount);
-            ship.TaskState.Pop();
-            TradeInteractionHelpers.UndockSuccess(ref ship);
+            ApplyOrderBuyDelta(ref tradeState, order.ItemId, amount); // Уменьшаем встречный buy-ордер станции.
+            ship.TaskState.Pop();                                     // Sell-задача исполнена.
+            TradeInteractionHelpers.UndockSuccess(ref ship);          // Возвращаем корабль в полет.
         }
 
         private static int CalcSellAmount(in Ship ship, in OrderBy order) // расчет объема продажи
@@ -78,7 +79,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             int available = ship.Cargo.GetAmount(_Project.Items.ItemType.Item, order.ItemId);
             if (available < amount) // ограничение трюма
-                amount = available;
+                amount = available; // Нельзя продать больше, чем есть в трюме.
 
             return amount;
         }
@@ -90,9 +91,9 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             order.Amount -= amount;
             if (order.Amount <= 0)
-                tradeState.OrdersBuy.Remove(itemId);
+                tradeState.OrdersBuy.Remove(itemId); // Ордер покупателя закрыт.
             else
-                tradeState.OrdersBuy[itemId] = order;
+                tradeState.OrdersBuy[itemId] = order; // Частичное исполнение ордера.
         }
 
         private static bool TryReplanSell( // поиск нового покупателя
@@ -105,7 +106,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             buyerStation = default;
 
             if (!_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestBuyerInSystem(system, ship.CurrentAction.ItemId, out buyerUid))
-                return false;
+                return false; // В системе нет альтернативного покупателя.
 
             return TradeInteraction.TryGetStation(in system, buyerUid, out buyerStation);
         }
