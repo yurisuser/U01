@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using _Project.DataAccess;
+using _Project.CONST;
 
 namespace _Project.Scripts.Stations
 {
@@ -10,7 +11,6 @@ namespace _Project.Scripts.Stations
         private const int OrdersPerSide = 25;
         private const float MeanFill = 0.5f;
         private const float FillSpread = 0.3f;
-        private const float MaxPriceDelta = 0.2f;
 
         public static void InitForStation(ref Station station, Random rng)
         {
@@ -108,8 +108,8 @@ namespace _Project.Scripts.Stations
             if (basePrice <= 0)
                 return 0;
 
-            float delta = (MeanFill - fill) / FillSpread * MaxPriceDelta;
-            delta = Math.Clamp(delta, -MaxPriceDelta, MaxPriceDelta);
+            float delta = (MeanFill - fill) / FillSpread * EconomyConstants.MaxPriceDelta;
+            delta = Math.Clamp(delta, -EconomyConstants.MaxPriceDelta, EconomyConstants.MaxPriceDelta);
             float price = basePrice * (1f + delta);
             return Math.Max(1, (int)MathF.Round(price));
         }

@@ -13,7 +13,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                TradeTopOrderAssigner.EnsureTradeGalaxyOrder(ref ship, systemIndex, patrolRadius); // Единое правило назначения для локала/глобала.
+                _Project.Scripts.Simulation.Ships.TradeTopOrderAssigner.EnsureTradeGalaxyOrder(ref ship, systemIndex, patrolRadius); // Явно вызываем общий assigner, чтобы не зависеть от using-контекста.
                 ships[i] = ship; // value-type: записываем обратно в список.
             }
         }

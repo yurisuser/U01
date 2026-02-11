@@ -46,19 +46,18 @@ namespace _Project.Scripts.Simulation.Ships
             if (galaxy == null || galaxy.Length == 0 || edges == null)
                 return false;
 
-            var candidates = GalacticTradeFinder.FindCandidates(
+            if (!GalacticTradeFinder.TryFindBestCandidate(
                 galaxy,
                 edges,
                 avgYield: 0f,
                 currentSystemIndex: currentSystemIndex,
-                maxResults: 1,
-                maxHops: 1); // Временный режим: отбор маршрутов только через соседние системы (1 hop).
-
-            if (candidates == null || candidates.Count == 0)
+                out candidate,
+                maxHops: 1)) // Временный режим: отбор маршрутов только через соседние системы (1 hop).
+            {
                 return false;
+            }
 
-            candidate = candidates[0];
-            return true;
+            return true; // Найден один лучший кандидат.
         }
 
         public static void TryPlanWithCandidate(ref Ship ship, GameStateService gameState, int currentSystemIndex, in GalacticTradeCandidate candidate)
