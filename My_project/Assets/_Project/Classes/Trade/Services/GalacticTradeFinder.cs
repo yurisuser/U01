@@ -11,6 +11,10 @@ namespace _Project.Scripts.Trade.Services
     {
         private const int DefaultMaxResults = 10; // Дефолтный размер выборки лучших кандидатов.
         private const int DefaultMaxHops = 6; // Дефолтный лимит хопов для маршрутов поиска.
+        private static readonly object AdjacencyCacheLock = new object(); // Общий lock для кэша графа гиперлинков.
+        private static HyperlinkEdge[] _cachedAdjacencyEdges; // Последний массив ребер, под который построен adjacency.
+        private static int _cachedAdjacencySystemsCount = -1; // Размер галактики, соответствующий кэшированному графу.
+        private static List<int>[] _cachedAdjacency; // Read-only граф соседей для переиспользования в hot path.
 
         // --- Пайплайн: хардкор в начале файла ---
         private sealed class PipelineContext // Общий контекст прохода через стадии поиска.
@@ -143,110 +147,81 @@ namespace _Project.Scripts.Trade.Services
                 normalizedCurrent = 0; // Фоллбек на 0-ю систему, если индекс вне диапазона.
 
             bool oneHopMode = maxHops == 1;
-            List<int>[] adjacency = oneHopMode ? BuildAdjacency(edges, systemsCount) : null;
+            List<int>[] adjacency = oneHopMode ? GetAdjacencyCached(edges, systemsCount) : null;
             if (oneHopMode && (adjacency == null || adjacency[normalizedCurrent].Count == 0))
                 return false; // В радиусе 1 перехода нет систем-кандидатов.
 
             bool hasBest = false;
             float bestScore = float.MinValue;
 
-            for (int sellerSys = 0; sellerSys < systemsCount; sellerSys++) // Перебираем системы-продавцы.
+            if (oneHopMode)
             {
-                if (oneHopMode)
+                var sellers = adjacency[normalizedCurrent]; // Продавцы только среди соседей текущей системы.
+                for (int s = 0; s < sellers.Count; s++)
                 {
+                    int sellerSys = sellers[s];
                     if (sellerSys == normalizedCurrent)
-                        continue; // В 1-hop режиме продавец — только сосед current.
-                    if (!ContainsNeighbor(adjacency[normalizedCurrent], sellerSys))
-                        continue; // Отсеиваем несоседние системы.
-                }
+                        continue; // На случай самопетли в графе.
 
-                var sellerStations = galaxy[sellerSys].Stations;
-                if (sellerStations == null || sellerStations.Length == 0)
-                    continue; // В системе продавца нет станций.
+                    var sellerStations = galaxy[sellerSys].Stations;
+                    if (sellerStations == null || sellerStations.Length == 0)
+                        continue; // В системе продавца нет станций.
 
-                for (int buyerSys = 0; buyerSys < systemsCount; buyerSys++) // Перебираем системы-покупатели.
-                {
-                    if (buyerSys == sellerSys)
-                        continue; // Продавец и покупатель не могут быть в одной системе.
-
-                    int hopsToSeller;
-                    int hopsSellerToBuyer;
-                    if (oneHopMode)
+                    var buyers = adjacency[sellerSys]; // Покупатели только среди соседей продавца.
+                    for (int b = 0; b < buyers.Count; b++)
                     {
-                        if (!ContainsNeighbor(adjacency[sellerSys], buyerSys))
-                            continue; // Покупатель должен быть соседом seller.
-                        hopsToSeller = 1;
-                        hopsSellerToBuyer = 1;
+                        int buyerSys = buyers[b];
+                        if (buyerSys == sellerSys)
+                            continue; // Продавец и покупатель не могут быть в одной системе.
+
+                        TryEvaluateSystemPair(
+                            galaxy,
+                            sellerSys,
+                            buyerSys,
+                            hopsToSeller: 1,
+                            hopsSellerToBuyer: 1,
+                            avgYield,
+                            ref hasBest,
+                            ref bestScore,
+                            ref bestCandidate);
                     }
-                    else
+                }
+            }
+            else
+            {
+                for (int sellerSys = 0; sellerSys < systemsCount; sellerSys++) // Полный режим: продавец может быть в любой системе.
+                {
+                    var sellerStations = galaxy[sellerSys].Stations;
+                    if (sellerStations == null || sellerStations.Length == 0)
+                        continue; // В системе продавца нет станций.
+
+                    for (int buyerSys = 0; buyerSys < systemsCount; buyerSys++) // Полный режим: покупатель может быть в любой системе.
                     {
-                        hopsSellerToBuyer = GalacticRouteFinder.GetHops(sellerSys, buyerSys, edges, systemsCount);
+                        if (buyerSys == sellerSys)
+                            continue; // Продавец и покупатель не могут быть в одной системе.
+
+                        int hopsSellerToBuyer = GalacticRouteFinder.GetHops(sellerSys, buyerSys, edges, systemsCount);
                         if (hopsSellerToBuyer < 0)
                             continue; // Нет маршрута seller -> buyer.
                         if (maxHops >= 0 && hopsSellerToBuyer > maxHops)
                             continue; // Превышен лимит хопов seller -> buyer.
 
-                        hopsToSeller = GalacticRouteFinder.GetHops(normalizedCurrent, sellerSys, edges, systemsCount);
+                        int hopsToSeller = GalacticRouteFinder.GetHops(normalizedCurrent, sellerSys, edges, systemsCount);
                         if (hopsToSeller < 0)
                             continue; // Нет маршрута current -> seller.
                         if (maxHops >= 0 && hopsToSeller > maxHops)
                             continue; // Превышен лимит хопов current -> seller.
-                    }
 
-                    var buyerStations = galaxy[buyerSys].Stations;
-                    if (buyerStations == null || buyerStations.Length == 0)
-                        continue; // В системе покупателя нет станций.
-
-                    for (int si = 0; si < sellerStations.Length; si++) // Перебираем станции-продавцы.
-                    {
-                        if (!TryGetTradeState(sellerStations[si].Modules, out var sellerTrade))
-                            continue; // На станции нет Trade-модуля.
-                        if (sellerTrade.OrdersSell.Count == 0)
-                            continue; // На станции нет ордеров продажи.
-
-                        for (int bi = 0; bi < buyerStations.Length; bi++) // Перебираем станции-покупатели.
-                        {
-                            if (!TryGetTradeState(buyerStations[bi].Modules, out var buyerTrade))
-                                continue; // На станции нет Trade-модуля.
-                            if (buyerTrade.OrdersBuy.Count == 0)
-                                continue; // На станции нет ордеров покупки.
-
-                            foreach (var sellPair in sellerTrade.OrdersSell) // Перебираем товары seller-станции.
-                            {
-                                int itemId = sellPair.Key;
-                                var sell = sellPair.Value;
-                                if (!buyerTrade.OrdersBuy.TryGetValue(itemId, out var buy))
-                                    continue; // Покупатель не берет этот товар.
-
-                                int profitPerUnit = buy.Price - sell.Price;
-                                if (profitPerUnit <= 0)
-                                    continue; // Неприбыльная сделка.
-
-                                int amount = Math.Min(sell.Amount, buy.Amount);
-                                if (amount <= 0)
-                                    continue; // По факту объем сделки нулевой.
-
-                                var candidate = new GalacticTradeCandidate(
-                                    sellerStations[si].Uid,
-                                    sellerSys,
-                                    buyerStations[bi].Uid,
-                                    buyerSys,
-                                    itemId,
-                                    amount,
-                                    sell.Price,
-                                    buy.Price,
-                                    hopsToSeller,
-                                    hopsSellerToBuyer);
-                                float score = GalacticTradeScoringService.ComputeScore(candidate, avgYield); // Считаем score сразу в потоке.
-
-                                if (!hasBest || score > bestScore)
-                                {
-                                    hasBest = true; // Нашли первый или лучший по score вариант.
-                                    bestScore = score;
-                                    bestCandidate = candidate;
-                                }
-                            }
-                        }
+                        TryEvaluateSystemPair(
+                            galaxy,
+                            sellerSys,
+                            buyerSys,
+                            hopsToSeller,
+                            hopsSellerToBuyer,
+                            avgYield,
+                            ref hasBest,
+                            ref bestScore,
+                            ref bestCandidate);
                     }
                 }
             }
@@ -273,7 +248,7 @@ namespace _Project.Scripts.Trade.Services
                 normalizedCurrent = 0; // Фоллбек на 0-ю систему, если индекс вне диапазона.
 
             bool oneHopMode = maxHops == 1;
-            List<int>[] adjacency = oneHopMode ? BuildAdjacency(edges, systemsCount) : null;
+            List<int>[] adjacency = oneHopMode ? GetAdjacencyCached(edges, systemsCount) : null;
             if (oneHopMode && (adjacency == null || adjacency[normalizedCurrent].Count == 0))
                 return false; // В радиусе 1 перехода нет систем-кандидатов.
 
@@ -294,16 +269,39 @@ namespace _Project.Scripts.Trade.Services
 
         private static void BuildSystemPairs(PipelineContext context) // Стадия 1: формируем пары систем, которые проходят route-фильтры.
         {
-            for (int sellerSys = 0; sellerSys < context.SystemsCount; sellerSys++) // Перебираем системы-продавцы.
+            if (context.OneHopMode)
             {
-                if (context.OneHopMode)
+                var sellers = context.Adjacency[context.CurrentSystemIndex]; // Продавцы только соседи current.
+                for (int s = 0; s < sellers.Count; s++)
                 {
+                    int sellerSys = sellers[s];
                     if (sellerSys == context.CurrentSystemIndex)
-                        continue; // В 1-hop режиме продавец — только сосед current.
-                    if (!ContainsNeighbor(context.Adjacency[context.CurrentSystemIndex], sellerSys))
-                        continue; // Отсеиваем несоседние системы.
+                        continue;
+
+                    var sellerStations = context.Galaxy[sellerSys].Stations;
+                    if (sellerStations == null || sellerStations.Length == 0)
+                        continue; // В системе продавца нет станций.
+
+                    var buyers = context.Adjacency[sellerSys]; // Покупатели только соседи seller.
+                    for (int b = 0; b < buyers.Count; b++)
+                    {
+                        int buyerSys = buyers[b];
+                        if (buyerSys == sellerSys)
+                            continue;
+
+                        var buyerStations = context.Galaxy[buyerSys].Stations;
+                        if (buyerStations == null || buyerStations.Length == 0)
+                            continue; // В системе покупателя нет станций.
+
+                        context.SystemPairs.Add(new SystemPair(sellerSys, buyerSys, hopsToSeller: 1, hopsSellerToBuyer: 1));
+                    }
                 }
 
+                return; // В one-hop режиме не делаем полный N^2 обход.
+            }
+
+            for (int sellerSys = 0; sellerSys < context.SystemsCount; sellerSys++) // Перебираем системы-продавцы.
+            {
                 var sellerStations = context.Galaxy[sellerSys].Stations;
                 if (sellerStations == null || sellerStations.Length == 0)
                     continue; // В системе продавца нет станций.
@@ -478,6 +476,24 @@ namespace _Project.Scripts.Trade.Services
             return adjacency;
         }
 
+        private static List<int>[] GetAdjacencyCached(HyperlinkEdge[] edges, int systemsCount)
+        {
+            lock (AdjacencyCacheLock)
+            {
+                if (_cachedAdjacency != null &&
+                    ReferenceEquals(_cachedAdjacencyEdges, edges) &&
+                    _cachedAdjacencySystemsCount == systemsCount)
+                {
+                    return _cachedAdjacency; // Переиспользуем уже построенный граф для того же массива ребер.
+                }
+
+                _cachedAdjacency = BuildAdjacency(edges, systemsCount);
+                _cachedAdjacencyEdges = edges;
+                _cachedAdjacencySystemsCount = systemsCount;
+                return _cachedAdjacency;
+            }
+        }
+
         private static bool ContainsNeighbor(List<int> neighbors, int systemIndex)
         {
             if (neighbors == null || neighbors.Count == 0)
@@ -509,6 +525,77 @@ namespace _Project.Scripts.Trade.Services
             }
 
             return false;
+        }
+
+        private static void TryEvaluateSystemPair(
+            StarSys[] galaxy,
+            int sellerSys,
+            int buyerSys,
+            int hopsToSeller,
+            int hopsSellerToBuyer,
+            float avgYield,
+            ref bool hasBest,
+            ref float bestScore,
+            ref GalacticTradeCandidate bestCandidate)
+        {
+            var sellerStations = galaxy[sellerSys].Stations;
+            var buyerStations = galaxy[buyerSys].Stations;
+            if (sellerStations == null || buyerStations == null)
+                return;
+            if (sellerStations.Length == 0 || buyerStations.Length == 0)
+                return;
+
+            for (int si = 0; si < sellerStations.Length; si++) // Перебираем станции-продавцы.
+            {
+                if (!TryGetTradeState(sellerStations[si].Modules, out var sellerTrade))
+                    continue; // На станции нет Trade-модуля.
+                if (sellerTrade.OrdersSell.Count == 0)
+                    continue; // На станции нет ордеров продажи.
+
+                for (int bi = 0; bi < buyerStations.Length; bi++) // Перебираем станции-покупатели.
+                {
+                    if (!TryGetTradeState(buyerStations[bi].Modules, out var buyerTrade))
+                        continue; // На станции нет Trade-модуля.
+                    if (buyerTrade.OrdersBuy.Count == 0)
+                        continue; // На станции нет ордеров покупки.
+
+                    foreach (var sellPair in sellerTrade.OrdersSell) // Перебираем товары seller-станции.
+                    {
+                        int itemId = sellPair.Key;
+                        var sell = sellPair.Value;
+                        if (!buyerTrade.OrdersBuy.TryGetValue(itemId, out var buy))
+                            continue; // Покупатель не берет этот товар.
+
+                        int profitPerUnit = buy.Price - sell.Price;
+                        if (profitPerUnit <= 0)
+                            continue; // Неприбыльная сделка.
+
+                        int amount = Math.Min(sell.Amount, buy.Amount);
+                        if (amount <= 0)
+                            continue; // По факту объем сделки нулевой.
+
+                        var candidate = new GalacticTradeCandidate(
+                            sellerStations[si].Uid,
+                            sellerSys,
+                            buyerStations[bi].Uid,
+                            buyerSys,
+                            itemId,
+                            amount,
+                            sell.Price,
+                            buy.Price,
+                            hopsToSeller,
+                            hopsSellerToBuyer);
+                        float score = GalacticTradeScoringService.ComputeScore(candidate, avgYield); // Считаем score сразу в потоке.
+
+                        if (!hasBest || score > bestScore)
+                        {
+                            hasBest = true; // Нашли первый или лучший по score вариант.
+                            bestScore = score;
+                            bestCandidate = candidate;
+                        }
+                    }
+                }
+            }
         }
     }
 }
