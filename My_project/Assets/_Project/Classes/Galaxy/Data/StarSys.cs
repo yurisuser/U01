@@ -29,6 +29,7 @@ namespace _Project.Scripts.Galaxy.Data
         public Station[] Stations; // станции в системе
 
         public bool isHome;
+        public float SecurityLevel; // уровень безопасности/контроля фракции (0..1)
 
         public int[] PlanetOrbits;
         public float OldX;

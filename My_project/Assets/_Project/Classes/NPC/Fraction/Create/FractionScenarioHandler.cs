@@ -19,6 +19,8 @@ namespace _Project.Scripts.NPC.Fraction.Create
     /// </summary>
     public static class FractionScenarioHandler
     {
+        private const float SecurityLevelHome = 1f;
+
         /// <summary>Точка входа для сценария конкретной фракции.</summary>
         public static void Apply(StarSys[] galaxy, Fraction fraction, CatalogFraction catalog)
         {
@@ -49,10 +51,19 @@ namespace _Project.Scripts.NPC.Fraction.Create
             var planetNameIndex = 0;
             var moonNameIndex = 0;
             int capitalIndex = -1;
+            var configuredHomeSystemsCount = 0;
+            var assignedHomeSystemsCount = 0;
+
+            if (scenario.systems == null || scenario.systems.Length == 0)
+                return;
 
             // Прогоняем сценарные системы по очереди
             foreach (var sysDto in scenario.systems)
             {
+                var configuredSecurityLevel = ResolveSecurityLevel(sysDto, catalog.Name, scenarioPath);
+                if (sysDto.isHome)
+                    configuredHomeSystemsCount++;
+
                 var targetIndex = PickSystem(galaxy, systemsInConstellation, sysDto.pick, occupied, distancesToExternal, capitalIndex);
                 if (targetIndex == -1)
                 {
@@ -62,11 +73,23 @@ namespace _Project.Scripts.NPC.Fraction.Create
 
                 ref var sys = ref galaxy[targetIndex];
                 ApplySystem(ref sys, sysDto, scenario.star, fraction, catalog,
-                    ref starNameIndexFromEnd, ref planetNameIndex, ref moonNameIndex);
+                    ref starNameIndexFromEnd, ref planetNameIndex, ref moonNameIndex,
+                    out var assignedIsHome, configuredSecurityLevel);
                 occupied.Add(targetIndex);
                 if (capitalIndex == -1 && string.Equals(sysDto.role, "capital", StringComparison.OrdinalIgnoreCase))
                     capitalIndex = targetIndex;
+
+                if (assignedIsHome)
+                    assignedHomeSystemsCount++;
             }
+
+            if (configuredHomeSystemsCount != 1)
+                throw new InvalidOperationException(
+                    $"Сценарий фракции {catalog.Name} ({scenarioPath}) должен содержать ровно одну систему с isHome=true. Найдено: {configuredHomeSystemsCount}.");
+
+            if (assignedHomeSystemsCount != 1)
+                throw new InvalidOperationException(
+                    $"Сценарий фракции {catalog.Name} ({scenarioPath}) не смог применить единственную систему isHome=true. Найдено применённых: {assignedHomeSystemsCount}.");
         }
 
         private static string ResolveScenarioPath(string dir)
@@ -223,7 +246,8 @@ namespace _Project.Scripts.NPC.Fraction.Create
         }
 
         private static void ApplySystem(ref StarSys sys, ScenarioSystem sysDto, ScenarioStar starDto, Fraction fraction, CatalogFraction catalog,
-            ref int starNameIndexFromEnd, ref int planetNameIndex, ref int moonNameIndex)
+            ref int starNameIndexFromEnd, ref int planetNameIndex, ref int moonNameIndex,
+            out bool assignedIsHome, float configuredSecurityLevel)
         {
             // звезда
             if (starDto != null)
@@ -283,6 +307,34 @@ namespace _Project.Scripts.NPC.Fraction.Create
 
             if (sysDto.isHome) sys.isHome = true;
             sys.OwnerFrac = fraction;
+            assignedIsHome = sysDto.isHome;
+            sys.SecurityLevel = configuredSecurityLevel;
+        }
+
+        private static float ResolveSecurityLevel(ScenarioSystem sysDto, string fractionName, string scenarioPath)
+        {
+            // Берем уровень только из конфига. Если поле не задано, JsonUtility даст 0.
+            float securityLevel = sysDto.securityLevel;
+
+            if (securityLevel < 0f || securityLevel > 1f)
+            {
+                throw new InvalidOperationException(
+                    $"securityLevel вне диапазона [0..1] у фракции {fractionName} ({scenarioPath}): {securityLevel}.");
+            }
+
+            if (securityLevel <= 0f)
+            {
+                throw new InvalidOperationException(
+                    $"Для всех систем в сценарии securityLevel должен быть > 0 у фракции {fractionName} ({scenarioPath}).");
+            }
+
+            if (sysDto.isHome && !Mathf.Approximately(securityLevel, SecurityLevelHome))
+            {
+                throw new InvalidOperationException(
+                    $"Для isHome системы securityLevel обязан быть {SecurityLevelHome} у фракции {fractionName} ({scenarioPath}).");
+            }
+
+            return securityLevel;
         }
 
         private static Moon[] CreateMoons(ScenarioPlanet pDto, CatalogFraction catalog, ref int moonNameIndex)
@@ -329,6 +381,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
             public string role;
             public string pick;
             public bool isHome;
+            public float securityLevel;
             public ScenarioPlanet[] planets;
             public ScenarioStation[] stations;
         }

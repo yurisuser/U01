@@ -5,6 +5,8 @@ namespace _Project.Scripts.NPC.Fraction.Create
 {
     public static class FractionsSpawner
     {
+        private const float DefaultOwnedSecurityLevel = 0.1f;
+
         public static void SpawnAll(StarSys[] galaxy)
         {
             var fractions = FractionService.GetAll();
@@ -34,6 +36,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
 
                 var sys = galaxy[i];
                 sys.OwnerFrac = fraction;
+                sys.SecurityLevel = DefaultOwnedSecurityLevel; // Базовый security для любой принадлежащей фракции системы.
                 if (canRename && nameIndex < starNames.Count)
                 {
                     var newName = starNames[nameIndex++];

@@ -5,6 +5,7 @@
       "role": "capital",
       "isHome": true,
       "pick": "far_to_hyper_distance",
+      "securityLevel": 1.0,
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },
         { "type": "Desert", "size": "Medium", "orbit": 4, "catalogName": true, "moons": [
@@ -26,6 +27,7 @@
     {
       "role": "raider",
       "pick": "have_external_hyper",
+      "securityLevel": 0.5,
       "planets": [
         { "type": "Stone", "size": "Medium", "orbit": 3, "catalogName": true, "moons": [] },
         { "type": "GasGiant", "orbit": 8, "catalogName": true, "moons": [
@@ -40,6 +42,7 @@
     {
       "role": "mid",
       "pick": "closest_to_capital",
+      "securityLevel": 0.5,
       "planets": [
         { "type": "IceGiant", "orbit": 5, "catalogName": true, "moons": [
           { "type": "Ice", "size": "Small", "orbit": 2, "catalogName": true }

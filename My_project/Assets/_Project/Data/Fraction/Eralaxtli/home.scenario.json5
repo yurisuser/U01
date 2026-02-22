@@ -5,6 +5,7 @@
       "role": "capital",
       "isHome": true,
       "pick": "far_to_hyper_distance",
+      "securityLevel": 1.0,
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },
         { "type": "Stone", "size": "Medium", "orbit": 4, "catalogName": true, "moons": [
@@ -25,6 +26,7 @@
     {
       "role": "border",
       "pick": "have_external_hyper",
+      "securityLevel": 0.5,
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 3, "catalogName": true, "moons": [] },
         { "type": "Desert", "size": "Medium", "orbit": 6, "catalogName": true, "moons": [
@@ -42,6 +44,7 @@
     {
       "role": "rebel_hold",
       "pick": "closest_to_capital",
+      "securityLevel": 0.5,
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 2, "catalogName": true, "moons": [] },
         { "type": "Frozen", "size": "Medium", "orbit": 6, "catalogName": true, "moons": [
@@ -58,6 +61,7 @@
     {
       "role": "outer_watch",
       "pick": "far_to_capital",
+      "securityLevel": 0.5,
       "planets": [
         { "type": "Stone", "size": "Small", "orbit": 3, "catalogName": true, "moons": [] },
         { "type": "Frozen", "size": "Medium", "orbit": 7, "catalogName": true, "moons": [
