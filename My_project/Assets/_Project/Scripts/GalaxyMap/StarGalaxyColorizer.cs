@@ -82,6 +82,13 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             if (_systemIndex < 0 || _systemIndex >= systems.Length)
                 return;
 
+            if (_state.UseSecurityColoring)
+            {
+                var securityLevel = Mathf.Clamp01(systems[_systemIndex].SecurityLevel);
+                ApplyToRenderers(GetSecurityColor(securityLevel));
+                return;
+            }
+
             bool coloringOn = _state.UseHyperlinkColoring || _state.UseFractionColoring;
             if (!coloringOn)
             {
@@ -123,6 +130,29 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 colorSettings.DefaultColor);
 
             ApplyToRenderers(finalColor);
+        }
+
+        private static Color GetSecurityColor(float securityLevel)
+        {
+            // По правилу UI:
+            // 1..0.5      -> зеленый .. желто-зеленый
+            // 0.4999..0.1 -> желтый .. оранжевый
+            // 0           -> красный
+            if (securityLevel <= 0f)
+                return Color.red;
+
+            var low = new Color(1f, 0.45f, 0f, 1f); // оранжевый
+            var mid = Color.yellow;
+            var midHigh = new Color(0.70f, 1f, 0f, 1f); // желто-зеленый
+            var high = Color.green;
+
+            if (securityLevel < 0.1f)
+                return low;
+
+            if (securityLevel <= 0.5f)
+                return Color.Lerp(low, mid, (securityLevel - 0.1f) / 0.4f);
+
+            return Color.Lerp(midHigh, high, (securityLevel - 0.5f) / 0.5f);
         }
 
         private int FindSystemIndex(StarSys[] systems, UID uid)

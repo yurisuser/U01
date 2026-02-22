@@ -20,6 +20,7 @@ namespace _Project.Scripts.Core.GameState
         private bool _showHyperlinks = true; // Флаг показа гиперлинков в представлении.
         private bool _useHyperlinkColoring = true; // Флаг раскраски по гиперлинкам.
         private bool _useFractionColoring = true; // Флаг раскраски по фракциям.
+        private bool _useSecurityColoring; // Флаг раскраски по уровню безопасности.
         private Func<bool> _waitGlobalIdle; // Колбэк ожидания idle у global worker (handshake выбора системы).
         private ERunMode _runModeBeforeSelection = ERunMode.Paused; // Режим до входа в handshake выбора системы.
         private bool _selectionHandshakeActive; // Защита от повторного входа в handshake выбора системы.
@@ -31,6 +32,7 @@ namespace _Project.Scripts.Core.GameState
             _showHyperlinks = SettingsService.Instance.ShowHyperlinks;
             _useHyperlinkColoring = SettingsService.Instance.UseHyperlinkColoring;
             _useFractionColoring = SettingsService.Instance.UseFractionColoring;
+            _useSecurityColoring = SettingsService.Instance.UseSecurityColoring;
         }
 
         public ERunMode RunMode => _runMode; // Публичный read-only доступ к текущему run mode.
@@ -42,6 +44,7 @@ namespace _Project.Scripts.Core.GameState
         public bool ShowHyperlinks => _showHyperlinks; // UI-флаг показа гиперлинков.
         public bool UseHyperlinkColoring => _useHyperlinkColoring; // UI-флаг раскраски по гиперлинкам.
         public bool UseFractionColoring => _useFractionColoring; // UI-флаг раскраски по фракциям.
+        public bool UseSecurityColoring => _useSecurityColoring; // UI-флаг раскраски по security level.
         /// <summary>Сервис выбора объекта.</summary>
         public SelectedService SelectedService => _selectedService;
 
@@ -109,6 +112,15 @@ namespace _Project.Scripts.Core.GameState
                 return; // Игнорируем noop.
 
             _useFractionColoring = use;
+            NotifyChanged(); // Уведомляем UI.
+        }
+
+        internal void ApplyUseSecurityColoring(bool use)
+        {
+            if (_useSecurityColoring == use)
+                return; // Игнорируем noop.
+
+            _useSecurityColoring = use;
             NotifyChanged(); // Уведомляем UI.
         }
 

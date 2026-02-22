@@ -14,7 +14,7 @@
                     <ui:Label text="Constellations" double-click-selects-word="false" class="vm-toggle-label vm-toggle-label-tight" />
                 </ui:VisualElement>
                 <ui:VisualElement name="VisualElement4" class="vm-toggle-item">
-                    <ui:Label text="Unuse" class="vm-toggle-label vm-toggle-label-tight" />
+                    <ui:Label text="Security" class="vm-toggle-label vm-toggle-label-tight" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

@@ -44,6 +44,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
         private StarSys[] _currentGalaxy;
         private bool _lastUseHyperlinkColoring;
         private bool _lastUseFractionColoring;
+        private bool _lastUseSecurityColoring;
 
         public IReadOnlyList<GameObject> Spawned => _spawned;
 
@@ -124,7 +125,8 @@ namespace _Project.Scripts.GalaxyMap.Runtime
 
             var galaxy = _state.Galaxy;
             bool coloringChanged = _lastUseHyperlinkColoring != _state.UseHyperlinkColoring
-                                   || _lastUseFractionColoring != _state.UseFractionColoring;
+                                   || _lastUseFractionColoring != _state.UseFractionColoring
+                                   || _lastUseSecurityColoring != _state.UseSecurityColoring;
 
             if (_currentGalaxy != galaxy)
             {
@@ -132,6 +134,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
                 _currentGalaxy = galaxy;
                 _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
                 _lastUseFractionColoring = _state.UseFractionColoring;
+                _lastUseSecurityColoring = _state.UseSecurityColoring;
                 return;
             }
 
@@ -139,6 +142,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
                 _lastUseFractionColoring = _state.UseFractionColoring;
+                _lastUseSecurityColoring = _state.UseSecurityColoring;
                 RefreshSpawnedColors();
             }
         }
@@ -188,6 +192,7 @@ namespace _Project.Scripts.GalaxyMap.Runtime
             {
                 _lastUseHyperlinkColoring = _state.UseHyperlinkColoring;
                 _lastUseFractionColoring = _state.UseFractionColoring;
+                _lastUseSecurityColoring = _state.UseSecurityColoring;
             }
         }
 

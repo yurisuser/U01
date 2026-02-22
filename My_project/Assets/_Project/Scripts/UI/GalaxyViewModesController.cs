@@ -27,6 +27,8 @@ namespace _Project.Scripts.UI
         private Label _fractionsLabel;
         private VisualElement _constellationsButton;
         private Label _constellationsLabel;
+        private VisualElement _securityButton;
+        private Label _securityLabel;
         private GameStateService _state;
         private ObjectInfoController _starInfoController;
         private ObjectInfoTabsController _tabsController;
@@ -34,6 +36,7 @@ namespace _Project.Scripts.UI
         private EventCallback<ClickEvent> _onClick;
         private EventCallback<ClickEvent> _onFractionsClick;
         private EventCallback<ClickEvent> _onConstellationsClick;
+        private EventCallback<ClickEvent> _onSecurityClick;
 
         private void OnEnable()
         {
@@ -56,10 +59,15 @@ namespace _Project.Scripts.UI
             _constellationsButton?.UnregisterCallback(_onConstellationsClick);
             _constellationsButton?.RegisterCallback(_onConstellationsClick);
 
+            _onSecurityClick = OnSecurityClicked;
+            _securityButton?.UnregisterCallback(_onSecurityClick);
+            _securityButton?.RegisterCallback(_onSecurityClick);
+
             ApplyPanelBackground();
             RefreshLinkVisual();
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
+            RefreshSecurityVisual();
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
@@ -78,6 +86,8 @@ namespace _Project.Scripts.UI
                 _fractionsButton.UnregisterCallback(_onFractionsClick);
             if (_constellationsButton != null && _onConstellationsClick != null)
                 _constellationsButton.UnregisterCallback(_onConstellationsClick);
+            if (_securityButton != null && _onSecurityClick != null)
+                _securityButton.UnregisterCallback(_onSecurityClick);
         }
 
         private void OnValidate()
@@ -96,6 +106,7 @@ namespace _Project.Scripts.UI
             RefreshLinkVisual();
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
+            RefreshSecurityVisual();
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
@@ -128,8 +139,10 @@ namespace _Project.Scripts.UI
             _fractionsLabel = _fractionsButton?.Q<Label>();
             _constellationsButton = _root.Q<VisualElement>("VisualElement3");
             _constellationsLabel = _constellationsButton?.Q<Label>();
+            _securityButton = _root.Q<VisualElement>("VisualElement4");
+            _securityLabel = _securityButton?.Q<Label>();
 
-            return _panel != null && _linkButton != null && _fractionsButton != null && _constellationsButton != null;
+            return _panel != null && _linkButton != null && _fractionsButton != null && _constellationsButton != null && _securityButton != null;
         }
 
         private void EnsureObjectData()
@@ -200,6 +213,7 @@ namespace _Project.Scripts.UI
             RefreshLinkVisual();
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
+            RefreshSecurityVisual();
         }
 
         private void OnLinkClicked(ClickEvent evt)
@@ -212,6 +226,8 @@ namespace _Project.Scripts.UI
         {
             var settings = SettingsService.Instance;
             bool newValue = !settings.UseFractionColoring;
+            if (newValue == false && _state != null && _state.UseSecurityColoring)
+                return; // В режиме Security гиперлинии должны оставаться в цветах фракций.
             settings.SetUseFractionColoring(newValue);
             if (newValue && settings.UseHyperlinkColoring)
                 settings.SetUseHyperlinkColoring(false);
@@ -224,6 +240,23 @@ namespace _Project.Scripts.UI
             settings.SetUseHyperlinkColoring(newValue);
             if (newValue && settings.UseFractionColoring)
                 settings.SetUseFractionColoring(false);
+            if (newValue && settings.UseSecurityColoring)
+                settings.SetUseSecurityColoring(false);
+        }
+
+        private void OnSecurityClicked(ClickEvent evt)
+        {
+            var settings = SettingsService.Instance;
+            bool newValue = !settings.UseSecurityColoring;
+            settings.SetUseSecurityColoring(newValue);
+            if (!newValue)
+                return;
+
+            // В режиме Security линии должны краситься фракционными цветами.
+            if (settings.UseHyperlinkColoring)
+                settings.SetUseHyperlinkColoring(false);
+            if (!settings.UseFractionColoring)
+                settings.SetUseFractionColoring(true);
         }
 
         private void RefreshLinkVisual()
@@ -272,6 +305,22 @@ namespace _Project.Scripts.UI
 
             if (_constellationsLabel != null)
                 _constellationsLabel.style.color = _state.UseHyperlinkColoring ? linkOnColor : linkOffColor;
+        }
+
+        private void RefreshSecurityVisual()
+        {
+            if (_securityButton == null)
+                return;
+
+            if (_state == null)
+            {
+                if (_securityLabel != null)
+                    _securityLabel.style.color = linkDisabledColor;
+                return;
+            }
+
+            if (_securityLabel != null)
+                _securityLabel.style.color = _state.UseSecurityColoring ? linkOnColor : linkOffColor;
         }
     }
 }

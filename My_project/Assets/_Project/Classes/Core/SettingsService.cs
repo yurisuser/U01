@@ -8,11 +8,13 @@ namespace _Project.Scripts.Core
         private const string ShowHyperlinksKey = "Settings_ShowHyperlinks";
         private const string UseHyperlinkColoringKey = "Settings_UseHyperlinkColoring";
         private const string UseFractionColoringKey = "Settings_UseFractionColoring";
+        private const string UseSecurityColoringKey = "Settings_UseSecurityColoring";
         private static SettingsService _instance;
 
         private bool _showHyperlinks;
         private bool _useHyperlinkColoring;
         private bool _useFractionColoring;
+        private bool _useSecurityColoring;
 
         public static SettingsService Instance
         {
@@ -30,11 +32,13 @@ namespace _Project.Scripts.Core
             _showHyperlinks = PlayerPrefs.GetInt(ShowHyperlinksKey, 1) == 1;
             _useHyperlinkColoring = PlayerPrefs.GetInt(UseHyperlinkColoringKey, 1) == 1;
             _useFractionColoring = PlayerPrefs.GetInt(UseFractionColoringKey, 1) == 1;
+            _useSecurityColoring = PlayerPrefs.GetInt(UseSecurityColoringKey, 0) == 1;
         }
 
         public bool ShowHyperlinks => _showHyperlinks;
         public bool UseHyperlinkColoring => _useHyperlinkColoring;
         public bool UseFractionColoring => _useFractionColoring;
+        public bool UseSecurityColoring => _useSecurityColoring;
 
         public void SetShowHyperlinks(bool show)
         {
@@ -76,6 +80,20 @@ namespace _Project.Scripts.Core
             var gameState = GameBootstrap.GameState;
             if (gameState != null)
                 gameState.ApplyUseFractionColoring(use);
+        }
+
+        public void SetUseSecurityColoring(bool use)
+        {
+            if (_useSecurityColoring == use)
+                return;
+
+            _useSecurityColoring = use;
+            PlayerPrefs.SetInt(UseSecurityColoringKey, use ? 1 : 0);
+            PlayerPrefs.Save();
+
+            var gameState = GameBootstrap.GameState;
+            if (gameState != null)
+                gameState.ApplyUseSecurityColoring(use);
         }
     }
 }
