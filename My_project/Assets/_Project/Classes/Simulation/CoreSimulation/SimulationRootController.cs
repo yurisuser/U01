@@ -46,6 +46,13 @@ namespace _Project.Scripts.Simulation.Core
         {
             _eventBus.Clear(); // Новый буфер событий на текущий шаг.
             var mode = _gameState?.RunMode ?? ERunMode.Paused; // Если gameState null, считаем симуляцию на паузе.
+            var requestedMode = _gameState?.RequestedRunMode ?? mode; // Режим, который просит UI.
+
+            if (mode == ERunMode.Paused && requestedMode == ERunMode.Auto)
+            {
+                _gameState?.SetRunMode(ERunMode.Auto); // Возврат из паузы в Auto применяем сразу.
+                mode = _gameState?.RunMode ?? ERunMode.Auto;
+            }
 
             if (mode != ERunMode.Paused)
             {
@@ -58,6 +65,8 @@ namespace _Project.Scripts.Simulation.Core
                     RunGlobal(mode); // Глобал отправляется в worker.
                     if (mode == ERunMode.Step)
                         _nextRunMode = ERunMode.Paused; // Одноразовый Step завершился, надо вернуть Paused.
+                    else if (mode == ERunMode.Auto && requestedMode == ERunMode.Paused)
+                        _nextRunMode = ERunMode.Paused; // Пауза из UI применяется строго на границе глобального хода.
                 }
             }
 

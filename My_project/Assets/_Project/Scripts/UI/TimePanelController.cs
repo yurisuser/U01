@@ -53,7 +53,7 @@ namespace _Project.Scripts.UI
             _playToggle.RegisterValueChangedCallback(_onToggleChanged);   // Подписываемся у UI Toolkit
 
             _isPlaying = _playToggle.value;                           // Считываем начальное состояние
-            GameBootstrap.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // Отражаем статус в ядре
+            GameBootstrap.GameState.SetRequestedRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // Передаем желаемый режим в ядро
         }
 
         private void OnDisable()
@@ -65,7 +65,7 @@ namespace _Project.Scripts.UI
         private void OnPlayToggleChanged(ChangeEvent<bool> evt)        // Обработка клика по Play/Pause
         {
             _isPlaying = evt.newValue;                                 // Обновляем локальный флаг
-            GameBootstrap.GameState.SetRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // переключаем режим симуляции
+            GameBootstrap.GameState.SetRequestedRunMode(_isPlaying ? ERunMode.Auto : ERunMode.Paused); // переключаем желаемый режим симуляции
         }
 
         private void OnDestroy()

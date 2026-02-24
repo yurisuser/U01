@@ -14,7 +14,8 @@ namespace _Project.Scripts.Core.GameState
         private StarSys[] _galaxy = Array.Empty<StarSys>(); // Массив всех систем галактики (основной mutable state).
         private HyperlinkEdge[] _hyperlinkEdges = Array.Empty<HyperlinkEdge>(); // Кэш графа гиперсвязей между системами.
         private int[][] _constellationList = Array.Empty<int[]>(); // Группировка систем по созвездиям.
-        private ERunMode _runMode = ERunMode.Paused; // Текущий режим симуляции (Paused/Step/Auto).
+        private ERunMode _runMode = ERunMode.Paused; // Фактический режим симуляции, который сейчас исполняет ядро.
+        private ERunMode _requestedRunMode = ERunMode.Paused; // Желаемый режим от UI (может применяться на границе хода).
         private readonly SelectedService _selectedService = new SelectedService(); // Сервис текущего выбора в UI.
         private int _activeLocalSystemIndex = -1; // Система, которая реально тикается локальным пайплайном (SystemMap).
         private bool _showHyperlinks = true; // Флаг показа гиперлинков в представлении.
@@ -36,7 +37,8 @@ namespace _Project.Scripts.Core.GameState
             _useSecurityColoring = SettingsService.Instance.UseSecurityColoring;
         }
 
-        public ERunMode RunMode => _runMode; // Публичный read-only доступ к текущему run mode.
+        public ERunMode RunMode => _runMode; // Публичный read-only доступ к фактическому run mode.
+        public ERunMode RequestedRunMode => _requestedRunMode; // Публичный read-only доступ к запрошенному run mode.
         public StarSys[] Galaxy => _galaxy; // Публичный доступ к массиву систем.
         public HyperlinkEdge[] HyperlinkEdges => _hyperlinkEdges; // Публичный доступ к графу гиперсвязей.
         public int[][] ConstellationList => _constellationList; // Публичный доступ к списку созвездий.
@@ -63,6 +65,15 @@ namespace _Project.Scripts.Core.GameState
                 return null;
 
             return _galaxy[_activeLocalSystemIndex];
+        }
+
+        public void SetRequestedRunMode(ERunMode mode)
+        {
+            if (_requestedRunMode == mode)
+                return; // Не шлем лишние уведомления при том же режиме.
+
+            _requestedRunMode = mode;
+            NotifyChanged(); // Уведомляем подписчиков о смене желаемого режима.
         }
 
         public void SetRunMode(ERunMode mode)
@@ -234,7 +245,7 @@ namespace _Project.Scripts.Core.GameState
             if (_runMode != ERunMode.Paused)
                 SetRunMode(ERunMode.Paused); // Смена активной системы допустима только из паузы.
 
-            GlobalSyncDebugLog.Log("GameState", "handshake start runModeBefore=" + _runModeBeforeSelection + " current=" + _runMode);
+            GlobalSyncDebugLog.Log("GameState", "handshake start runModeBefore=" + _runModeBeforeSelection + " requested=" + _requestedRunMode + " current=" + _runMode);
             _selectionHandshakeActive = true; // Помечаем начало handshake.
             if (_waitGlobalIdle == null)
             {
@@ -248,8 +259,8 @@ namespace _Project.Scripts.Core.GameState
                 return true; // Global worker подтвердил idle.
 
             _selectionHandshakeActive = false; // Сбрасываем флаг при таймауте ожидания.
-            if (_runModeBeforeSelection == ERunMode.Auto && _runMode == ERunMode.Paused)
-                SetRunMode(ERunMode.Auto); // Не удалось дождаться idle — возвращаем исходный режим.
+            if (_runModeBeforeSelection == ERunMode.Auto && _requestedRunMode == ERunMode.Auto && _runMode == ERunMode.Paused)
+                SetRunMode(ERunMode.Auto); // Не удалось дождаться idle — возвращаем авто, только если оно все еще запрошено.
             GlobalSyncDebugLog.Log("GameState", "handshake failed; runMode restored to " + _runMode);
             return false;
         }
@@ -260,9 +271,9 @@ namespace _Project.Scripts.Core.GameState
                 return; // Вызвано вне handshake — ничего не делаем.
 
             _selectionHandshakeActive = false; // Завершаем handshake.
-            if (_runModeBeforeSelection == ERunMode.Auto && _runMode == ERunMode.Paused)
-                SetRunMode(ERunMode.Auto); // Возвращаем автопрогон после безопасной смены системы.
-            GlobalSyncDebugLog.Log("GameState", "handshake done; runMode=" + _runMode + " selected=" + SelectedSystemIndex);
+            if (_runModeBeforeSelection == ERunMode.Auto && _requestedRunMode == ERunMode.Auto && _runMode == ERunMode.Paused)
+                SetRunMode(ERunMode.Auto); // Возвращаем автопрогон после безопасной смены системы, если UI по-прежнему просит Auto.
+            GlobalSyncDebugLog.Log("GameState", "handshake done; runMode=" + _runMode + " requested=" + _requestedRunMode + " selected=" + SelectedSystemIndex);
         }
     }
 }
