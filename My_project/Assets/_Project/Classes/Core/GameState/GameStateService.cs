@@ -21,6 +21,7 @@ namespace _Project.Scripts.Core.GameState
         private bool _useHyperlinkColoring = true; // Флаг раскраски по гиперлинкам.
         private bool _useFractionColoring = true; // Флаг раскраски по фракциям.
         private bool _useSecurityColoring; // Флаг раскраски по уровню безопасности.
+        private int _currentTurnNumber; // Текущий номер игрового хода (день глобальной симуляции).
         private Func<bool> _waitGlobalIdle; // Колбэк ожидания idle у global worker (handshake выбора системы).
         private ERunMode _runModeBeforeSelection = ERunMode.Paused; // Режим до входа в handshake выбора системы.
         private bool _selectionHandshakeActive; // Защита от повторного входа в handshake выбора системы.
@@ -45,6 +46,7 @@ namespace _Project.Scripts.Core.GameState
         public bool UseHyperlinkColoring => _useHyperlinkColoring; // UI-флаг раскраски по гиперлинкам.
         public bool UseFractionColoring => _useFractionColoring; // UI-флаг раскраски по фракциям.
         public bool UseSecurityColoring => _useSecurityColoring; // UI-флаг раскраски по security level.
+        public int CurrentTurnNumber => _currentTurnNumber; // Текущий номер хода для UI.
         /// <summary>Сервис выбора объекта.</summary>
         public SelectedService SelectedService => _selectedService;
 
@@ -122,6 +124,18 @@ namespace _Project.Scripts.Core.GameState
 
             _useSecurityColoring = use;
             NotifyChanged(); // Уведомляем UI.
+        }
+
+        internal void ApplyCurrentTurnNumber(int currentTurnNumber)
+        {
+            if (currentTurnNumber < 0)
+                currentTurnNumber = 0; // Негативный номер хода в UI не допускаем.
+
+            if (_currentTurnNumber == currentTurnNumber)
+                return; // Игнорируем noop.
+
+            _currentTurnNumber = currentTurnNumber;
+            NotifyChanged(); // Уведомляем UI о смене номера хода.
         }
 
         public bool SelectSystemByIndex(int index)

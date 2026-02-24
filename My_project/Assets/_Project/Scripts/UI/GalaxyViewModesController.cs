@@ -23,6 +23,7 @@ namespace _Project.Scripts.UI
         private VisualElement _objectDataHost;
         private VisualElement _linkButton;
         private Label _linkLabel;
+        private Label _titleLabel;
         private VisualElement _fractionsButton;
         private Label _fractionsLabel;
         private VisualElement _constellationsButton;
@@ -68,6 +69,7 @@ namespace _Project.Scripts.UI
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
             RefreshSecurityVisual();
+            RefreshTurnVisual();
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
@@ -107,6 +109,7 @@ namespace _Project.Scripts.UI
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
             RefreshSecurityVisual();
+            RefreshTurnVisual();
             EnsureObjectData();
             HideDefaultObjectData();
             RebindTabs();
@@ -132,6 +135,7 @@ namespace _Project.Scripts.UI
             }
 
             _panel = _root.Q<VisualElement>("GalaxyViewModes");
+            _titleLabel = _root.Q<Label>("TitleLabel");
             _objectDataHost = _root.Q<VisualElement>("ObjectDataHost");
             _linkButton = _root.Q<VisualElement>("VisualElement1");
             _linkLabel = _linkButton?.Q<Label>();
@@ -214,6 +218,7 @@ namespace _Project.Scripts.UI
             RefreshFractionsVisual();
             RefreshConstellationsVisual();
             RefreshSecurityVisual();
+            RefreshTurnVisual();
         }
 
         private void OnLinkClicked(ClickEvent evt)
@@ -321,6 +326,15 @@ namespace _Project.Scripts.UI
 
             if (_securityLabel != null)
                 _securityLabel.style.color = _state.UseSecurityColoring ? linkOnColor : linkOffColor;
+        }
+
+        private void RefreshTurnVisual()
+        {
+            if (_titleLabel == null)
+                return;
+
+            var turn = _state != null ? _state.CurrentTurnNumber : 0;
+            _titleLabel.text = $"Turn {turn}";
         }
     }
 }

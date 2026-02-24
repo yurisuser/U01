@@ -24,6 +24,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _gameState = gameState;
             _clock = clock;
+            _gameState?.ApplyCurrentTurnNumber(_clock.Day); // Синхронизируем стартовый номер хода для UI.
             _eventBus = new SimulationEventBus(); // Main-thread event bus.
             _continuumService = new ContinuumService(); // сервис Continuum для глобальных прыжков
             _globalPipeline = new _Project.Scripts.Simulation.Global.GlobalSimulationPipeline();
@@ -85,6 +86,7 @@ namespace _Project.Scripts.Simulation.Core
         {
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds; // Потребили один слот глобального шага.
             var day = _clock.NextDay(); // Инкремент игрового дня привязан к global tick.
+            _gameState?.ApplyCurrentTurnNumber(day); // Прокидываем текущий номер хода в game state для UI.
             int activeSystemIndex = _gameState?.ActiveLocalSystemIndex ?? -1; // Снимок реально активной локальной системы.
             GlobalSyncDebugLog.Log("Root", "run-global day=" + day + " mode=" + mode + " active=" + activeSystemIndex);
             _globalWorker.EnqueueRunStep(day, mode, activeSystemIndex); // Фиксируем параметры шага на границе тика и отдаем в очередь worker.
