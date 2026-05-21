@@ -1,4 +1,5 @@
 using _Project.Scripts.Core;
+using _Project.Items;
 
 namespace _Project.Scripts.Trade.Models
 {
@@ -7,16 +8,16 @@ namespace _Project.Scripts.Trade.Models
     {
         public readonly UID SellerUid;
         public readonly UID BuyerUid;
-        public readonly int ItemId;
+        public readonly ItemKey Key;
         public readonly int Amount;
         public readonly int SellPrice;
         public readonly int BuyPrice;
 
-        public TradeRoute(UID sellerUid, UID buyerUid, int itemId, int amount, int sellPrice, int buyPrice)
+        public TradeRoute(UID sellerUid, UID buyerUid, ItemKey key, int amount, int sellPrice, int buyPrice)
         {
             SellerUid = sellerUid;
             BuyerUid = buyerUid;
-            ItemId = itemId;
+            Key = key;
             Amount = amount;
             SellPrice = sellPrice;
             BuyPrice = buyPrice;

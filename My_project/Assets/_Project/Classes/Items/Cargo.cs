@@ -4,7 +4,7 @@ namespace _Project.Items
     /// <summary>Единое хранилище грузов для кораблей, станций и т.д.</summary>
     public sealed class Cargo
     {
-        private readonly Dictionary<int, int> _stock = new();
+        private readonly Dictionary<ItemKey, int> _stock = new();
 
         public Cargo(int capacity = 0)
         {
@@ -13,7 +13,7 @@ namespace _Project.Items
 
         public int Capacity { get; set; } // 0 или меньше = безлимит
 
-        public IReadOnlyDictionary<int, int> Stock => _stock;
+        public IReadOnlyDictionary<ItemKey, int> Stock => _stock;
 
         public int Used
         {
@@ -26,12 +26,12 @@ namespace _Project.Items
             }
         }
 
-        public int GetAmount(ItemType type, int itemId)
+        public int GetAmount(ItemKey key)
         {
-            return _stock.TryGetValue(itemId, out var amount) ? amount : 0;
+            return _stock.TryGetValue(key, out var amount) ? amount : 0;
         }
 
-        public bool CanAdd(ItemType type, int itemId, int amount)
+        public bool CanAdd(ItemKey key, int amount)
         {
             if (amount <= 0)
                 return true;
@@ -41,39 +41,47 @@ namespace _Project.Items
             return Used + amount <= Capacity;
         }
 
-        public void Add(ItemType type, int itemId, int amount)
+        public void Add(ItemKey key, int amount)
         {
             if (amount <= 0)
                 return;
-            if (!CanAdd(type, itemId, amount))
+            if (key.IsEmpty)
+                return;
+            if (!CanAdd(key, amount))
                 return;
 
-            if (_stock.TryGetValue(itemId, out var current))
-                _stock[itemId] = current + amount;
+            if (_stock.TryGetValue(key, out var current))
+                _stock[key] = current + amount;
             else
-                _stock[itemId] = amount;
+                _stock[key] = amount;
         }
 
-        public void Remove(ItemType type, int itemId, int amount)
+        public void Remove(ItemKey key, int amount)
         {
             if (amount <= 0)
                 return;
-            if (!_stock.TryGetValue(itemId, out var current))
+            if (!_stock.TryGetValue(key, out var current))
                 return;
 
             var next = current - amount;
             if (next > 0)
-                _stock[itemId] = next;
+                _stock[key] = next;
             else
-                _stock.Remove(itemId);
+                _stock.Remove(key);
         }
 
-        public void SetAmount(int itemId, int amount)
+        public void SetAmount(ItemKey key, int amount)
         {
             if (amount <= 0)
-                _stock.Remove(itemId);
-            else
-                _stock[itemId] = amount;
+                _stock.Remove(key);
+            else if (!key.IsEmpty)
+                _stock[key] = amount;
         }
+
+        public bool Contains(ItemKey key)
+        {
+            return _stock.ContainsKey(key);
+        }
+
     }
 }

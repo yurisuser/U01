@@ -1,3 +1,4 @@
+using _Project.Items;
 using _Project.Scripts.Core;
 
 namespace _Project.Scripts.Trade.Models
@@ -9,7 +10,7 @@ namespace _Project.Scripts.Trade.Models
         public readonly int SellerSystemIndex;  // система продавца
         public readonly UID BuyerUid;           // станция-покупатель
         public readonly int BuyerSystemIndex;   // система покупателя
-        public readonly int ItemId;
+        public readonly ItemKey Key;
         public readonly int Amount;
         public readonly int SellPrice;          // цена продажи (у покупателя)
         public readonly int BuyPrice;           // цена покупки (у продавца)
@@ -21,7 +22,7 @@ namespace _Project.Scripts.Trade.Models
             int sellerSystemIndex,
             UID buyerUid,
             int buyerSystemIndex,
-            int itemId,
+            ItemKey key,
             int amount,
             int sellPrice,
             int buyPrice,
@@ -32,7 +33,7 @@ namespace _Project.Scripts.Trade.Models
             SellerSystemIndex = sellerSystemIndex;
             BuyerUid = buyerUid;
             BuyerSystemIndex = buyerSystemIndex;
-            ItemId = itemId;
+            Key = key;
             Amount = amount;
             SellPrice = sellPrice;
             BuyPrice = buyPrice;

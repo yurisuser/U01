@@ -18,9 +18,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             in Station targetStation,
             TradeModuleState tradeState)
         {
-            if (!tradeState.OrdersSell.TryGetValue(ship.CurrentAction.ItemId, out var order)) // ордер продажи отсутствует
+            var key = ship.CurrentAction.Key;
+            if (!tradeState.OrdersSell.TryGetValue(key, out var order)) // ордер продажи отсутствует
             {
-                TradeInteractionLogger.LogTradeOrderMissing("Sell", ship.Uid.Id, targetStation.Uid.Id, ship.CurrentAction.ItemId);
+                TradeInteractionLogger.LogTradeOrderMissing("Sell", ship.Uid.Id, targetStation.Uid.Id, key);
                 TradeInteractionHelpers.FailAndResetTrade(ref ship);
                 return;
             }
@@ -35,18 +36,17 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             var offer = new TradeOffer(
                 targetStation,
                 ship,
-                _Project.Items.ItemType.Item,
-                order.ItemId,
+                order.Key,
                 amount,
                 order.Price,
                 system.Uid.Id);
 
-            TradeInteractionLogger.LogTradeStart("Buy", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, order.Price);
+            TradeInteractionLogger.LogTradeStart("Buy", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, order.Price);
 
             var result = _Project.Scripts.Trade.Services.TradeService.Execute(offer);
             if (!result.Success) // сделка не прошла
             {
-                TradeInteractionLogger.LogTradeFailed("Buy", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, result.FailReason);
+                TradeInteractionLogger.LogTradeFailed("Buy", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, result.FailReason);
                 if (result.FailReason == ETradeFailReason.NotEnoughCargoSpace) // нет места
                     TradeInteractionHelpers.DropCurrentTaskAndUndock(ref ship); // Пропускаем текущую buy-задачу и продолжаем стек.
                 else
@@ -56,7 +56,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             ship.TaskState.Pop(); // Текущая buy-задача выполнена.
             HandlePartialBuy(ref ship, ref system, in order, amount); // Если купили не всё — пробуем найти следующего продавца.
-            ApplyOrderSellDelta(ref tradeState, order.ItemId, amount); // Синхронизируем ордер станции-продавца.
+            ApplyOrderSellDelta(ref tradeState, order.Key, amount); // Синхронизируем ордер станции-продавца.
             TradeInteractionHelpers.UndockSuccess(ref ship); // Возвращаем корабль в полет.
         }
 
@@ -70,7 +70,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (sellerCargo == null)
                 return 0; // Нет грузового модуля/состояния.
 
-            int available = sellerCargo.GetAmount(_Project.Items.ItemType.Item, order.ItemId);
+            int available = sellerCargo.GetAmount(order.Key);
             if (available < amount) // ограничение склада
                 amount = available; // Режем объем по фактическому остатку товара.
 
@@ -88,11 +88,11 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return; // Полная покупка, допланирование не нужно.
 
             int remaining = requested - boughtAmount;
-            if (_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestSellerInSystem(system, order.ItemId, out var sellerUid) &&
+            if (_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestSellerInSystem(system, order.Key, out var sellerUid) &&
                 TradeInteraction.TryGetStation(in system, sellerUid, out var nextSeller))
             {
                 // LIFO: пушим сначала торговое действие, затем move к найденному продавцу.
-                ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(sellerUid, order.ItemId, remaining));
+                ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(sellerUid, order.Key, remaining));
                 ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                     nextSeller.Position,
                     SimulationConsts.DestinationPointTolerance,
@@ -102,16 +102,16 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
         }
 
 
-        private static void ApplyOrderSellDelta(ref TradeModuleState tradeState, int itemId, int amount) // уменьшение ордера продавца
+        private static void ApplyOrderSellDelta(ref TradeModuleState tradeState, _Project.Items.ItemKey key, int amount) // уменьшение ордера продавца
         {
-            if (!tradeState.OrdersSell.TryGetValue(itemId, out var order))
+            if (!tradeState.OrdersSell.TryGetValue(key, out var order))
                 return;
 
             order.Amount -= amount;
             if (order.Amount <= 0)
-                tradeState.OrdersSell.Remove(itemId); // Ордер закрыт.
+                tradeState.OrdersSell.Remove(key); // Ордер закрыт.
             else
-                tradeState.OrdersSell[itemId] = order; // Ордер остался частично активным.
+                tradeState.OrdersSell[key] = order; // Ордер остался частично активным.
         }
     }
 }

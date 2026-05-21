@@ -7,8 +7,7 @@ namespace _Project.Scripts.Trade.Models
     {
         public readonly ITradeActor Seller;
         public readonly ITradeActor Buyer;
-        public readonly ItemType ItemType;
-        public readonly int ItemId;
+        public readonly ItemKey Key;
         public readonly int Amount;
         public readonly int UnitPrice;
         public readonly int SystemIndex;
@@ -16,16 +15,14 @@ namespace _Project.Scripts.Trade.Models
         public TradeOffer(
             ITradeActor seller,
             ITradeActor buyer,
-            ItemType itemType,
-            int itemId,
+            ItemKey key,
             int amount,
             int unitPrice,
             int systemIndex)
         {
             Seller = seller;
             Buyer = buyer;
-            ItemType = itemType;
-            ItemId = itemId;
+            Key = key;
             Amount = amount;
             UnitPrice = unitPrice;
             SystemIndex = systemIndex;

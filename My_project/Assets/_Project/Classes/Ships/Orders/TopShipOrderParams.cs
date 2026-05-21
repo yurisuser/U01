@@ -1,5 +1,6 @@
 using UnityEngine;
 using _Project.Scripts.Core;
+using _Project.Items;
 
 namespace _Project.Scripts.Ships.Orders
 {
@@ -10,7 +11,7 @@ namespace _Project.Scripts.Ships.Orders
         public int SystemIndex;    // система для торговли/патруля
         public UID SellerStation;  // для межсистемной торговли
         public UID BuyerStation;   // для межсистемной торговли
-        public int ItemId;         // товар
+        public ItemKey Key;        // товар
         public int Amount;         // количество
     }
 }

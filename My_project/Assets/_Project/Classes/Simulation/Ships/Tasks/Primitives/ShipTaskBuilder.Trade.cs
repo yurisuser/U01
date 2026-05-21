@@ -2,7 +2,7 @@ namespace _Project.Scripts.Simulation.Ships
 {
     public static partial class ShipTaskBuilder
     {
-        public static ShipTask TradeBuy(_Project.Scripts.Core.UID stationUid, int itemId, int amount)
+        public static ShipTask TradeBuy(_Project.Scripts.Core.UID stationUid, _Project.Items.ItemKey key, int amount)
         {
             return new ShipTask(EShipTaskType.TradeBuy, new ShipTaskParams
             {
@@ -10,13 +10,13 @@ namespace _Project.Scripts.Simulation.Ships
                 TradeBuyParams = new TradeBuyParams
                 {
                     StationUid = stationUid,
-                    ItemId = itemId,
+                    Key = key,
                     Amount = amount
                 }
             });
         }
 
-        public static ShipTask TradeSell(_Project.Scripts.Core.UID stationUid, int itemId, int amount)
+        public static ShipTask TradeSell(_Project.Scripts.Core.UID stationUid, _Project.Items.ItemKey key, int amount)
         {
             return new ShipTask(EShipTaskType.TradeSell, new ShipTaskParams
             {
@@ -24,7 +24,7 @@ namespace _Project.Scripts.Simulation.Ships
                 TradeSellParams = new TradeSellParams
                 {
                     StationUid = stationUid,
-                    ItemId = itemId,
+                    Key = key,
                     Amount = amount
                 }
             });

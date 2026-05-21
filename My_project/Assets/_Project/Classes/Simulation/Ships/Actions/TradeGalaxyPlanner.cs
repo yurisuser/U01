@@ -98,7 +98,7 @@ namespace _Project.Scripts.Simulation.Ships
                 return; // Нет свободного трюма.
 
             // Порядок push обратный к исполнению: сначала финал, потом старт.
-            ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(candidate.BuyerUid, candidate.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(candidate.BuyerUid, candidate.Key, amount));
             ship.TaskState.PushTask(ShipTaskBuilder.MoveToPosition(
                 buyer.Position,
                 SimulationConsts.DestinationPointTolerance,
@@ -107,7 +107,7 @@ namespace _Project.Scripts.Simulation.Ships
 
             PushRouteSteps(ref ship, sellerToBuyerSteps); // Продавец -> Покупатель (может быть мультихоп).
 
-            ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(candidate.SellerUid, candidate.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(candidate.SellerUid, candidate.Key, amount));
             ship.TaskState.PushTask(ShipTaskBuilder.MoveToPosition(
                 seller.Position,
                 SimulationConsts.DestinationPointTolerance,

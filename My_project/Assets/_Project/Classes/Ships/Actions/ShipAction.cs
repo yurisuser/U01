@@ -7,7 +7,7 @@ namespace _Project.Scripts.Ships.Actions
     {
         public EShipActionType Type;
         public UID TargetUid;
-        public int ItemId;
+        public _Project.Items.ItemKey Key;
         public int Amount;
 
         public bool IsEmpty => Type == EShipActionType.None;

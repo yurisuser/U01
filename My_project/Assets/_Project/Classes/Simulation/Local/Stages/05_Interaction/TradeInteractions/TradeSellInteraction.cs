@@ -16,12 +16,13 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             in Station targetStation,
             TradeModuleState tradeState)
         {
-            if (!tradeState.OrdersBuy.TryGetValue(ship.CurrentAction.ItemId, out var order)) // ордер покупки отсутствует
+            var key = ship.CurrentAction.Key;
+            if (!tradeState.OrdersBuy.TryGetValue(key, out var order)) // ордер покупки отсутствует
             {
-                TradeInteractionLogger.LogTradeOrderMissing("Buy", ship.Uid.Id, targetStation.Uid.Id, ship.CurrentAction.ItemId);
-                if (TryForcedSell(ref ship, ship.CurrentAction.ItemId, ship.CurrentAction.Amount, out var soldAmount, out var unitPrice))
+                TradeInteractionLogger.LogTradeOrderMissing("Buy", ship.Uid.Id, targetStation.Uid.Id, key);
+                if (TryForcedSell(ref ship, key, ship.CurrentAction.Amount, out var soldAmount, out var unitPrice))
                 {
-                    TradeInteractionLogger.LogTradeForcedSell(ship.Uid.Id, targetStation.Uid.Id, ship.CurrentAction.ItemId, soldAmount, unitPrice);
+                    TradeInteractionLogger.LogTradeForcedSell(ship.Uid.Id, targetStation.Uid.Id, key, soldAmount, unitPrice);
                     ship.TaskState.Pop(); // Закрываем текущую TradeSell-задачу принудительной продажей.
                     TradeInteractionHelpers.UndockSuccess(ref ship);
                 }
@@ -43,23 +44,22 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             var offer = new TradeOffer(
                 ship,
                 targetStation,
-                _Project.Items.ItemType.Item,
-                order.ItemId,
+                order.Key,
                 amount,
                 order.Price,
                 system.Uid.Id);
 
-            TradeInteractionLogger.LogTradeStart("Sell", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, order.Price);
+            TradeInteractionLogger.LogTradeStart("Sell", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, order.Price);
 
             var result = _Project.Scripts.Trade.Services.TradeService.Execute(offer);
             if (!result.Success) // сделка не прошла
             {
-                TradeInteractionLogger.LogTradeFailed("Sell", ship.Uid.Id, targetStation.Uid.Id, order.ItemId, amount, result.FailReason);
+                TradeInteractionLogger.LogTradeFailed("Sell", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, result.FailReason);
                 TradeInteractionHelpers.FailAndResetTrade(ref ship); // Ошибку продажи не лечим частично.
                 return;
             }
 
-            ApplyOrderBuyDelta(ref tradeState, order.ItemId, amount); // Уменьшаем встречный buy-ордер станции.
+            ApplyOrderBuyDelta(ref tradeState, order.Key, amount); // Уменьшаем встречный buy-ордер станции.
             ship.TaskState.Pop();                                     // Sell-задача исполнена.
             TradeInteractionHelpers.UndockSuccess(ref ship);          // Возвращаем корабль в полет.
         }
@@ -70,36 +70,36 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (order.Amount < amount) // ограничение ордера
                 amount = order.Amount;
 
-            int available = ship.Cargo.GetAmount(_Project.Items.ItemType.Item, order.ItemId);
+            int available = ship.Cargo.GetAmount(order.Key);
             if (available < amount) // ограничение трюма
                 amount = available; // Нельзя продать больше, чем есть в трюме.
 
             return amount;
         }
 
-        private static void ApplyOrderBuyDelta(ref TradeModuleState tradeState, int itemId, int amount) // уменьшение ордера покупателя
+        private static void ApplyOrderBuyDelta(ref TradeModuleState tradeState, ItemKey key, int amount) // уменьшение ордера покупателя
         {
-            if (!tradeState.OrdersBuy.TryGetValue(itemId, out var order))
+            if (!tradeState.OrdersBuy.TryGetValue(key, out var order))
                 return;
 
             order.Amount -= amount;
             if (order.Amount <= 0)
-                tradeState.OrdersBuy.Remove(itemId); // Ордер покупателя закрыт.
+                tradeState.OrdersBuy.Remove(key); // Ордер покупателя закрыт.
             else
-                tradeState.OrdersBuy[itemId] = order; // Частичное исполнение ордера.
+                tradeState.OrdersBuy[key] = order; // Частичное исполнение ордера.
         }
 
         private static bool TryForcedSell(
             ref Ship ship,
-            int itemId,
+            ItemKey key,
             int requestedAmount,
             out int soldAmount,
             out int unitPrice)
         {
             soldAmount = 0;
-            unitPrice = ResolveForcedSellPrice(itemId);
+            unitPrice = ResolveForcedSellPrice(key);
 
-            int available = ship.Cargo.GetAmount(ItemType.Item, itemId);
+            int available = ship.Cargo.GetAmount(key);
             if (available <= 0)
                 return false; // В трюме нет нужного товара.
 
@@ -107,7 +107,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (soldAmount <= 0)
                 return false;
 
-            ship.Cargo.Remove(ItemType.Item, itemId, soldAmount); // Товар утилизируется, в склад станции не попадает.
+            ship.Cargo.Remove(key, soldAmount); // Товар утилизируется, в склад станции не попадает.
 
             long total = (long)unitPrice * soldAmount;
             if (total > 0)
@@ -116,9 +116,9 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             return true;
         }
 
-        private static int ResolveForcedSellPrice(int itemId)
+        private static int ResolveForcedSellPrice(ItemKey key)
         {
-            if (ItemCatalogService.TryGetInfo(ItemType.Item, itemId, out var info))
+            if (ItemCatalogService.TryGetInfo(key.Type, key.Id, out var info))
                 return info.Price;
 
             return 0;

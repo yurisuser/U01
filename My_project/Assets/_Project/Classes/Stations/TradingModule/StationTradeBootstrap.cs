@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using _Project.DataAccess;
 using _Project.CONST;
+using _Project.Items;
 
 namespace _Project.Scripts.Stations
 {
@@ -55,22 +56,22 @@ namespace _Project.Scripts.Stations
 
         private static void AddBuyOrder(int itemId, StorageModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
-            int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
+            var key = new ItemKey(ItemType.Item, itemId);
+            int limit = TradeLimits.GetMaxAmount(key);
             if (limit <= 0)
                 return;
 
             float fill = RandomRange(rng, MeanFill - FillSpread, MeanFill);
             int stock = (int)MathF.Round(limit * fill);
-            cargoState.Cargo.SetAmount(itemId, stock);
+            cargoState.Cargo.SetAmount(key, stock);
 
             int target = (int)MathF.Round(limit * MeanFill);
             int amount = Math.Max(1, target - stock);
             int price = CalcPrice(itemId, fill);
 
-            tradeState.OrdersBuy[itemId] = new OrderBy
+            tradeState.OrdersBuy[key] = new OrderBy
             {
-                Type = _Project.Items.ItemType.Item,
-                ItemId = itemId,
+                Key = key,
                 Price = price,
                 Amount = amount
             };
@@ -78,22 +79,22 @@ namespace _Project.Scripts.Stations
 
         private static void AddSellOrder(int itemId, StorageModuleState cargoState, TradeModuleState tradeState, Random rng)
         {
-            int limit = TradeLimits.GetMaxAmount(_Project.Items.ItemType.Item, itemId);
+            var key = new ItemKey(ItemType.Item, itemId);
+            int limit = TradeLimits.GetMaxAmount(key);
             if (limit <= 0)
                 return;
 
             float fill = RandomRange(rng, MeanFill, MeanFill + FillSpread);
             int stock = (int)MathF.Round(limit * fill);
-            cargoState.Cargo.SetAmount(itemId, stock);
+            cargoState.Cargo.SetAmount(key, stock);
 
             int target = (int)MathF.Round(limit * MeanFill);
             int amount = Math.Max(1, stock - target);
             int price = CalcPrice(itemId, fill);
 
-            tradeState.OrdersSell[itemId] = new OrderSell
+            tradeState.OrdersSell[key] = new OrderSell
             {
-                Type = _Project.Items.ItemType.Item,
-                ItemId = itemId,
+                Key = key,
                 Price = price,
                 Amount = amount
             };

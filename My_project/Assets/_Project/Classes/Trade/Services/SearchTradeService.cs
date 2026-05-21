@@ -1,3 +1,4 @@
+using _Project.Items;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Stations;
@@ -42,8 +43,9 @@ namespace _Project.Scripts.Trade.Services
 
                     foreach (var sellPair in sellerTrade.OrdersSell)
                     {
+                        var key = sellPair.Key;
                         var sell = sellPair.Value;
-                        if (!buyerTrade.OrdersBuy.TryGetValue(sell.ItemId, out var buy))
+                        if (!buyerTrade.OrdersBuy.TryGetValue(key, out var buy))
                             continue;
 
                         int profitPerUnit = buy.Price - sell.Price;
@@ -61,7 +63,7 @@ namespace _Project.Scripts.Trade.Services
                             route = new TradeRoute(
                                 sellerStation.Uid,
                                 buyerStation.Uid,
-                                sell.ItemId,
+                                key,
                                 amount,
                                 sell.Price,
                                 buy.Price);
@@ -77,11 +79,11 @@ namespace _Project.Scripts.Trade.Services
         /// <summary>Ищет лучшую пару buy/sell по конкретному товару внутри системы.</summary>
         public static bool TryFindBestInSystemForItem( // поиск сделки по конкретному товару
             StarSys system,
-            int itemId,
+            ItemKey key,
             out TradeRoute route)
         {
             route = default;
-            if (itemId <= 0)
+            if (key.IsEmpty)
                 return false;
             if (system.Stations == null || system.Stations.Length == 0)
                 return false;
@@ -96,7 +98,7 @@ namespace _Project.Scripts.Trade.Services
                 if (sellerTrade == null || sellerTrade.OrdersSell.Count == 0)
                     continue;
 
-                if (!sellerTrade.OrdersSell.TryGetValue(itemId, out var sell))
+                if (!sellerTrade.OrdersSell.TryGetValue(key, out var sell))
                     continue;
 
                 for (int j = 0; j < system.Stations.Length; j++) // перебор покупателей
@@ -109,7 +111,7 @@ namespace _Project.Scripts.Trade.Services
                     if (buyerTrade == null || buyerTrade.OrdersBuy.Count == 0)
                         continue;
 
-                    if (!buyerTrade.OrdersBuy.TryGetValue(itemId, out var buy))
+                    if (!buyerTrade.OrdersBuy.TryGetValue(key, out var buy))
                         continue;
 
                     int profitPerUnit = buy.Price - sell.Price;
@@ -127,7 +129,7 @@ namespace _Project.Scripts.Trade.Services
                         route = new TradeRoute(
                             sellerStation.Uid,
                             buyerStation.Uid,
-                            sell.ItemId,
+                            key,
                             amount,
                             sell.Price,
                             buy.Price);
@@ -142,11 +144,11 @@ namespace _Project.Scripts.Trade.Services
         /// <summary>Ищет лучшую станцию-покупателя для товара.</summary>
         public static bool TryFindBestBuyerInSystem( // поиск лучшего покупателя
             StarSys system,
-            int itemId,
+            ItemKey key,
             out UID buyerUid)
         {
             buyerUid = default;
-            if (itemId <= 0)
+            if (key.IsEmpty)
                 return false;
             if (system.Stations == null || system.Stations.Length == 0)
                 return false;
@@ -161,7 +163,7 @@ namespace _Project.Scripts.Trade.Services
                 if (trade == null || trade.OrdersBuy.Count == 0)
                     continue;
 
-                if (!trade.OrdersBuy.TryGetValue(itemId, out var order))
+                if (!trade.OrdersBuy.TryGetValue(key, out var order))
                     continue;
 
                 if (!found || order.Price > bestPrice)
@@ -177,11 +179,11 @@ namespace _Project.Scripts.Trade.Services
 
         public static bool TryFindBestSellerInSystem( // поиск лучшего продавца
             StarSys system,
-            int itemId,
+            ItemKey key,
             out UID sellerUid)
         {
             sellerUid = default;
-            if (itemId <= 0)
+            if (key.IsEmpty)
                 return false;
             if (system.Stations == null || system.Stations.Length == 0)
                 return false;
@@ -196,7 +198,7 @@ namespace _Project.Scripts.Trade.Services
                 if (trade == null || trade.OrdersSell.Count == 0)
                     continue;
 
-                if (!trade.OrdersSell.TryGetValue(itemId, out var order))
+                if (!trade.OrdersSell.TryGetValue(key, out var order))
                     continue;
 
                 if (!found || order.Price < bestPrice)

@@ -579,7 +579,7 @@ namespace _Project.Scripts.UI
         }
 
         private static void BuildBuyOrdersList(
-            System.Collections.Generic.Dictionary<int, OrderBy> orders,
+            System.Collections.Generic.Dictionary<ItemKey, OrderBy> orders,
             StorageModuleState cargoState,
             out string paramText,
             out string valueText)
@@ -597,8 +597,9 @@ namespace _Project.Scripts.UI
             foreach (var pair in orders)
             {
                 var order = pair.Value;
-                var name = GetGoodsName(order.ItemId);
-                int stock = GetStock(cargoState, order.ItemId);
+                var key = pair.Key;
+                var name = GetGoodsName(key);
+                int stock = GetStock(cargoState, key);
                 paramList.Append(name).Append('\n');
                 valueList.Append($"{FormatCompactInt(order.Price)} / {FormatCompactInt(stock)}").Append('\n');
             }
@@ -608,7 +609,7 @@ namespace _Project.Scripts.UI
         }
 
         private static void BuildSellOrdersList(
-            System.Collections.Generic.Dictionary<int, OrderSell> orders,
+            System.Collections.Generic.Dictionary<ItemKey, OrderSell> orders,
             StorageModuleState cargoState,
             out string paramText,
             out string valueText)
@@ -626,8 +627,9 @@ namespace _Project.Scripts.UI
             foreach (var pair in orders)
             {
                 var order = pair.Value;
-                var name = GetGoodsName(order.ItemId);
-                int stock = GetStock(cargoState, order.ItemId);
+                var key = pair.Key;
+                var name = GetGoodsName(key);
+                int stock = GetStock(cargoState, key);
                 paramList.Append(name).Append('\n');
                 valueList.Append($"{FormatCompactInt(order.Price)} / {FormatCompactInt(stock)}").Append('\n');
             }
@@ -636,20 +638,20 @@ namespace _Project.Scripts.UI
             valueText = valueList.ToString();
         }
 
-        private static string GetGoodsName(int itemId)
+        private static string GetGoodsName(ItemKey key)
         {
-            if (CATALOG.ItemsById != null && CATALOG.ItemsById.TryGetValue(itemId, out var item))
-                return string.IsNullOrWhiteSpace(item.Name) ? $"item_{item.Id}" : item.Name;
+            if (ItemCatalogService.TryGetInfo(key.Type, key.Id, out var info))
+                return string.IsNullOrWhiteSpace(info.DisplayName) ? key.ToString() : info.DisplayName;
 
-            return $"item {itemId}";
+            return key.ToString();
         }
 
-        private static int GetStock(StorageModuleState cargoState, int itemId)
+        private static int GetStock(StorageModuleState cargoState, ItemKey key)
         {
             if (cargoState?.Cargo == null)
                 return 0;
 
-            return cargoState.Cargo.GetAmount(_Project.Items.ItemType.Item, itemId);
+            return cargoState.Cargo.GetAmount(key);
         }
 
         private static string FormatCompactInt(int value)

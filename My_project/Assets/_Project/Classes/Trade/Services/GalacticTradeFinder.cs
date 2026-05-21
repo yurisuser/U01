@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using _Project.Items;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Trade.Models;
@@ -86,15 +87,15 @@ namespace _Project.Scripts.Trade.Services
         private readonly struct OrderMatch // Узел "совпавший товар между sell/buy".
         {
             public readonly StationPair StationPair;
-            public readonly int ItemId;
+            public readonly ItemKey Key;
             public readonly int Amount;
             public readonly int SellPrice;
             public readonly int BuyPrice;
 
-            public OrderMatch(in StationPair stationPair, int itemId, int amount, int sellPrice, int buyPrice)
+            public OrderMatch(in StationPair stationPair, ItemKey key, int amount, int sellPrice, int buyPrice)
             {
                 StationPair = stationPair;
-                ItemId = itemId;
+                Key = key;
                 Amount = amount;
                 SellPrice = sellPrice;
                 BuyPrice = buyPrice;
@@ -404,9 +405,9 @@ namespace _Project.Scripts.Trade.Services
                 var stationPair = context.StationPairs[i];
                 foreach (var sellPair in stationPair.SellerTrade.OrdersSell) // Перебираем товары seller-станции.
                 {
-                    int itemId = sellPair.Key;
+                    var key = sellPair.Key;
                     var sell = sellPair.Value;
-                    if (!stationPair.BuyerTrade.OrdersBuy.TryGetValue(itemId, out var buy))
+                    if (!stationPair.BuyerTrade.OrdersBuy.TryGetValue(key, out var buy))
                         continue; // Покупатель не берет этот товар.
 
                     int profitPerUnit = buy.Price - sell.Price;
@@ -417,7 +418,7 @@ namespace _Project.Scripts.Trade.Services
                     if (amount <= 0)
                         continue; // По факту объем сделки нулевой.
 
-                    context.OrderMatches.Add(new OrderMatch(stationPair, itemId, amount, sell.Price, buy.Price));
+                    context.OrderMatches.Add(new OrderMatch(stationPair, key, amount, sell.Price, buy.Price));
                 }
             }
         }
@@ -432,7 +433,7 @@ namespace _Project.Scripts.Trade.Services
                     match.StationPair.SellerSystem,
                     match.StationPair.BuyerStation.Uid,
                     match.StationPair.BuyerSystem,
-                    match.ItemId,
+                    match.Key,
                     match.Amount,
                     match.SellPrice,
                     match.BuyPrice,
@@ -561,9 +562,9 @@ namespace _Project.Scripts.Trade.Services
 
                     foreach (var sellPair in sellerTrade.OrdersSell) // Перебираем товары seller-станции.
                     {
-                        int itemId = sellPair.Key;
+                        var key = sellPair.Key;
                         var sell = sellPair.Value;
-                        if (!buyerTrade.OrdersBuy.TryGetValue(itemId, out var buy))
+                        if (!buyerTrade.OrdersBuy.TryGetValue(key, out var buy))
                             continue; // Покупатель не берет этот товар.
 
                         int profitPerUnit = buy.Price - sell.Price;
@@ -579,7 +580,7 @@ namespace _Project.Scripts.Trade.Services
                             sellerSys,
                             buyerStations[bi].Uid,
                             buyerSys,
-                            itemId,
+                            key,
                             amount,
                             sell.Price,
                             buy.Price,

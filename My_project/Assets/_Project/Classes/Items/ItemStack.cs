@@ -9,11 +9,12 @@ namespace _Project.Items
         [field: SerializeField] public int Id { get; private set; }
         [field: SerializeField] public ItemType Type { get; private set; }
         [field: SerializeField] public int Quantity { get; private set; }
+        public ItemKey Key => new ItemKey(Type, Id);
 
-        public ItemStack(ItemType type, int id, int quantity)
+        public ItemStack(ItemKey key, int quantity)
         {
-            Type = type;
-            Id = id;
+            Type = key.Type;
+            Id = key.Id;
             Quantity = quantity;
         }
     }

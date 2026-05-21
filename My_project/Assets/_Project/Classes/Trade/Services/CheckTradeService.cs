@@ -32,7 +32,7 @@ namespace _Project.Scripts.Trade.Services
             if (offer.Seller == null || offer.Buyer == null)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
 
-            if (offer.Amount <= 0 || offer.ItemId <= 0)
+            if (offer.Amount <= 0 || offer.Key.IsEmpty)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
 
             if (offer.UnitPrice < 0)
@@ -47,7 +47,7 @@ namespace _Project.Scripts.Trade.Services
             if (cargo == null)
                 return TradeResult.Fail(ETradeFailReason.NotEnoughStock);
 
-            int have = cargo.GetAmount(offer.ItemType, offer.ItemId);
+            int have = cargo.GetAmount(offer.Key);
             if (have < offer.Amount)
                 return TradeResult.Fail(ETradeFailReason.NotEnoughStock);
 
@@ -60,7 +60,7 @@ namespace _Project.Scripts.Trade.Services
             if (cargo == null)
                 return TradeResult.Fail(ETradeFailReason.NotEnoughCargoSpace);
 
-            if (!cargo.CanAdd(offer.ItemType, offer.ItemId, offer.Amount))
+            if (!cargo.CanAdd(offer.Key, offer.Amount))
                 return TradeResult.Fail(ETradeFailReason.NotEnoughCargoSpace);
 
             return TradeResult.Ok(offer.Amount);

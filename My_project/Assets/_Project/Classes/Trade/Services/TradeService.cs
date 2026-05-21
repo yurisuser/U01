@@ -18,8 +18,8 @@ namespace _Project.Scripts.Trade.Services
             if (sellerCargo == null || buyerCargo == null)
                 return TradeResult.Fail(ETradeFailReason.InvalidInput);
 
-            sellerCargo.Remove(offer.ItemType, offer.ItemId, offer.Amount);
-            buyerCargo.Add(offer.ItemType, offer.ItemId, offer.Amount);
+            sellerCargo.Remove(offer.Key, offer.Amount);
+            buyerCargo.Add(offer.Key, offer.Amount);
 
             ApplyMoney(offer);
 

@@ -32,13 +32,13 @@ namespace _Project.Scripts.Simulation.Ships
                 return; // Нет свободного объема.
 
             // Важно: пушим в обратном порядке исполнения (LIFO стек).
-            ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(route.BuyerUid, route.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeSell(route.BuyerUid, route.Key, amount));
             ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 buyer.Position,
                 SimulationConsts.DestinationPointTolerance,
                 keepSpeed: true,
                 targetUid: route.BuyerUid));
-            ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(route.SellerUid, route.ItemId, amount));
+            ship.TaskState.PushTask(ShipTaskBuilder.TradeBuy(route.SellerUid, route.Key, amount));
             ship.TaskState.PushTask(ShipTaskBuilder.MoveTo(
                 seller.Position,
                 SimulationConsts.DestinationPointTolerance,

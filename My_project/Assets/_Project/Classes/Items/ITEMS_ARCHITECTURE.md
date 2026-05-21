@@ -4,7 +4,9 @@
 
 ## Ключевая идея
 - Предмет в трюме — это тупая коробка.
-- В коде хранится только `ItemStack`: `Id`, `Type`, `Quantity`.
+- В коде хранится только `ItemStack`: `Key`, `Quantity`.
+- `ItemKey` = `ItemType + Id`, где `ItemType` выбирает каталог/таблицу, а `Id` является ключом внутри этой таблицы.
+- `Cargo` хранит остатки по `ItemKey`, а не только по `Id`, чтобы `Item id=1` и `Weapon id=1` были разными грузами.
 - В БД есть таблица `items` для торговых предметов.
 
 ## Типы (ItemType)
@@ -40,8 +42,9 @@
 - `damage`, `rate_per_second`, `range`
 
 ## Правило использования
-- `ItemStack.Type` выбирает таблицу.
-- `ItemStack.Id` — ключ внутри этой таблицы.
+- `ItemKey.Type` выбирает таблицу.
+- `ItemKey.Id` — ключ внутри этой таблицы.
+- `ItemStack.Type`/`ItemStack.Id` остаются удобным доступом к `ItemStack.Key`.
 - `stackable` хранится как 0/1 (BOOLEAN в SQLite).
 
 ## Чтение из БД

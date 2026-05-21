@@ -74,7 +74,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                         {
                             Type = EShipActionType.TradeBuy,
                             TargetUid = station.Uid,
-                            ItemId = task.Params.TradeBuyParams.ItemId,
+                            Key = task.Params.TradeBuyParams.Key,
                             Amount = task.Params.TradeBuyParams.Amount
                         };
                     }
@@ -85,7 +85,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                         {
                             Type = EShipActionType.TradeSell,
                             TargetUid = station.Uid,
-                            ItemId = task.Params.TradeSellParams.ItemId,
+                            Key = task.Params.TradeSellParams.Key,
                             Amount = task.Params.TradeSellParams.Amount
                         };
                     }
