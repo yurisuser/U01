@@ -52,5 +52,9 @@
         "Temp/": true
     },
     "dotnet.preferCSharpExtension": true,
-    "dotnet.defaultSolution": "My_project.slnx"
+    "dotnet.defaultSolution": "My_project.slnx",
+    "workbench.colorTheme": "Dark Modern",
+    "[csharp]": {
+        "editor.semanticHighlighting.enabled": false
+    }
 }
