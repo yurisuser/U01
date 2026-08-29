@@ -41,8 +41,11 @@ public class SystemMapCameraController : MonoBehaviour
                 float scroll = Mouse.current.scroll.ReadValue().y;
                 if (Mathf.Abs(scroll) > 0.01f)
                 {
+                    Vector3 mouseWorldBefore = ScreenToWorld(Mouse.current.position.ReadValue());
                     var size = _cam.orthographicSize * Mathf.Exp(-scroll * zoomSpeed * Time.unscaledDeltaTime);
                     _cam.orthographicSize = Mathf.Clamp(size, minOrtho, maxOrtho);
+                    Vector3 mouseWorldAfter = ScreenToWorld(Mouse.current.position.ReadValue());
+                    _cam.transform.position += mouseWorldBefore - mouseWorldAfter;
                 }
 
                 // Панорамирование правой кнопкой (или средней)
@@ -56,6 +59,16 @@ public class SystemMapCameraController : MonoBehaviour
                     _cam.transform.position += move;
                 }
             }
+        }
+
+        private Vector3 ScreenToWorld(Vector2 screenPosition)
+        {
+            var point = _cam.ScreenToWorldPoint(new Vector3(
+                screenPosition.x,
+                screenPosition.y,
+                _cam.nearClipPlane));
+            point.z = _cam.transform.position.z;
+            return point;
         }
     }
 }

@@ -3,10 +3,10 @@ using UnityEngine.InputSystem;
 
 // New Input System
 
-namespace _Project.Scripts.GalaxyMap.Runtime
+namespace _Project.Components.Cameras
 {
     [RequireComponent(typeof(Camera))]
-    public class GalaxyCamera2D : MonoBehaviour
+    public class CameraGalaxyMap : MonoBehaviour
     {
         [Header("Pan bounds")]
         public float minX = -500f, maxX = 500f;
