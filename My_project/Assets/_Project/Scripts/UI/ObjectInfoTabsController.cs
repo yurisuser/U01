@@ -46,6 +46,8 @@ namespace _Project.Scripts.UI
         private string _sellValueText = string.Empty;
         private string _cargoParamText = string.Empty;
         private string _cargoValueText = string.Empty;
+        private string _taskParamText = string.Empty;
+        private string _taskValueText = string.Empty;
         private string _activeTabText = string.Empty;
         private ObjectInfoTabScope _currentScope = ObjectInfoTabScope.GalaxyStar;
         private readonly List<VisualElement> _tabs = new List<VisualElement>();
@@ -494,8 +496,60 @@ namespace _Project.Scripts.UI
             _starValueText = valueList.ToString();
             BuildShipEquipmentInfo(ship.Equipment);
             BuildShipCargoInfo(ship);
+            BuildShipTaskInfo(in ship);
 
             UpdateParamPanels(GetActiveTabTextOrDefault());
+        }
+
+        private void BuildShipTaskInfo(in _Project.Scripts.Ships.Ship ship)
+        {
+            var ai = ship.Ai;
+            if (ai == null)
+            {
+                _taskParamText = "ai:";
+                _taskValueText = "not initialized";
+                return;
+            }
+
+            var paramList = new StringBuilder();
+            var valueList = new StringBuilder();
+
+            paramList.Append("order:").Append('\n');
+            valueList.Append(ai.CurrentOrder.IsEmpty ? "none" : ai.CurrentOrder.Type.ToString()).Append('\n');
+
+            paramList.Append("behavior:").Append('\n');
+            if (ai.Behaviors.TryPeek(out var behavior))
+                valueList.Append(behavior.GetType().Name.Replace("Behavior", string.Empty)).Append('\n');
+            else
+                valueList.Append("none").Append('\n');
+
+            var execution = ai.TaskExecution;
+            paramList.Append("task:").Append('\n');
+            valueList.Append(execution == null ? "none" : execution.Task.Type.ToString()).Append('\n');
+
+            paramList.Append("state:").Append('\n');
+            valueList.Append(execution == null ? "none" : execution.Status.ToString()).Append('\n');
+
+            if (execution?.Task is _Project.Scripts.Simulation.AI.StationTradeTask tradeTask)
+            {
+                paramList.Append("station:").Append('\n');
+                valueList.Append(tradeTask.StationUid.Id).Append('\n');
+                paramList.Append("goods:").Append('\n');
+                valueList.Append(GetGoodsName(tradeTask.Key)).Append('\n');
+                paramList.Append("amount:").Append('\n');
+                valueList.Append(tradeTask.Amount).Append('\n');
+            }
+            else if (execution?.Task is _Project.Scripts.Simulation.AI.MoveToPointTask moveTask)
+            {
+                paramList.Append("target:").Append('\n');
+                valueList.Append(FormatFloat2(moveTask.Destination.x, false))
+                    .Append(", ")
+                    .Append(FormatFloat2(moveTask.Destination.y, false))
+                    .Append('\n');
+            }
+
+            _taskParamText = paramList.ToString();
+            _taskValueText = valueList.ToString();
         }
 
         private void BuildStationModulesInfo(_Project.Scripts.Stations.StationModule[] modules)
@@ -822,6 +876,7 @@ namespace _Project.Scripts.UI
             bool showBuy = active == "buy" || active == "by";
             bool showSell = active == "sell" || active == "sells";
             bool showCargo = active == "cargo";
+            bool showTask = active == "task";
 
             if (_paramValueBlock == null || _paramLabel == null || _valueLabel == null)
                 return;
@@ -855,6 +910,12 @@ namespace _Project.Scripts.UI
                 _paramValueBlock.style.display = DisplayStyle.Flex;
                 _paramLabel.text = _cargoParamText;
                 _valueLabel.text = _cargoValueText;
+            }
+            else if (showTask)
+            {
+                _paramValueBlock.style.display = DisplayStyle.Flex;
+                _paramLabel.text = _taskParamText;
+                _valueLabel.text = _taskValueText;
             }
             else
             {

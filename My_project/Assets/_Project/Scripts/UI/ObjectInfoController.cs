@@ -28,6 +28,21 @@ namespace _Project.Scripts.UI
         private StarSys starSys;
         private ObjectInfoTabsController _tabsController;
         private GalaxyViewModesController _viewModesController;
+        private SelectableData _selectedData;
+
+        private void Update()
+        {
+            if (_selectedData == null || !_selectedData.HasData || _selectedData.SelectedType != ESelectedObjectType.Ship)
+                return;
+
+            int systemIndex = _selectedData.SystemIndex >= 0
+                ? _selectedData.SystemIndex
+                : GameBootstrap.GameState.SelectedSystemIndex;
+            if (!TryGetSystem(systemIndex, out var system) || !TryFindShip(system, _selectedData.Uid, out var ship))
+                return;
+
+            _tabsController?.ApplyShipInfo(system, ship);
+        }
         private void OnEnable()
         {
             if (!TryResolveElements())
@@ -61,6 +76,7 @@ namespace _Project.Scripts.UI
 
         public void ShowStarInfo(UID starUid)
         {
+            _selectedData = null;
             if (!TryResolveElements())
                 return;
 
@@ -84,9 +100,12 @@ namespace _Project.Scripts.UI
         {
             if (data == null || !data.HasData)
             {
+                _selectedData = null;
                 ClearStarInfo();
                 return;
             }
+
+            _selectedData = data;
 
             if (!TryResolveElements())
                 return;
@@ -100,6 +119,7 @@ namespace _Project.Scripts.UI
             int systemIndex = data.SystemIndex >= 0 ? data.SystemIndex : GameBootstrap.GameState.SelectedSystemIndex;
             if (!TryGetSystem(systemIndex, out var system))
             {
+                _selectedData = null;
                 ClearStarInfo();
                 return;
             }
@@ -143,6 +163,7 @@ namespace _Project.Scripts.UI
 
         public void ClearStarInfo()
         {
+            _selectedData = null;
             if (!TryResolveElements())
                 return;
 
