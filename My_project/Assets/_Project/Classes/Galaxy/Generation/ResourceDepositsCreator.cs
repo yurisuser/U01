@@ -266,11 +266,24 @@ namespace _Project.Scripts.Galaxy.Generation
             if (candidates == null || candidates.Count == 0)
                 return Array.Empty<ResourceDeposit>();
 
-            int count = Math.Clamp(1 + (int)(fullness * 2f) + Rng.Next(0, 2), 1, 5);
+            var uniqueCandidates = new List<int>(candidates.Count);
+            var selectedIds = new HashSet<int>();
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                if (selectedIds.Add(candidates[i]))
+                    uniqueCandidates.Add(candidates[i]);
+            }
+
+            if (uniqueCandidates.Count == 0)
+                return Array.Empty<ResourceDeposit>();
+
+            int count = Math.Clamp(1 + (int)(fullness * 2f) + Rng.Next(0, 2), 1, Math.Min(5, uniqueCandidates.Count));
             var deposits = new ResourceDeposit[count];
             for (int i = 0; i < count; i++)
             {
-                int resId = candidates[Rng.Next(candidates.Count)];
+                int candidateIndex = Rng.Next(uniqueCandidates.Count);
+                int resId = uniqueCandidates[candidateIndex];
+                uniqueCandidates.RemoveAt(candidateIndex);
                 float level = fullness * (0.6f + 0.4f * (float)Rng.NextDouble());
                 level = Math.Clamp(level, 0.1f, 1f);
                 float availability = fullness * k * starMetallicity * (0.8f + 0.2f * (float)Rng.NextDouble());
