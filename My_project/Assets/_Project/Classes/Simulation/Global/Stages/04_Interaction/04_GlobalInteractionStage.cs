@@ -23,6 +23,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Interaction
                 if (system.State == null || system.Stations == null || system.Stations.Length == 0)
                     continue; // Нет контекста или станций для взаимодействия.
 
+                ShipAiTradeTaskExecutor.Process(ref system);
                 DockingInteraction.ProcessDockActions(ref system);
                 TradeInteraction.ProcessTradeActions(ref system);
                 DockingInteraction.ProcessUndockActions(ref system);

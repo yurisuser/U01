@@ -108,7 +108,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
             var ship = ShipCreator.CreateShip(ownerFraction, pilotUid);
             ship.Position = SamplePosition(spawnRadius);
             ship.Rotation = SampleOrientation();
-            _Project.Scripts.Simulation.Ships.TradeTopOrderAssigner.EnsureTradeGalaxyOrder(ref ship, systemIndex, spawnRadius); // Явно вызываем общий assigner, чтобы не зависеть от using-контекста.
+            _Project.Scripts.Simulation.AI.ShipInitialOrderAssigner.EnsureOrder(ref ship, systemIndex, spawnRadius);
 
             return ship;
         }

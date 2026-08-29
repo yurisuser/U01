@@ -1,5 +1,6 @@
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Simulation.AI;
 
 namespace _Project.Scripts.Simulation.Global.Stages.Ai
 {
@@ -34,11 +35,14 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
                 for (int i = 0; i < ships.Count; i++)
                 {
                     var ship = ships[i];
-                    ShipTaskPlanner.EnsurePatrolTask(ref ship);
+                    ShipInitialOrderAssigner.EnsureOrder(
+                        ref ship,
+                        systemIndex,
+                        _Project.Scripts.Const.SimulationConsts.SpawnRadius);
+                    ShipAiLegacyOrderBridge.TryMigratePatrol(ref ship);
+                    ShipAiController.Advance(ref ship, in system);
                     ships[i] = ship;
                 }
-
-                TradeActionPlanner.EnsureTradeActionsForSystem(gameState, systemIndex, ref system);
                 galaxy[systemIndex] = system;
             }
         }

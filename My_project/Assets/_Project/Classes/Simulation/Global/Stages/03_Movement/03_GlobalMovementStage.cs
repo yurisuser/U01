@@ -4,6 +4,7 @@ using _Project.Scripts.Const;
 using _Project.Scripts.Simulation.Continuum;
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Simulation.AI;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Global.Stages.Movement
@@ -49,6 +50,11 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
 
         private static bool ProcessMoveTo(ref Ship ship, float deltaTime)
         {
+            if (ProcessNewAiMoveTo(ref ship, deltaTime))
+                return true;
+            if (ProcessNewAiStationTradeMove(ref ship, deltaTime))
+                return true;
+
             if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.MoveToPoint)
                 return false; // Текущая задача не относится к перемещению.
 
@@ -82,6 +88,77 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                 ship.Rotation = Quaternion.LookRotation(Vector3.forward, dir);
 
             return true;
+        }
+
+        private static bool ProcessNewAiStationTradeMove(ref Ship ship, float deltaTime)
+        {
+            var execution = ship.Ai?.TaskExecution;
+            if (execution == null || !(execution.Task is StationTradeTask task) || execution.IsFinished ||
+                execution.Status == EShipAiTaskStatus.Suspended)
+                return false;
+
+            execution.Start();
+            var toTarget = task.StationPosition - ship.Position;
+            float distance = toTarget.magnitude;
+            if (distance <= task.Tolerance)
+                return true;
+
+            float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
+            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            if (speed <= 0f || stepSeconds <= 0f)
+                return false;
+
+            float step = Mathf.Min(speed * stepSeconds, distance);
+            Vector3 direction = toTarget / distance;
+            ship.Position += direction * step;
+            ship.CurrentSpeed = speed;
+            ship.Rotation = Quaternion.LookRotation(Vector3.forward, direction);
+            return true;
+        }
+
+        private static bool ProcessNewAiMoveTo(ref Ship ship, float deltaTime)
+        {
+            var execution = ship.Ai?.TaskExecution;
+            if (execution == null || !(execution.Task is MoveToPointTask task) || execution.IsFinished ||
+                execution.Status == EShipAiTaskStatus.Suspended)
+                return false;
+
+            execution.Start();
+            var toTarget = task.Destination - ship.Position;
+            float distance = toTarget.magnitude;
+            if (distance <= task.Tolerance)
+            {
+                CompleteNewAiMoveTask(ref ship, task, execution);
+                return true;
+            }
+
+            float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
+            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            if (speed <= 0f || stepSeconds <= 0f)
+                return false;
+
+            float stepDistance = speed * stepSeconds;
+            if (stepDistance >= distance)
+            {
+                ship.Position = task.Destination;
+                CompleteNewAiMoveTask(ref ship, task, execution);
+                return true;
+            }
+
+            Vector3 direction = toTarget / distance;
+            ship.Position += direction * stepDistance;
+            ship.CurrentSpeed = speed;
+            ship.Rotation = Quaternion.LookRotation(Vector3.forward, direction);
+            return true;
+        }
+
+        private static void CompleteNewAiMoveTask(ref Ship ship, MoveToPointTask task, ShipAiTaskExecution execution)
+        {
+            ship.Position = task.Destination;
+            if (!task.KeepSpeed)
+                ship.CurrentSpeed = 0f;
+
+            execution.Complete(EShipAiTaskOutcome.Succeeded);
         }
 
         private static void CompleteMoveTask(ref Ship ship, in MoveToPointParams move)

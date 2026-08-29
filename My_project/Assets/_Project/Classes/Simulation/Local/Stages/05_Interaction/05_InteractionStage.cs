@@ -32,6 +32,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (system.State == null || system.Stations == null || system.Stations.Length == 0)
                 return;
 
+            ShipAiTradeTaskExecutor.Process(ref system);
             DockingInteraction.ProcessDockActions(ref system);
             TradeInteraction.ProcessTradeActions(ref system);
             DockingInteraction.ProcessUndockActions(ref system);

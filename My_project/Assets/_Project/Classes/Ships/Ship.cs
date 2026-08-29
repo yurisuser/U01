@@ -5,6 +5,7 @@ using _Project.Scripts.NPC.Fraction;    // для Fraction
 using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Simulation.AI;
 using _Project.Scripts.Trade.Models;
 using UnityEngine;                      // для Vector3, Quaternion
 
@@ -30,6 +31,7 @@ namespace _Project.Scripts.Ships
         public EShipActionFailReason LastActionFailReason; // причина последнего сбоя действия
         public TopShipOrder TopOrder;     // верхний приказ
         public Cargo Cargo;               // содержимое и вместимость трюма
+        public ShipAiRuntime Ai;          // новое состояние ИИ корабля
 
         public Fraction Owner => MakerFraction;
 
@@ -78,6 +80,7 @@ namespace _Project.Scripts.Ships
             LastActionFailReason = EShipActionFailReason.None;
             TopOrder = default;
             Cargo = new Cargo(cargo);
+            Ai = new ShipAiRuntime();
         }
 
         /// <summary>Клонирование для снапшотов (поверхностное, с общими ссылками).</summary>

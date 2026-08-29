@@ -1,6 +1,7 @@
 using UnityEngine;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Simulation.AI;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Movement
 {
@@ -20,6 +21,11 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
 
         public void ProcessMove(ref Ship ship, float deltaTime)
         {
+            if (ProcessNewAiMove(ref ship, deltaTime))
+                return;
+            if (ProcessNewAiStationTradeMove(ref ship, deltaTime))
+                return;
+
             if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.MoveToPoint)
                 return; // На вершине стека не MoveToPoint.
 
@@ -49,6 +55,75 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
 
             if (Vector3.Distance(ship.Position, moveTaskParams.Destination) <= moveTaskParams.Tolerance)
                 CompleteTask(ref ship, in moveTaskParams); // Дошли до цели на этом тике.
+        }
+
+        private bool ProcessNewAiStationTradeMove(ref Ship ship, float deltaTime)
+        {
+            var execution = ship.Ai?.TaskExecution;
+            if (execution == null || !(execution.Task is StationTradeTask task) || execution.IsFinished ||
+                execution.Status == EShipAiTaskStatus.Suspended)
+                return false;
+
+            execution.Start();
+            var toTarget = task.StationPosition - ship.Position;
+            float distance = toTarget.magnitude;
+            if (distance <= task.Tolerance)
+                return true;
+
+            var moveParams = new MoveToPointParams
+            {
+                Destination = task.StationPosition,
+                Tolerance = task.Tolerance,
+                KeepSpeed = false,
+            };
+            var direction = _courseChanger.GetDirection(ship.Position, GetCurrentDirection(in ship), task.StationPosition, ship.Stats.Agility, deltaTime);
+            var speed = _speedChanger.GetSpeed(ref ship, moveParams, deltaTime);
+            Apply(ref ship, _moveChanger.GetShift(in ship, GetStepShift(direction, speed, deltaTime, distance)), direction, speed);
+            return true;
+        }
+
+        private bool ProcessNewAiMove(ref Ship ship, float deltaTime)
+        {
+            var execution = ship.Ai?.TaskExecution;
+            if (execution == null || !(execution.Task is MoveToPointTask task) || execution.IsFinished ||
+                execution.Status == EShipAiTaskStatus.Suspended)
+                return false;
+
+            execution.Start();
+            var currentPosition = ship.Position;
+            var currentDirection = GetCurrentDirection(in ship);
+            var toTarget = task.Destination - currentPosition;
+            float distance = toTarget.magnitude;
+            if (distance <= task.Tolerance)
+            {
+                CompleteNewAiTask(ref ship, task, execution);
+                return true;
+            }
+
+            var moveParams = new MoveToPointParams
+            {
+                Destination = task.Destination,
+                Tolerance = task.Tolerance,
+                KeepSpeed = task.KeepSpeed,
+            };
+            var nextDirection = _courseChanger.GetDirection(currentPosition, currentDirection, task.Destination, ship.Stats.Agility, deltaTime);
+            var nextSpeed = _speedChanger.GetSpeed(ref ship, moveParams, deltaTime);
+            var stepShift = GetStepShift(nextDirection, nextSpeed, deltaTime, distance);
+            var nextPosition = _moveChanger.GetShift(in ship, stepShift);
+            Apply(ref ship, nextPosition, nextDirection, nextSpeed);
+
+            if (Vector3.Distance(ship.Position, task.Destination) <= task.Tolerance)
+                CompleteNewAiTask(ref ship, task, execution);
+
+            return true;
+        }
+
+        private static void CompleteNewAiTask(ref Ship ship, MoveToPointTask task, ShipAiTaskExecution execution)
+        {
+            if (!task.KeepSpeed)
+                ship.CurrentSpeed = 0f;
+
+            execution.Complete(EShipAiTaskOutcome.Succeeded);
         }
 
         private static Vector3 GetCurrentDirection(in Ship ship)
