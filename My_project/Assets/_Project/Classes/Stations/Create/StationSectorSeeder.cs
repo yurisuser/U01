@@ -237,31 +237,37 @@ namespace _Project.Scripts.Stations
             for (int i = 0; i < deposits.Length && sources.Count < MiningStationsPerSystem; i++)
             {
                 var deposit = deposits[i];
-                if (resourceIds.Add(deposit.ResourceId))
+                if (resourceIds.Contains(deposit.ResourceId))
+                    continue;
+
+                var recipe = FindExtractionRecipe(deposit.ResourceId);
+                if (recipe == null)
+                    continue;
+
+                resourceIds.Add(deposit.ResourceId);
+                sources.Add(new MiningSource
                 {
-                    sources.Add(new MiningSource
-                    {
-                        ResourceId = deposit.ResourceId,
-                        DepositId = deposit.DepositId,
-                        PlanetIndex = planetIndex,
-                        MoonIndex = moonIndex,
-                        Center = moonIndex < 0
-                            ? GetPlanetPosition(sys.PlanetSysArr[planetIndex])
-                            : GetPlanetPosition(sys.PlanetSysArr[planetIndex]) + GetMoonPosition(planetIndex, moonIndex, sys.PlanetSysArr[planetIndex].Moons[moonIndex]),
-                        ParentCenter = GetPlanetPosition(sys.PlanetSysArr[planetIndex]),
-                        IsMoon = moonIndex >= 0,
-                        AnchorAngle = Hash01(deposit.ResourceId * 73856093 ^ deposit.DepositId * 19349663) * Mathf.PI * 2f,
-                        OrbitRadius = moonIndex < 0
-                            ? StarSysemConstants.PlanetOrbitUnit
-                            : StarSysemConstants.MoonOrbitUnit
-                    });
-                }
+                    ResourceId = deposit.ResourceId,
+                    DepositId = deposit.DepositId,
+                    PlanetIndex = planetIndex,
+                    MoonIndex = moonIndex,
+                    Recipe = recipe,
+                    Center = moonIndex < 0
+                        ? GetPlanetPosition(sys.PlanetSysArr[planetIndex])
+                        : GetPlanetPosition(sys.PlanetSysArr[planetIndex]) + GetMoonPosition(planetIndex, moonIndex, sys.PlanetSysArr[planetIndex].Moons[moonIndex]),
+                    ParentCenter = GetPlanetPosition(sys.PlanetSysArr[planetIndex]),
+                    IsMoon = moonIndex >= 0,
+                    AnchorAngle = Hash01(deposit.ResourceId * 73856093 ^ deposit.DepositId * 19349663) * Mathf.PI * 2f,
+                    OrbitRadius = moonIndex < 0
+                        ? StarSysemConstants.PlanetOrbitUnit
+                        : StarSysemConstants.MoonOrbitUnit
+                });
             }
         }
 
         private static void ConfigureMiningStation(ref Station station, MiningSource source)
         {
-            var recipe = FindExtractionRecipe(source.ResourceId);
+            var recipe = source.Recipe;
             for (int i = 0; i < station.Modules.Length; i++)
             {
                 var module = station.Modules[i];
@@ -338,6 +344,7 @@ namespace _Project.Scripts.Stations
             public int DepositId;
             public int PlanetIndex;
             public int MoonIndex;
+            public Recipe Recipe;
             public Vector3 Center;
             public Vector3 ParentCenter;
             public bool IsMoon;
