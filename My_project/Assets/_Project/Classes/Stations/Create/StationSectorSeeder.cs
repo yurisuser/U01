@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using _Project.CONST;
 using _Project.DataAccess;
 using _Project.Industry.Recipes;
 using _Project.Items;
@@ -14,7 +15,6 @@ namespace _Project.Scripts.Stations
     public static class StationSectorSeeder
     {
         private const int MiningStationsPerSystem = 3;
-        private const int MiningInitialStockTurns = 20;
 
         private static readonly StationTypeDef DefaultDef = new()
         {
@@ -43,8 +43,8 @@ namespace _Project.Scripts.Stations
             for (int i = 0; i < fractions.Count; i++)
                 SpawnForFraction(galaxy, fractions[i]);
 
-            SpawnTemporaryExtraStations(galaxy, fractions);
             SpawnMiningStations(galaxy);
+            TestStationTradeBootstrap.EnsureSystemProductionRoutes(galaxy);
         }
 
         private static void SpawnMiningStations(StarSys[] galaxy)
@@ -313,7 +313,7 @@ namespace _Project.Scripts.Stations
             if (recipe?.Outputs == null || recipe.Outputs.Length == 0 || recipe.CycleTurns <= 0)
                 return;
 
-            int completedCycles = MiningInitialStockTurns / recipe.CycleTurns;
+            int completedCycles = IndustryTradeConstants.InitialStockTurns / recipe.CycleTurns;
             if (completedCycles <= 0)
                 return;
 
@@ -389,30 +389,6 @@ namespace _Project.Scripts.Stations
 
                 TestStationTradeBootstrap.InitializeRandomMarket(ref station, rng);
                 sys.Stations = new[] { station };
-            }
-        }
-
-        /// <summary>ВРЕМЕННЫЙ спавн дополнительных станций (удалить безболезненно).</summary>
-        private static void SpawnTemporaryExtraStations(StarSys[] galaxy, System.Collections.Generic.IReadOnlyList<Fraction> fractions)
-        {
-            if (fractions == null || fractions.Count == 0)
-                return;
-
-            var rng = new System.Random(1337);
-            float orbitUnit = OrbitMath.PlanetOrbitIndexToUnits(1);
-            float baseRadius = OrbitMath.PlanetOrbitIndexToUnits(10) + orbitUnit;
-
-            for (int i = 0; i < galaxy.Length; i++)
-            {
-                ref var sys = ref galaxy[i];
-                if (sys.Stations == null || sys.Stations.Length == 0)
-                    continue;
-
-                var ownerFraction = fractions[rng.Next(0, fractions.Count)];
-                var station = StationCreator.Create(DefaultDef, ownerFraction, new UnityEngine.Vector3(0f, baseRadius, 0f)); // 12 часов
-
-                TestStationTradeBootstrap.InitializeRandomMarket(ref station, rng);
-                AppendStation(ref sys, station);
             }
         }
 
