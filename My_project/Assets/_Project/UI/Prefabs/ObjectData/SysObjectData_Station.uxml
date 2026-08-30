@@ -18,7 +18,7 @@
                     <ui:Label text="Sell" display-tooltip-when-elided="false" parse-escape-sequences="false" emoji-fallback-support="false" double-click-selects-word="false" triple-click-selects-line="false" />
                 </ui:VisualElement>
                 <ui:VisualElement class="od-tab">
-                    <ui:Label text="anomaly" double-click-selects-word="false" selectable="false" focusable="false" triple-click-selects-line="false" binding-path="civ" emoji-fallback-support="false" display-tooltip-when-elided="true" />
+                    <ui:Label text="industry" display-tooltip-when-elided="false" double-click-selects-word="false" triple-click-selects-line="false" emoji-fallback-support="false" parse-escape-sequences="false" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="ParamValueBlock" class="od-param-block">
