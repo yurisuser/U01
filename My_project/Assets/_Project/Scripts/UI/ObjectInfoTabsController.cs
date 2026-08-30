@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
 using _Project.DataAccess;
-using _Project.Industry.Recipes;
 using _Project.Items;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Galaxy.Constellations;
@@ -593,34 +592,12 @@ namespace _Project.Scripts.UI
             StringBuilder paramList,
             StringBuilder valueList)
         {
-            var state = module.State as IndustryModuleState;
-            var recipe = FindRecipeForResource(state == null ? 0 : state.ResourceId);
+            var data = module.Data as IndustryModuleData;
+            var recipe = data?.Recipe;
             paramList.Append("recipe:").Append('\n');
             valueList.Append(recipe == null
                 ? "none"
                 : string.IsNullOrWhiteSpace(recipe.Name) ? recipe.Key : recipe.Name).Append('\n');
-        }
-
-        private static Recipe FindRecipeForResource(int resourceId)
-        {
-            if (resourceId <= 0 || CATALOG.Recipes == null)
-                return null;
-
-            for (int i = 0; i < CATALOG.Recipes.Count; i++)
-            {
-                var recipe = CATALOG.Recipes[i];
-                if (recipe == null || recipe.Type != ERecipeType.Extraction || recipe.Outputs == null)
-                    continue;
-
-                for (int j = 0; j < recipe.Outputs.Length; j++)
-                {
-                    var output = recipe.Outputs[j];
-                    if (output.Key.Type == ItemType.Item && output.Key.Id == resourceId)
-                        return recipe;
-                }
-            }
-
-            return null;
         }
 
         private void BuildStationOrdersInfo(_Project.Scripts.Stations.StationModule[] modules)

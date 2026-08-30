@@ -427,7 +427,7 @@ namespace _Project.Scripts.NPC.Fraction.Create
                 var def = DefaultStationDef();
                 var position = OrbitMath.PlanetOrbitIndexToUnits(dto.orbit);
                 var station = StationCreator.Create(def, owner, new UnityEngine.Vector3(position, 0f, 0f));
-                StationTradeBootstrap.InitForStation(ref station, rng);
+                TestStationTradeBootstrap.InitializeRandomMarket(ref station, rng);
                 list.Add(station);
             }
 

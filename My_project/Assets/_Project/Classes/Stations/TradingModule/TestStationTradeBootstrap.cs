@@ -6,14 +6,14 @@ using _Project.Items;
 
 namespace _Project.Scripts.Stations
 {
-    /// <summary>Инициализация виртуального склада и ордеров торговли для станции.</summary>
-    public static class StationTradeBootstrap
+    /// <summary>ТЕСТ: создаёт случайный склад и ордера станции для отладки торгового ИИ.</summary>
+    public static class TestStationTradeBootstrap
     {
         private const int OrdersPerSide = 25;
         private const float MeanFill = 0.5f;
         private const float FillSpread = 0.3f;
 
-        public static void InitForStation(ref Station station, Random rng)
+        public static void InitializeRandomMarket(ref Station station, Random rng)
         {
             if (rng == null)
                 rng = new Random();

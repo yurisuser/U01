@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using _Project.DataAccess;
+using _Project.Industry.Recipes;
+using _Project.Items;
 using _Project.Scripts.Const;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.NPC.Fraction;
@@ -11,6 +14,7 @@ namespace _Project.Scripts.Stations
     public static class StationSectorSeeder
     {
         private const int MiningStationsPerSystem = 3;
+        private const int MiningInitialStockTurns = 20;
 
         private static readonly StationTypeDef DefaultDef = new()
         {
@@ -25,7 +29,7 @@ namespace _Project.Scripts.Stations
         {
             Key = "station_mining",
             PrefabKey = "station_test",
-            DefaultModules = new[] { EStationModuleType.Storage, EStationModuleType.Dock, EStationModuleType.Industry },
+            DefaultModules = new[] { EStationModuleType.Storage, EStationModuleType.Dock, EStationModuleType.Industry, EStationModuleType.Trade },
             BaseHull = 100f,
             BasePower = 50f,
         };
@@ -257,11 +261,18 @@ namespace _Project.Scripts.Stations
 
         private static void ConfigureMiningStation(ref Station station, MiningSource source)
         {
+            var recipe = FindExtractionRecipe(source.ResourceId);
             for (int i = 0; i < station.Modules.Length; i++)
             {
                 var module = station.Modules[i];
                 if (module == null || module.Type != EStationModuleType.Industry)
                     continue;
+
+                if (module.Data is IndustryModuleData data)
+                    data.Recipe = recipe;
+                else
+                    module.Data = new IndustryModuleData { Recipe = recipe };
+
                 if (module.State is IndustryModuleState state)
                 {
                     state.ResourceId = source.ResourceId;
@@ -269,7 +280,55 @@ namespace _Project.Scripts.Stations
                     state.SourcePlanetIndex = source.PlanetIndex;
                     state.SourceMoonIndex = source.MoonIndex;
                 }
+                break;
+            }
+
+            AddMiningInitialStock(ref station, recipe);
+        }
+
+        private static Recipe FindExtractionRecipe(int resourceId)
+        {
+            if (resourceId <= 0 || CATALOG.Recipes == null)
+                return null;
+
+            for (int i = 0; i < CATALOG.Recipes.Count; i++)
+            {
+                var recipe = CATALOG.Recipes[i];
+                if (recipe == null || recipe.Type != ERecipeType.Extraction || recipe.Outputs == null)
+                    continue;
+
+                for (int j = 0; j < recipe.Outputs.Length; j++)
+                {
+                    var output = recipe.Outputs[j];
+                    if (output.Key.Type == ItemType.Item && output.Key.Id == resourceId)
+                        return recipe;
+                }
+            }
+
+            return null;
+        }
+
+        private static void AddMiningInitialStock(ref Station station, Recipe recipe)
+        {
+            if (recipe?.Outputs == null || recipe.Outputs.Length == 0 || recipe.CycleTurns <= 0)
                 return;
+
+            int completedCycles = MiningInitialStockTurns / recipe.CycleTurns;
+            if (completedCycles <= 0)
+                return;
+
+            var cargo = station.Cargo;
+            if (cargo == null)
+                return;
+
+            for (int i = 0; i < recipe.Outputs.Length; i++)
+            {
+                var output = recipe.Outputs[i];
+                long amount = (long)output.Quantity * completedCycles;
+                if (amount <= 0)
+                    continue;
+
+                cargo.Add(output.Key, amount > int.MaxValue ? int.MaxValue : (int)amount);
             }
         }
 
@@ -328,7 +387,7 @@ namespace _Project.Scripts.Stations
                     };
                 }
 
-                StationTradeBootstrap.InitForStation(ref station, rng);
+                TestStationTradeBootstrap.InitializeRandomMarket(ref station, rng);
                 sys.Stations = new[] { station };
             }
         }
@@ -352,7 +411,7 @@ namespace _Project.Scripts.Stations
                 var ownerFraction = fractions[rng.Next(0, fractions.Count)];
                 var station = StationCreator.Create(DefaultDef, ownerFraction, new UnityEngine.Vector3(0f, baseRadius, 0f)); // 12 часов
 
-                StationTradeBootstrap.InitForStation(ref station, rng);
+                TestStationTradeBootstrap.InitializeRandomMarket(ref station, rng);
                 AppendStation(ref sys, station);
             }
         }
