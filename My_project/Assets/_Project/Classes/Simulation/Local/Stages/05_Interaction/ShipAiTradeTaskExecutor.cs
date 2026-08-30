@@ -120,11 +120,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
         {
             if (!state.OrdersSell.TryGetValue(key, out var order))
                 return;
-            order.Amount -= amount;
-            if (order.Amount <= 0)
-                state.OrdersSell.Remove(key);
-            else
-                state.OrdersSell[key] = order;
+            order.Amount = System.Math.Max(0, order.Amount - amount);
+            state.OrdersSell[key] = order; // Нулевой ордер сохраняет объявленный ассортимент станции.
         }
 
         private static void ApplyBuyDelta(TradeModuleState state, ItemKey key, int amount)

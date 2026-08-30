@@ -32,16 +32,25 @@ namespace _Project.Scripts.UI
 
         private void Update()
         {
-            if (_selectedData == null || !_selectedData.HasData || _selectedData.SelectedType != ESelectedObjectType.Ship)
+            if (_selectedData == null || !_selectedData.HasData)
                 return;
 
             int systemIndex = _selectedData.SystemIndex >= 0
                 ? _selectedData.SystemIndex
                 : GameBootstrap.GameState.SelectedSystemIndex;
-            if (!TryGetSystem(systemIndex, out var system) || !TryFindShip(system, _selectedData.Uid, out var ship))
+            if (!TryGetSystem(systemIndex, out var system))
                 return;
 
-            _tabsController?.ApplyShipInfo(system, ship);
+            if (_selectedData.SelectedType == ESelectedObjectType.Ship &&
+                TryFindShip(system, _selectedData.Uid, out var ship))
+            {
+                _tabsController?.ApplyShipInfo(system, ship);
+            }
+            else if (_selectedData.SelectedType == ESelectedObjectType.Station &&
+                     TryFindStation(system, _selectedData.Uid, out var station))
+            {
+                _tabsController?.ApplyStationInfo(system, station);
+            }
         }
         private void OnEnable()
         {

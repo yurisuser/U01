@@ -1,6 +1,7 @@
 using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
+using _Project.Scripts.Stations;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Ai
 {
@@ -17,8 +18,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             if (!context.HasActiveSystem || context.ActiveSystem.Value.State == null)
                 return;
 
-            var ships = context.ActiveSystem.Value.State.Ships;
             var system = context.ActiveSystem.Value;
+            StationTickService.TickTurn(in system, context.Day);
+            IndustryTradeOrderSynchronizer.Refresh(in system);
+            var ships = system.State.Ships;
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];

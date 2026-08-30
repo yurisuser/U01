@@ -1,6 +1,7 @@
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
+using _Project.Scripts.Stations;
 
 namespace _Project.Scripts.Simulation.Global.Stages.Ai
 {
@@ -31,6 +32,8 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
                 if (runtime == null)
                     continue; // В системе нет рантайма кораблей.
 
+                StationTickService.TickTurn(in system, context.Day);
+                IndustryTradeOrderSynchronizer.Refresh(in system);
                 var ships = runtime.Ships;
                 for (int i = 0; i < ships.Count; i++)
                 {

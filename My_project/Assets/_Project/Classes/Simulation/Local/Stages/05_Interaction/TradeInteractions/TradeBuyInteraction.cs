@@ -107,11 +107,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
             if (!tradeState.OrdersSell.TryGetValue(key, out var order))
                 return;
 
-            order.Amount -= amount;
-            if (order.Amount <= 0)
-                tradeState.OrdersSell.Remove(key); // Ордер закрыт.
-            else
-                tradeState.OrdersSell[key] = order; // Ордер остался частично активным.
+            order.Amount = System.Math.Max(0, order.Amount - amount);
+            tradeState.OrdersSell[key] = order; // Нулевой ордер сохраняет объявленный ассортимент станции.
         }
     }
 }
