@@ -5,6 +5,8 @@ namespace _Project.Industry.Recipes
     /// <summary>Статическое описание преобразования предметов за заданное число ходов.</summary>
     public sealed class Recipe
     {
+        public string Key;                // текстовый ключ рецепта
+        public int FactionId;             // автор рецепта
         public int Id;                   // идентификатор рецепта в каталоге
         public string Name;               // отображаемое имя рецепта
         public string Description;        // описание для интерфейса

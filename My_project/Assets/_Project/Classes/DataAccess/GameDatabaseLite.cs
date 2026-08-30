@@ -6,6 +6,7 @@ using System.Text;
 using Mono.Data.Sqlite;
 using UnityEngine;
 using _Project.Scripts.NPC.Fraction;
+using _Project.Industry.Recipes;
 
 namespace _Project.DataAccess
 {
@@ -24,6 +25,50 @@ namespace _Project.DataAccess
         private static IReadOnlyList<CatalogShip> _ships;
         private static IReadOnlyList<CatalogFraction> _fractions;
         private static IReadOnlyList<CatalogConstellationName> _constellationNames;
+        private static IReadOnlyList<Recipe> _recipes;
+
+        /// <summary>Возвращает каталог производственных рецептов из базы.</summary>
+        public static IReadOnlyList<Recipe> GetRecipes(bool forceReload = false)
+        {
+            if (!forceReload && _recipes != null)
+                return _recipes;
+
+            var itemsByKey = new Dictionary<string, CatalogItem>(StringComparer.Ordinal);
+            foreach (var item in GetItems(forceReload))
+                itemsByKey.Add(item.Key, item);
+
+            using var conn = OpenConnection();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"SELECT id, key, display_name, description, faction_id, type, cycle_turns,
+input_1_key, input_1_amount, input_2_key, input_2_amount, input_3_key, input_3_amount,
+input_4_key, input_4_amount, input_5_key, input_5_amount, input_6_key, input_6_amount,
+output_1_key, output_1_amount, output_2_key, output_2_amount, output_3_key, output_3_amount,
+output_4_key, output_4_amount, output_5_key, output_5_amount, output_6_key, output_6_amount
+FROM recipes ORDER BY id";
+
+            var list = new List<Recipe>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    list.Add(new Recipe
+                    {
+                        Id = reader.GetInt32(0),
+                        Key = reader.GetString(1),
+                        Name = reader.GetString(2),
+                        Description = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                        FactionId = reader.GetInt32(4),
+                        Type = ParseRecipeType(reader.GetString(5), reader.GetString(1)),
+                        CycleTurns = reader.GetInt32(6),
+                        Inputs = ReadRecipeStacks(reader, 7, itemsByKey, reader.GetString(1)),
+                        Outputs = ReadRecipeStacks(reader, 19, itemsByKey, reader.GetString(1)),
+                    });
+                }
+            }
+
+            _recipes = list;
+            return list;
+        }
 
         /// <summary>Возвращает список items из базы (с кешированием).</summary>
         public static IReadOnlyList<CatalogItem> GetItems(bool forceReload = false)
@@ -31,7 +76,7 @@ namespace _Project.DataAccess
             if (!forceReload && _items != null) return _items;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peak_orbit, orbit_spread, metallicity_factor, peak_orbit_norm, orbit_spread_norm, weight, stackable, max_stack FROM items ORDER BY id";
+            cmd.CommandText = "SELECT id, key, name, description, img, price, isMineable, isIndustrial, isConsumable, isLootOnly, peak_orbit, orbit_spread, metallicity_factor, peak_orbit_norm, orbit_spread_norm, weight, stackable, max_stack FROM items ORDER BY id";
 
             var list = new List<CatalogItem>();
             using (var reader = cmd.ExecuteReader())
@@ -39,26 +84,27 @@ namespace _Project.DataAccess
                 while (reader.Read())
                 {
                     var id = reader.GetInt32(0);
-                    var name = reader.GetString(1);
-                    var description = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
-                    var img = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
-                    var price = (float)reader.GetDouble(4);
-                    var isMineable = reader.GetInt32(5) != 0;
-                    var isIndustrial = reader.GetInt32(6) != 0;
+                    var key = reader.GetString(1);
+                    var name = reader.GetString(2);
+                    var description = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
+                    var img = reader.IsDBNull(4) ? string.Empty : reader.GetString(4);
+                    var price = (float)reader.GetDouble(5);
+                    var isMineable = reader.GetInt32(6) != 0;
+                    var isIndustrial = reader.GetInt32(7) != 0;
                     if (isMineable && isIndustrial)
                         throw new InvalidOperationException($"Item #{id} \"{name}\" помечен и как добываемый, и как промышленный. Флаги должны быть взаимоисключающими.");
-                    var isConsumable = reader.GetInt32(7) != 0;
-                    var isLootOnly = reader.GetInt32(8) != 0;
-                    var peakOrbit = (float)reader.GetDouble(9);
-                    var orbitSpread = (float)reader.GetDouble(10);
-                    var metallicityFactor = (float)reader.GetDouble(11);
-                    var peakOrbitNorm = reader.IsDBNull(12) ? 0f : (float)reader.GetDouble(12);
-                    var orbitSpreadNorm = reader.IsDBNull(13) ? 0f : (float)reader.GetDouble(13);
-                    var weight = (float)reader.GetDouble(14);
-                    var stackable = reader.GetInt32(15) != 0;
-                    var maxStack = reader.GetInt32(16);
+                    var isConsumable = reader.GetInt32(8) != 0;
+                    var isLootOnly = reader.GetInt32(9) != 0;
+                    var peakOrbit = (float)reader.GetDouble(10);
+                    var orbitSpread = (float)reader.GetDouble(11);
+                    var metallicityFactor = (float)reader.GetDouble(12);
+                    var peakOrbitNorm = reader.IsDBNull(13) ? 0f : (float)reader.GetDouble(13);
+                    var orbitSpreadNorm = reader.IsDBNull(14) ? 0f : (float)reader.GetDouble(14);
+                    var weight = (float)reader.GetDouble(15);
+                    var stackable = reader.GetInt32(16) != 0;
+                    var maxStack = reader.GetInt32(17);
                     list.Add(new CatalogItem(
-                        id, name, description, img, price,
+                        id, key, name, description, img, price,
                         isMineable, isIndustrial, isConsumable, isLootOnly,
                         peakOrbit, orbitSpread, metallicityFactor, peakOrbitNorm, orbitSpreadNorm,
                         weight, stackable, maxStack));
@@ -379,7 +425,44 @@ namespace _Project.DataAccess
             EnsureItemsTableRenamed(connection);
             EnsureEquipmentColumns(connection);
             EnsureItemColumns(connection);
+            EnsureItemKeys(connection);
+            EnsureRecipesSchema(connection);
             SeedDefaults(connection);
+        }
+
+        private static ERecipeType ParseRecipeType(string type, string recipeKey)
+        {
+            if (Enum.TryParse(type, true, out ERecipeType result) && result != ERecipeType.None)
+                return result;
+
+            throw new InvalidOperationException($"Рецепт '{recipeKey}' содержит неизвестный тип '{type}'.");
+        }
+
+        private static _Project.Items.ItemStack[] ReadRecipeStacks(
+            IDataRecord reader,
+            int firstColumn,
+            IReadOnlyDictionary<string, CatalogItem> itemsByKey,
+            string recipeKey)
+        {
+            var stacks = new List<_Project.Items.ItemStack>();
+            for (var index = 0; index < 6; index++)
+            {
+                var keyColumn = firstColumn + index * 2;
+                if (reader.IsDBNull(keyColumn))
+                    continue;
+
+                var itemKey = reader.GetString(keyColumn);
+                var amount = reader.GetInt32(keyColumn + 1);
+                if (string.IsNullOrWhiteSpace(itemKey) || amount <= 0)
+                    throw new InvalidOperationException($"Рецепт '{recipeKey}' содержит некорректный слот ресурсов.");
+                if (!itemsByKey.TryGetValue(itemKey, out var item))
+                    throw new InvalidOperationException($"Рецепт '{recipeKey}' ссылается на неизвестный предмет '{itemKey}'.");
+
+                stacks.Add(new _Project.Items.ItemStack(
+                    new _Project.Items.ItemKey(_Project.Items.ItemType.Item, item.Id), amount));
+            }
+
+            return stacks.ToArray();
         }
 
         private static bool IsSqliteFile(string path)
@@ -545,6 +628,7 @@ CREATE TABLE IF NOT EXISTS a_contellations_names (
 );
 CREATE TABLE IF NOT EXISTS items (
     id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
     name TEXT NOT NULL,
     description TEXT,
     img TEXT,
@@ -561,6 +645,27 @@ CREATE TABLE IF NOT EXISTS items (
     weight REAL NOT NULL DEFAULT 1,
     stackable BOOLEAN NOT NULL DEFAULT 1 CHECK (stackable IN (0,1)),
     max_stack INTEGER NOT NULL DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS recipes (
+    id INTEGER PRIMARY KEY,
+    key TEXT NOT NULL UNIQUE,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    faction_id INTEGER NOT NULL DEFAULT 0,
+    type TEXT NOT NULL,
+    cycle_turns INTEGER NOT NULL DEFAULT 1 CHECK (cycle_turns > 0),
+    input_1_key TEXT, input_1_amount INTEGER NOT NULL DEFAULT 0,
+    input_2_key TEXT, input_2_amount INTEGER NOT NULL DEFAULT 0,
+    input_3_key TEXT, input_3_amount INTEGER NOT NULL DEFAULT 0,
+    input_4_key TEXT, input_4_amount INTEGER NOT NULL DEFAULT 0,
+    input_5_key TEXT, input_5_amount INTEGER NOT NULL DEFAULT 0,
+    input_6_key TEXT, input_6_amount INTEGER NOT NULL DEFAULT 0,
+    output_1_key TEXT, output_1_amount INTEGER NOT NULL DEFAULT 0,
+    output_2_key TEXT, output_2_amount INTEGER NOT NULL DEFAULT 0,
+    output_3_key TEXT, output_3_amount INTEGER NOT NULL DEFAULT 0,
+    output_4_key TEXT, output_4_amount INTEGER NOT NULL DEFAULT 0,
+    output_5_key TEXT, output_5_amount INTEGER NOT NULL DEFAULT 0,
+    output_6_key TEXT, output_6_amount INTEGER NOT NULL DEFAULT 0
 );
 ";
             cmd.ExecuteNonQuery();
@@ -842,6 +947,73 @@ FROM f_fractions;";
             });
         }
 
+        private static void EnsureItemKeys(IDbConnection connection)
+        {
+            EnsureColumns(connection, "items", new[] { ("key", "TEXT NOT NULL DEFAULT ''") });
+
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+UPDATE items SET key = 'inorganic_carbon' WHERE id = 1 AND TRIM(key) = '';
+UPDATE items SET key = 'reactive_gases' WHERE id = 2 AND TRIM(key) = '';
+UPDATE items SET key = 'atmospheric_gases' WHERE id = 3 AND TRIM(key) = '';
+UPDATE items SET key = 'hydrocarbons' WHERE id = 4 AND TRIM(key) = '';
+UPDATE items SET key = 'noble_gases' WHERE id = 5 AND TRIM(key) = '';
+UPDATE items SET key = 'ice' WHERE id = 6 AND TRIM(key) = '';
+UPDATE items SET key = 'reactive_metals' WHERE id = 7 AND TRIM(key) = '';
+UPDATE items SET key = 'heavy_metals' WHERE id = 8 AND TRIM(key) = '';
+UPDATE items SET key = 'precious_metals' WHERE id = 9 AND TRIM(key) = '';
+UPDATE items SET key = 'structural_metals' WHERE id = 10 AND TRIM(key) = '';
+UPDATE items SET key = 'high_tech_metals' WHERE id = 11 AND TRIM(key) = '';
+UPDATE items SET key = 'minerals' WHERE id = 12 AND TRIM(key) = '';
+UPDATE items SET key = 'radioactive_elements' WHERE id = 13 AND TRIM(key) = '';
+UPDATE items SET key = 'salts' WHERE id = 14 AND TRIM(key) = '';
+UPDATE items SET key = 'alloys' WHERE id = 501 AND TRIM(key) = '';
+UPDATE items SET key = 'ceramics' WHERE id = 502 AND TRIM(key) = '';
+UPDATE items SET key = 'industrial_chemicals' WHERE id = 503 AND TRIM(key) = '';
+UPDATE items SET key = 'fertilizers' WHERE id = 504 AND TRIM(key) = '';
+UPDATE items SET key = 'item_' || id WHERE TRIM(key) = '';
+CREATE UNIQUE INDEX IF NOT EXISTS ix_items_key ON items(key);";
+            cmd.ExecuteNonQuery();
+        }
+
+        private static void EnsureRecipesSchema(IDbConnection connection)
+        {
+            var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(recipes)";
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    columns.Add(reader.GetString(1));
+            }
+
+            if (columns.Contains("key") && columns.Contains("faction_id"))
+                return;
+
+            using var tx = connection.BeginTransaction();
+            using var cmdDrop = connection.CreateCommand();
+            cmdDrop.Transaction = tx;
+            cmdDrop.CommandText = "DROP TABLE IF EXISTS recipe_inputs; DROP TABLE IF EXISTS recipe_outputs; DROP TABLE IF EXISTS recipes;";
+            cmdDrop.ExecuteNonQuery();
+
+            using var cmdCreate = connection.CreateCommand();
+            cmdCreate.Transaction = tx;
+            cmdCreate.CommandText = @"
+CREATE TABLE recipes (
+    id INTEGER PRIMARY KEY, key TEXT NOT NULL UNIQUE, display_name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '', faction_id INTEGER NOT NULL DEFAULT 0,
+    type TEXT NOT NULL, cycle_turns INTEGER NOT NULL DEFAULT 1 CHECK (cycle_turns > 0),
+    input_1_key TEXT, input_1_amount INTEGER NOT NULL DEFAULT 0, input_2_key TEXT, input_2_amount INTEGER NOT NULL DEFAULT 0,
+    input_3_key TEXT, input_3_amount INTEGER NOT NULL DEFAULT 0, input_4_key TEXT, input_4_amount INTEGER NOT NULL DEFAULT 0,
+    input_5_key TEXT, input_5_amount INTEGER NOT NULL DEFAULT 0, input_6_key TEXT, input_6_amount INTEGER NOT NULL DEFAULT 0,
+    output_1_key TEXT, output_1_amount INTEGER NOT NULL DEFAULT 0, output_2_key TEXT, output_2_amount INTEGER NOT NULL DEFAULT 0,
+    output_3_key TEXT, output_3_amount INTEGER NOT NULL DEFAULT 0, output_4_key TEXT, output_4_amount INTEGER NOT NULL DEFAULT 0,
+    output_5_key TEXT, output_5_amount INTEGER NOT NULL DEFAULT 0, output_6_key TEXT, output_6_amount INTEGER NOT NULL DEFAULT 0
+);";
+            cmdCreate.ExecuteNonQuery();
+            tx.Commit();
+        }
+
         private static void EnsureColumns(IDbConnection connection, string table, (string Name, string Sql)[] columns)
         {
             var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -995,6 +1167,55 @@ INSERT OR IGNORE INTO a_contellations_names (id, text) VALUES
     (102, 'Umbra'),
     (103, 'Lumen'),
     (104, 'Radius');
+
+INSERT OR IGNORE INTO recipes
+    (id, key, display_name, description, faction_id, type, cycle_turns, output_1_key, output_1_amount)
+VALUES
+    (1, 'extract_structural_metals', 'Добыча конструкционных металлов', 'Базовый цикл добычи конструкционных металлов из доступного депозита.', 0, 'Extraction', 1, 'structural_metals', 750),
+    (2, 'extract_minerals', 'Добыча минералов', 'Базовый цикл добычи минералов из доступного депозита.', 0, 'Extraction', 1, 'minerals', 1000),
+    (3, 'extract_reactive_metals', 'Добыча активных металлов', 'Базовый цикл добычи активных металлов из доступного депозита.', 0, 'Extraction', 1, 'reactive_metals', 500),
+    (4, 'extract_ice', 'Добыча льда', 'Базовый цикл добычи льда из доступного депозита.', 0, 'Extraction', 1, 'ice', 1200);
+
+INSERT OR IGNORE INTO recipes
+    (id, key, display_name, description, faction_id, type, cycle_turns,
+     input_1_key, input_1_amount, input_2_key, input_2_amount, output_1_key, output_1_amount)
+VALUES
+    (101, 'smelt_alloys', 'Выплавка промышленных сплавов', 'Первичная плавка конструкционных и тяжёлых металлов.', 0, 'Smelting', 1, 'structural_metals', 3, 'heavy_metals', 2, 'alloys', 1),
+    (102, 'manufacture_ceramics', 'Производство керамики', 'Переработка минералов и льда в техническую керамику.', 0, 'Manufacturing', 1, 'minerals', 3, 'ice', 2, 'ceramics', 1),
+    (103, 'synthesize_industrial_chemicals', 'Синтез промышленных химикатов', 'Переработка активных металлов и солей в базовые химические реагенты.', 0, 'Chemistry', 1, 'reactive_metals', 3, 'salts', 2, 'industrial_chemicals', 1),
+    (104, 'synthesize_fertilizers', 'Синтез удобрений', 'Производство удобрений из промышленных химикатов и атмосферных газов.', 0, 'Chemistry', 1, 'industrial_chemicals', 2, 'atmospheric_gases', 2, 'fertilizers', 1);
+
+/*
+INSERT OR IGNORE INTO recipes (id, name, description, type, cycle_turns) VALUES
+    (1, 'Добыча конструкционных металлов', 'Базовый цикл добычи конструкционных металлов из доступного депозита.', 1, 1),
+    (2, 'Добыча минералов', 'Базовый цикл добычи минералов из доступного депозита.', 1, 1),
+    (3, 'Добыча активных металлов', 'Базовый цикл добычи активных металлов из доступного депозита.', 1, 1),
+    (4, 'Добыча льда', 'Базовый цикл добычи льда из доступного депозита.', 1, 1),
+    (101, 'Выплавка промышленных сплавов', 'Первичная плавка конструкционных и тяжёлых металлов.', 3, 1),
+    (102, 'Производство керамики', 'Переработка минералов и льда в техническую керамику.', 6, 1),
+    (103, 'Синтез промышленных химикатов', 'Переработка активных металлов и солей в базовые химические реагенты.', 4, 1),
+    (104, 'Синтез удобрений', 'Производство удобрений из промышленных химикатов и атмосферных газов.', 4, 1);
+
+INSERT OR IGNORE INTO recipe_inputs (recipe_id, item_type, item_id, quantity) VALUES
+    (101, 1, 10, 3),
+    (101, 1, 8, 2),
+    (102, 1, 12, 3),
+    (102, 1, 6, 2),
+    (103, 1, 7, 3),
+    (103, 1, 14, 2),
+    (104, 1, 503, 2),
+    (104, 1, 3, 2);
+
+INSERT OR IGNORE INTO recipe_outputs (recipe_id, item_type, item_id, quantity) VALUES
+    (1, 1, 10, 750),
+    (2, 1, 12, 1000),
+    (3, 1, 7, 500),
+    (4, 1, 6, 1200),
+    (101, 1, 501, 1),
+    (102, 1, 502, 1),
+    (103, 1, 503, 1),
+    (104, 1, 504, 1);
+*/
 ";
             cmd.ExecuteNonQuery();
             tx.Commit();

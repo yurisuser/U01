@@ -86,8 +86,8 @@ namespace _Project.Scripts.Galaxy.Generation
             ConstellationCreator.Generate(galaxy);
 
             FractionsSpawner.SpawnAll(galaxy);
-            StationSectorSeeder.SpawnFactionStations(galaxy);
             ResourceDepositsCreator.AssignDeposits(galaxy);
+            StationSectorSeeder.SpawnFactionStations(galaxy);
 
             return galaxy;
         }

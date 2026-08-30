@@ -50,6 +50,7 @@ namespace _Project.Scripts.Stations
             {
                 EStationModuleType.Storage => new StorageModuleData(),
                 EStationModuleType.Dock => new DockModuleData(),
+                EStationModuleType.Industry => new IndustryModuleData(),
                 EStationModuleType.Trade => new TradeModuleData(),
                 _ => null
             };
@@ -61,6 +62,7 @@ namespace _Project.Scripts.Stations
             {
                 EStationModuleType.Storage => new StorageModuleState(),
                 EStationModuleType.Dock => new DockModuleState(),
+                EStationModuleType.Industry => new IndustryModuleState(),
                 EStationModuleType.Trade => new TradeModuleState(),
                 _ => null
             };

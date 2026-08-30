@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using _Project.Industry.Recipes;
 
 namespace _Project.DataAccess
 {
@@ -34,6 +35,9 @@ namespace _Project.DataAccess
 
         public static IReadOnlyList<CatalogConstellationName> ConstellationNames { get; private set; } = Array.Empty<CatalogConstellationName>();
         public static IReadOnlyDictionary<int, CatalogConstellationName> ConstellationNamesById { get; private set; } = EmptyIndex<CatalogConstellationName>();
+
+        public static IReadOnlyList<Recipe> Recipes { get; private set; } = Array.Empty<Recipe>();
+        public static IReadOnlyDictionary<int, Recipe> RecipesById { get; private set; } = EmptyIndex<Recipe>();
 
         public static IReadOnlyList<string> StarPrefixes { get; private set; } = Array.Empty<string>();
 
@@ -70,6 +74,9 @@ namespace _Project.DataAccess
             ConstellationNames = ConstellationNameCatalogReader.GetAll();
             ConstellationNamesById = BuildIndex(ConstellationNames, x => x.Id);
 
+            Recipes = RecipeCatalogReader.GetAll(forceReload);
+            RecipesById = BuildIndex(Recipes, x => x.Id);
+
             StarPrefixes = StarPrefixCatalogReader.GetAll(starPrefixLanguage);
 
             _isLoaded = true;
@@ -105,6 +112,9 @@ namespace _Project.DataAccess
 
             ConstellationNames = Array.Empty<CatalogConstellationName>();
             ConstellationNamesById = EmptyIndex<CatalogConstellationName>();
+
+            Recipes = Array.Empty<Recipe>();
+            RecipesById = EmptyIndex<Recipe>();
 
             StarPrefixes = Array.Empty<string>();
         }

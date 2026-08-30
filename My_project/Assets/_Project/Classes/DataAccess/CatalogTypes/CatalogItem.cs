@@ -5,6 +5,7 @@ namespace _Project.DataAccess
     {
         public CatalogItem(
             int id,
+            string key,
             string name,
             string description,
             string img,
@@ -23,6 +24,7 @@ namespace _Project.DataAccess
             int maxStack)
         {
             Id = id;
+            Key = key;
             Name = name;
             Description = description;
             Img = img;
@@ -42,6 +44,7 @@ namespace _Project.DataAccess
         }
 
         public int Id { get; }
+        public string Key { get; } // текстовый ключ предмета
         public string Name { get; }
         public string Description { get; }
         public string Img { get; }
