@@ -6,7 +6,7 @@ using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 using UnityEngine;                      // для Vector3, Quaternion
 
 namespace _Project.Scripts.Ships
