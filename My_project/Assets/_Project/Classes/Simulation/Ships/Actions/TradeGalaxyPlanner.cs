@@ -4,8 +4,7 @@ using _Project.Scripts.Core.GameState;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Continuum;
-using _Project.Scripts.Trade.Models;
-using _Project.Scripts.Trade.Services;
+using _Project.Trade;
 
 namespace _Project.Scripts.Simulation.Ships
 {

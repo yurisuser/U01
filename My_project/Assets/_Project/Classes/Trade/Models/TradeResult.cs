@@ -1,4 +1,4 @@
-namespace _Project.Scripts.Trade.Models
+namespace _Project.Trade
 {
     public struct TradeResult
     {

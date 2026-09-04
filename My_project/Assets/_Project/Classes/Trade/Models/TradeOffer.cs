@@ -1,6 +1,6 @@
 using _Project.Items;
 
-namespace _Project.Scripts.Trade.Models
+namespace _Project.Trade
 {
     /// <summary>Данные сделки между двумя сторонами.</summary>
     public readonly struct TradeOffer

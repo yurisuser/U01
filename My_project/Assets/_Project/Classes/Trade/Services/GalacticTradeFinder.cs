@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using _Project.Items;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Stations;
-using _Project.Scripts.Trade.Models;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     /// <summary>Поиск межсистемных торговых кандидатов с ограничением по хопам и оценкой yield.</summary>
     public static class GalacticTradeFinder

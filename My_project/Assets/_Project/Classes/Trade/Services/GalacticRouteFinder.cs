@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using _Project.Scripts.Galaxy.Data;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     /// <summary>Поиск кратчайшего числа прыжков между системами по HyperlinkEdge с кэшем.</summary>
     public static class GalacticRouteFinder

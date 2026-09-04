@@ -3,7 +3,7 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Simulation.AI;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
@@ -64,7 +64,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return;
             }
 
-            var result = _Project.Scripts.Trade.Services.TradeService.Execute(
+            var result = ExchangeService.Execute(
                 new TradeOffer(station, ship, task.Key, amount, order.Price, system.Uid.Id));
             if (!result.Success)
             {
@@ -91,7 +91,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return;
             }
 
-            var result = _Project.Scripts.Trade.Services.TradeService.Execute(
+            var result = ExchangeService.Execute(
                 new TradeOffer(ship, station, task.Key, amount, order.Price, system.Uid.Id));
             if (!result.Success)
             {

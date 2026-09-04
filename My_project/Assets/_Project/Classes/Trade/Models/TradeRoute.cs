@@ -1,7 +1,7 @@
 using _Project.Scripts.Core;
 using _Project.Items;
 
-namespace _Project.Scripts.Trade.Models
+namespace _Project.Trade
 {
     /// <summary>Маршрут сделки: где купить и где продать.</summary>
     public readonly struct TradeRoute

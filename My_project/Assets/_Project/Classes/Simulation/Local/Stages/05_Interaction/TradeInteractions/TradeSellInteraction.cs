@@ -3,7 +3,7 @@ using _Project.Items;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Stations;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
@@ -51,7 +51,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             TradeInteractionLogger.LogTradeStart("Sell", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, order.Price);
 
-            var result = _Project.Scripts.Trade.Services.TradeService.Execute(offer);
+            var result = ExchangeService.Execute(offer);
             if (!result.Success) // сделка не прошла
             {
                 TradeInteractionLogger.LogTradeFailed("Sell", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, result.FailReason);

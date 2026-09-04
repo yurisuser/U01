@@ -3,7 +3,7 @@ using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Ships.Orders;
 using _Project.Scripts.Simulation.Local;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 
 namespace _Project.Scripts.Simulation.Ships
 {

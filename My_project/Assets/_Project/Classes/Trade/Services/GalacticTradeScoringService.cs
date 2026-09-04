@@ -1,7 +1,6 @@
 using _Project.Scripts.Const;
-using _Project.Scripts.Trade.Models;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     /// <summary>Оценка межсистемных маршрутов без жёстких порогов: приоритет ближних и прибыльных.</summary>
     public static class GalacticTradeScoringService

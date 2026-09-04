@@ -1,8 +1,7 @@
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Stations;
-using _Project.Scripts.Trade.Models;
-using _Project.Scripts.Trade.Services;
+using _Project.Trade;
 using _Project.Items;
 
 namespace _Project.Scripts.Simulation.AI

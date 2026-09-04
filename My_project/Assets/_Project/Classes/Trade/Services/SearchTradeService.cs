@@ -2,9 +2,8 @@ using _Project.Items;
 using _Project.Scripts.Core;
 using _Project.Scripts.Galaxy.Data;
 using _Project.Scripts.Stations;
-using _Project.Scripts.Trade.Models;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     /// <summary>Поиск выгодной сделки внутри системы.</summary>
     public static class SearchTradeService

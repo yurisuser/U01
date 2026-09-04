@@ -1,7 +1,7 @@
 using _Project.Items;
 using _Project.Scripts.NPC.Fraction;
 
-namespace _Project.Scripts.Trade.Models
+namespace _Project.Trade
 {
     /// <summary>Участник сделки: владелец + доступ к карго.</summary>
     public interface ITradeActor

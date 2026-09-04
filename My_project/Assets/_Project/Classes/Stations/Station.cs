@@ -2,7 +2,7 @@ using UnityEngine;
 using _Project.Scripts.Core;
 using _Project.Items;
 using _Project.Scripts.NPC.Fraction;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 
 namespace _Project.Scripts.Stations
 {

@@ -1,10 +1,9 @@
 using _Project.Items;
-using _Project.Scripts.Trade.Models;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     /// <summary>Торговые операции (перенос товара) без участия денег у NPC.</summary>
-    public static class TradeService
+    public static class ExchangeService
     {
         /// <summary>Исполняет сделку: проверка, перенос товара, списание/начисление денег.</summary>
         public static TradeResult Execute(TradeOffer offer) // единая точка исполнения сделки

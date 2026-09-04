@@ -6,7 +6,7 @@ using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Ships.Orders;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 using UnityEngine;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction

@@ -5,7 +5,7 @@ using _Project.Scripts.Ships;
 using _Project.Scripts.Ships.Actions;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Stations;
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 {
@@ -43,7 +43,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
             TradeInteractionLogger.LogTradeStart("Buy", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, order.Price);
 
-            var result = _Project.Scripts.Trade.Services.TradeService.Execute(offer);
+            var result = ExchangeService.Execute(offer);
             if (!result.Success) // сделка не прошла
             {
                 TradeInteractionLogger.LogTradeFailed("Buy", ship.Uid.Id, targetStation.Uid.Id, order.Key, amount, result.FailReason);
@@ -88,7 +88,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                 return; // Полная покупка, допланирование не нужно.
 
             int remaining = requested - boughtAmount;
-            if (_Project.Scripts.Trade.Services.SearchTradeService.TryFindBestSellerInSystem(system, order.Key, out var sellerUid) &&
+            if (SearchTradeService.TryFindBestSellerInSystem(system, order.Key, out var sellerUid) &&
                 TradeInteraction.TryGetStation(in system, sellerUid, out var nextSeller))
             {
                 // LIFO: пушим сначала торговое действие, затем move к найденному продавцу.

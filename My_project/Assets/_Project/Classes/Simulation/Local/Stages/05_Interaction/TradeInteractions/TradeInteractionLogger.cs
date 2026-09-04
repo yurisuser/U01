@@ -1,4 +1,4 @@
-using _Project.Scripts.Trade.Models;
+using _Project.Trade;
 using _Project.Items;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
 
         internal static void LogTradeFailed(string action, int shipId, int stationId, ItemKey key, int amount, ETradeFailReason reason) // лог ошибки сделки
         {
-            Debug.Log($"[Trade] {action} failed. ship={shipId} station={stationId} item={key} amount={amount} reason={reason}"); // Причина отказа TradeService.
+            Debug.Log($"[Trade] {action} failed. ship={shipId} station={stationId} item={key} amount={amount} reason={reason}"); // Причина отказа ExchangeService.
         }
 
         internal static void LogTradeOrderMissing(string side, int shipId, int stationId, ItemKey key) // лог отсутствующего ордера

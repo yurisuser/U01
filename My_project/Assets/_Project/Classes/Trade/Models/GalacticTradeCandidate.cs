@@ -1,7 +1,7 @@
 using _Project.Items;
 using _Project.Scripts.Core;
 
-namespace _Project.Scripts.Trade.Models
+namespace _Project.Trade
 {
     /// <summary>Кандидат межсистемной сделки с данными для маршрутизации.</summary>
     public readonly struct GalacticTradeCandidate

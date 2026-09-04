@@ -1,7 +1,6 @@
 using _Project.Items;
-using _Project.Scripts.Trade.Models;
 
-namespace _Project.Scripts.Trade.Services
+namespace _Project.Trade
 {
     public static class CheckTradeService
     {
