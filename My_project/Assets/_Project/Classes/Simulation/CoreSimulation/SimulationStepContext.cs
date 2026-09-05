@@ -11,7 +11,8 @@ namespace _Project.Scripts.Simulation.Core
             float deltaTime,
             ERunMode runMode,
             SimulationEventBus eventBus,
-            int activeSystemIndex = -1)
+            int activeSystemIndex = -1,
+            bool isTurnStart = false)
         {
             GameState = gameState;
             Day = day;
@@ -19,6 +20,7 @@ namespace _Project.Scripts.Simulation.Core
             RunMode = runMode;
             EventBus = eventBus;
             ActiveSystemIndex = activeSystemIndex;
+            IsTurnStart = isTurnStart;
         }
 
         /// <summary>Сервис глобального состояния игры.</summary>
@@ -38,6 +40,9 @@ namespace _Project.Scripts.Simulation.Core
 
         /// <summary>Индекс активной системы, зафиксированный на границе этого шага.</summary>
         public int ActiveSystemIndex { get; }
+
+        /// <summary>Начинается ли новый внутриигровой ход.</summary>
+        public bool IsTurnStart { get; }
 
         /// <summary>Находимся ли в паузе.</summary>
         public bool IsPaused => RunMode == ERunMode.Paused;

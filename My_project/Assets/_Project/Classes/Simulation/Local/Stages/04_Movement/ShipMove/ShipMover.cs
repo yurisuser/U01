@@ -1,4 +1,5 @@
 using UnityEngine;
+using _Project.Scripts.Simulation.Ships.Movement;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Movement
 {
@@ -21,6 +22,12 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
+                if (ShipWarpProcessor.Process(ref ship, delta, context.IsTurnStart))
+                {
+                    ships[i] = ship; // Активная фаза варпа полностью владеет движением корабля.
+                    continue;
+                }
+
                 if (_jumpProcessor.TryProcessJump(ref ship, in context, ships, i))
                 {
                     i--; // RemoveAt сдвинул хвост списка.

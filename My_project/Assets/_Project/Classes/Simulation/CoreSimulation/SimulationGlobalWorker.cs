@@ -119,7 +119,8 @@ namespace _Project.Scripts.Simulation.Core
                     SimulationConsts.GlobalStepSeconds,
                     item.Mode,
                     bus,
-                    item.ActiveSystemIndex); // Контекст глобального шага из snapshot-параметров WorkItem.
+                    item.ActiveSystemIndex,
+                    true); // Контекст глобального шага всегда начинается на границе игрового хода.
 
                 _continuumService?.Tick(in context);
                 _globalPipeline?.RunStep(in context);

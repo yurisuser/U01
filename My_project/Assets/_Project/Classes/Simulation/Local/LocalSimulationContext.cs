@@ -6,18 +6,20 @@ namespace _Project.Scripts.Simulation.Local
     /// <summary>Контекст локального шага: выбранная система, время и ссылки на стейт.</summary>
     public readonly struct LocalSimulationContext
     {
-        public LocalSimulationContext(GameStateService gameState, StarSys? activeSystem, int day, float deltaTime)
+        public LocalSimulationContext(GameStateService gameState, StarSys? activeSystem, int day, float deltaTime, bool isTurnStart)
         {
             GameState = gameState;
             ActiveSystem = activeSystem;
             Day = day;
             DeltaTime = deltaTime;
+            IsTurnStart = isTurnStart;
         }
 
         public GameStateService GameState { get; }
         public StarSys? ActiveSystem { get; }
         public int Day { get; }
         public float DeltaTime { get; }
+        public bool IsTurnStart { get; }
         public bool HasActiveSystem => ActiveSystem.HasValue;
     }
 }

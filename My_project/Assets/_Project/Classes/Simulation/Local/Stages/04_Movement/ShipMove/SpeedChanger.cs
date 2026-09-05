@@ -25,8 +25,8 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
 
             ClearLocalVariables();
 
-            CurrSpeed = Mathf.Max(0f, ship.CurrentSpeed);
             MaxSpeed = GetMaxSpeed(in ship);   // физический потолок скорости
+            CurrSpeed = Mathf.Min(Mathf.Max(0f, ship.CurrentSpeed), MaxSpeed);
             Agility = GetAgility(in ship);     // манёвренность поворота
             Acceleration = GetAcceleration(in ship); // ускорение/торможение
 
@@ -50,7 +50,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
 
         private static float GetMaxSpeed(in Ship ship)
         {
-            return Mathf.Max(0f, ship.Stats.MaxSpeed);
+            return ShipSpeed.GetMetricMaxSpeed(in ship);
         }
 
         private static float GetAgility(in Ship ship)

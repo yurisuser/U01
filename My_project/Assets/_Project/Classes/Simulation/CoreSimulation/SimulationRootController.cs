@@ -16,6 +16,7 @@ namespace _Project.Scripts.Simulation.Core
         private readonly SimulationGlobalWorker _globalWorker; // Worker, который крутит глобальные ходы вне main thread.
         private float _globalAccumulator; // Накопитель времени до следующего глобального хода.
         private ERunMode? _nextRunMode; // Отложенное переключение режима после завершения тика.
+        private bool _localTurnStartPending = true; // Первый тик активной системы после глобальной границы открывает новый ход.
 
         private ISimulationPipeline _globalPipeline; // Глобальный staged pipeline (выполняется в worker).
         private ISimulationPipeline _localPipeline; // Локальный pipeline активной системы (main thread).
@@ -81,8 +82,9 @@ namespace _Project.Scripts.Simulation.Core
         private void RunLocal(float deltaTime, ERunMode mode)
         {
             int activeSystemIndex = _gameState?.ActiveLocalSystemIndex ?? -1; // Снимок реально активной локальной системы.
-            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus, activeSystemIndex); // Контекст локального тика.
+            var localCtx = new SimulationStepContext(_gameState, _clock.Day, deltaTime, mode, _eventBus, activeSystemIndex, _localTurnStartPending); // Контекст локального тика.
             _localPipeline?.RunStep(in localCtx); // Локальный конвейер.
+            _localTurnStartPending = false; // Только первый локальный тик после границы считает начало хода.
         }
 
         private bool CheckRunGlobal(float deltaTime)
@@ -96,6 +98,7 @@ namespace _Project.Scripts.Simulation.Core
             _globalAccumulator -= SimulationConsts.GlobalStepSeconds; // Потребили один слот глобального шага.
             var day = _clock.NextDay(); // Инкремент игрового дня привязан к global tick.
             _gameState?.ApplyCurrentTurnNumber(day); // Прокидываем текущий номер хода в game state для UI.
+            _localTurnStartPending = true; // Активная система применит переходы фаз на первом тике нового хода.
             int activeSystemIndex = _gameState?.ActiveLocalSystemIndex ?? -1; // Снимок реально активной локальной системы.
             GlobalSyncDebugLog.Log("Root", "run-global day=" + day + " mode=" + mode + " active=" + activeSystemIndex);
             _globalWorker.EnqueueRunStep(day, mode, activeSystemIndex); // Фиксируем параметры шага на границе тика и отдаем в очередь worker.

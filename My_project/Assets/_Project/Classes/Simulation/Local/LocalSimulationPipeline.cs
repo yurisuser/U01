@@ -34,7 +34,8 @@ namespace _Project.Scripts.Simulation.Local
                 gameState,
                 gameState?.GetActiveLocalSystem(),
                 context.Day,
-                context.DeltaTime);
+                context.DeltaTime,
+                context.IsTurnStart);
 
             var systemState = ResolveActiveState(gameState);
             systemState?.BeginShipSnapshot();

@@ -4,6 +4,7 @@ using _Project.Scripts.Const;
 using _Project.Scripts.Simulation.Continuum;
 using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
+using _Project.Scripts.Simulation.Ships.Movement;
 using _Project.Scripts.Simulation.AI;
 using UnityEngine;
 
@@ -34,6 +35,12 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                 for (int i = 0; i < ships.Count; i++)
                 {
                     var ship = ships[i];
+                    if (ShipWarpProcessor.Process(ref ship, context.DeltaTime, context.IsTurnStart))
+                    {
+                        ships[i] = ship; // Активная фаза варпа полностью владеет движением корабля.
+                        continue;
+                    }
+
                     if (TryProcessJump(ref ship, gameState, systemIndex, ships, i))
                     {
                         i--; // Компенсация RemoveAt при уходе в континуум.
@@ -69,7 +76,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
 
             // В глобале двигаем дискретно на дистанцию, которую корабль проходит за ход.
             float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
-            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            float speed = GetMetricMovementSpeed(in ship);
             if (speed <= 0f || stepSeconds <= 0f)
                 return false; // Некорректные параметры движения: оставляем задачу на следующий ход.
 
@@ -104,7 +111,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                 return true;
 
             float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
-            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            float speed = GetMetricMovementSpeed(in ship);
             if (speed <= 0f || stepSeconds <= 0f)
                 return false;
 
@@ -133,7 +140,7 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
             }
 
             float stepSeconds = deltaTime > 0f ? deltaTime : SimulationConsts.GlobalStepSeconds;
-            float speed = ship.CurrentSpeed > 0f ? ship.CurrentSpeed : Mathf.Max(0f, ship.Stats.MaxSpeed);
+            float speed = GetMetricMovementSpeed(in ship);
             if (speed <= 0f || stepSeconds <= 0f)
                 return false;
 
@@ -159,6 +166,17 @@ namespace _Project.Scripts.Simulation.Global.Stages.Movement
                 ship.CurrentSpeed = 0f;
 
             execution.Complete(EShipAiTaskOutcome.Succeeded);
+        }
+
+        private static float GetMetricMovementSpeed(in Ship ship)
+        {
+            float metricMaxSpeed = ShipSpeed.GetMetricMaxSpeed(in ship);
+            if (metricMaxSpeed <= 0f)
+                return 0f;
+
+            return ship.CurrentSpeed > 0f
+                ? Mathf.Min(ship.CurrentSpeed, metricMaxSpeed)
+                : metricMaxSpeed;
         }
 
         private static void CompleteMoveTask(ref Ship ship, in MoveToPointParams move)
