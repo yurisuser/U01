@@ -76,7 +76,7 @@ namespace _Project.Scripts.Simulation.Continuum
                 if (dir.sqrMagnitude > 0.0001f)
                 {
                     ship.Rotation = Quaternion.LookRotation(dir);
-                    ship.CurrentSpeed = ship.Stats.MaxSpeed;
+                    ship.CurrentSpeed = ShipSpeed.GetWarpSpeed(in ship);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace _Project.Scripts.Simulation.Continuum
 
             float radius = GetOrbitRadius(targetSys, 3);
             ship.Position = dirBA * radius;
-            ship.CurrentSpeed = ship.Stats.MaxSpeed;
+            ship.CurrentSpeed = ShipSpeed.GetMetricMaxSpeed(in ship); // После прибытия корабль движется внутри системы в метрике.
             runtime.Ships.Add(ship);
 
             targetSys.State = runtime;

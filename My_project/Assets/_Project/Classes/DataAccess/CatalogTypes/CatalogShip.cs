@@ -8,7 +8,8 @@ namespace _Project.DataAccess
             string displayName,
             string description,
             int hp,
-            float maxSpeed,
+            float warpSpeed,
+            float metricSpeed,
             float agility,
             float acceleration,
             float prefabSize,
@@ -21,7 +22,8 @@ namespace _Project.DataAccess
             DisplayName = displayName;
             Description = description;
             Hp = hp;
-            MaxSpeed = maxSpeed;
+            WarpSpeed = warpSpeed;
+            MetricSpeed = metricSpeed;
             Agility = agility;
             Acceleration = acceleration;
             PrefabSize = prefabSize;
@@ -35,7 +37,8 @@ namespace _Project.DataAccess
         public string DisplayName { get; }
         public string Description { get; }
         public int Hp { get; }
-        public float MaxSpeed { get; }
+        public float WarpSpeed { get; } // Базовая варповая скорость до применения коэффициента.
+        public float MetricSpeed { get; } // Базовая метрическая скорость до применения коэффициента.
         public float Agility { get; }
         public float Acceleration { get; }
         public float PrefabSize { get; }

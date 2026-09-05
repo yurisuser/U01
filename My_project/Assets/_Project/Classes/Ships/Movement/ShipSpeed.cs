@@ -8,12 +8,12 @@ namespace _Project.Scripts.Ships
     {
         public static float GetMetricMaxSpeed(in Ship ship)
         {
-            return Mathf.Max(0f, ship.Stats.MaxSpeed) * SimulationConsts.MetricSpaceSpeedMultiplier;
+            return Mathf.Max(0f, ship.Stats.MetricSpeed) * SimulationConsts.MetricSpaceSpeedMultiplier;
         }
 
         public static float GetWarpSpeed(in Ship ship)
         {
-            return Mathf.Max(0f, ship.Stats.MaxSpeed) * SimulationConsts.WarpSpeedMultiplier;
+            return Mathf.Max(0f, ship.Stats.WarpSpeed) * SimulationConsts.WarpSpeedMultiplier;
         }
     }
 }

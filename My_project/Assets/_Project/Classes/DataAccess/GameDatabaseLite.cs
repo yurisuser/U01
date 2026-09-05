@@ -287,7 +287,7 @@ FROM recipes ORDER BY id";
             if (!forceReload && _ships != null) return _ships;
             using var conn = OpenConnection();
             using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT id, key, display_name, description, hp, max_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots, cargo FROM ships ORDER BY id";
+            cmd.CommandText = "SELECT id, key, display_name, description, hp, warp_speed, metric_speed, agility, acceleration, prefab_size, prefab_name, weapon_slots, cargo FROM ships ORDER BY id";
 
             var list = new List<CatalogShip>();
             using (var reader = cmd.ExecuteReader())
@@ -299,14 +299,15 @@ FROM recipes ORDER BY id";
                     var displayName = reader.GetString(2);
                     var description = reader.GetString(3);
                     var hp = reader.GetInt32(4);
-                    var maxSpeed = (float)reader.GetDouble(5);
-                    var agility = (float)reader.GetDouble(6);
-                    var acceleration = (float)reader.GetDouble(7);
-                    var prefabSize = (float)reader.GetDouble(8);
-                    var prefabName = reader.GetString(9);
-                    var weaponSlots = Convert.ToByte(reader.GetInt32(10));
-                    var cargoSize = reader.IsDBNull(11) ? 0 : reader.GetInt32(11);
-                    list.Add(new CatalogShip(id, key, displayName, description, hp, maxSpeed, agility, acceleration, prefabSize, prefabName, weaponSlots, cargoSize));
+                    var warpSpeed = (float)reader.GetDouble(5);
+                    var metricSpeed = (float)reader.GetDouble(6);
+                    var agility = (float)reader.GetDouble(7);
+                    var acceleration = (float)reader.GetDouble(8);
+                    var prefabSize = (float)reader.GetDouble(9);
+                    var prefabName = reader.GetString(10);
+                    var weaponSlots = Convert.ToByte(reader.GetInt32(11));
+                    var cargoSize = reader.IsDBNull(12) ? 0 : reader.GetInt32(12);
+                    list.Add(new CatalogShip(id, key, displayName, description, hp, warpSpeed, metricSpeed, agility, acceleration, prefabSize, prefabName, weaponSlots, cargoSize));
                 }
             }
 
@@ -600,7 +601,8 @@ CREATE TABLE IF NOT EXISTS ships (
     display_name TEXT NOT NULL,
     description TEXT NOT NULL,
     hp INTEGER NOT NULL,
-    max_speed REAL NOT NULL,
+    warp_speed REAL NOT NULL,
+    metric_speed REAL NOT NULL,
     agility REAL NOT NULL,
     power REAL NOT NULL DEFAULT 0,
     cpu REAL NOT NULL DEFAULT 0,
@@ -609,7 +611,8 @@ CREATE TABLE IF NOT EXISTS ships (
     prefab_name TEXT NOT NULL DEFAULT '',
     weapon_slots INTEGER NOT NULL,
     shield_slots INTEGER NOT NULL DEFAULT 0,
-    engine_slots INTEGER NOT NULL DEFAULT 0
+    engine_slots INTEGER NOT NULL DEFAULT 0,
+    cargo INTEGER NOT NULL DEFAULT 200
 );
 CREATE TABLE IF NOT EXISTS f_fractions (
     id INTEGER PRIMARY KEY,
@@ -682,7 +685,34 @@ CREATE TABLE IF NOT EXISTS recipes (
                     existing.Add(reader.GetString(1));
             }
 
+            if (!existing.Contains("metric_speed") || !existing.Contains("warp_speed"))
+            {
+                using var tx = connection.BeginTransaction(); // Обе скорости переносим атомарно, сохраняя прежние значения.
+                using var migrate = connection.CreateCommand();
+                migrate.Transaction = tx;
+                if (!existing.Contains("metric_speed") && existing.Contains("max_speed"))
+                {
+                    migrate.CommandText = "ALTER TABLE ships RENAME COLUMN max_speed TO metric_speed";
+                    migrate.ExecuteNonQuery();
+                }
+
+                if (!existing.Contains("warp_speed"))
+                {
+                    migrate.CommandText = "ALTER TABLE ships ADD COLUMN warp_speed REAL NOT NULL DEFAULT 0";
+                    migrate.ExecuteNonQuery();
+                    migrate.CommandText = "UPDATE ships SET warp_speed = metric_speed"; // Старую скорость копируем только при первом добавлении поля.
+                    migrate.ExecuteNonQuery();
+                }
+                tx.Commit();
+            }
+
             using var alter = connection.CreateCommand();
+            if (!existing.Contains("cargo"))
+            {
+                alter.CommandText = "ALTER TABLE ships ADD COLUMN cargo INTEGER NOT NULL DEFAULT 200";
+                alter.ExecuteNonQuery();
+            }
+
             if (!existing.Contains("acceleration"))
             {
                 alter.CommandText = "ALTER TABLE ships ADD COLUMN acceleration REAL NOT NULL DEFAULT 0";
@@ -1058,9 +1088,9 @@ INSERT OR IGNORE INTO ""eq-scanners"" (id, key, display_name, description, price
 INSERT OR IGNORE INTO ""eq-shields"" (id, key, display_name, description, price, weight, stackable, max_stack, tech_level, power_use, cpu_use, radius, volume, regen) VALUES
     (1, 'test_shield', 'Тестовый щит', 'Щит для проверки.', 250, 4, 0, 1, 1, 7, 5, 25.0, 300.0, 5.0);
 
-INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, max_speed, agility, power, cpu, acceleration, prefab_size, prefab_name, weapon_slots, shield_slots, engine_slots) VALUES
-    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 0.8, 50, 40, 0, 1.0, '', 2, 1, 1),
-    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 0.5, 120, 90, 0, 1.0, '', 4, 2, 1);
+INSERT OR IGNORE INTO ships (id, key, display_name, description, hp, warp_speed, metric_speed, agility, power, cpu, acceleration, prefab_size, prefab_name, weapon_slots, shield_slots, engine_slots) VALUES
+    (1, 'scout', 'Разведчик', 'Лёгкий корабль для быстрых рейдов.', 150, 28.0, 28.0, 0.8, 50, 40, 0, 1.0, '', 2, 1, 1),
+    (2, 'frigate', 'Фрегат', 'Универсальный боевой корабль.', 420, 18.0, 18.0, 0.5, 120, 90, 0, 1.0, '', 4, 2, 1);
 
 INSERT OR IGNORE INTO a_contellations_names (id, text) VALUES
     (1, 'Viverra'),

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using _Project.DataAccess;
 using _Project.Items;
+using _Project.Scripts.Ships;
 using _Project.Scripts.Stations;
 using _Project.Scripts.Galaxy.Constellations;
 using _Project.Scripts.Galaxy.Data;
@@ -484,7 +485,10 @@ namespace _Project.Scripts.UI
             valueList.Append(ship.Stats.Hp).Append('\n');
 
             paramList.Append("speed:").Append('\n');
-            valueList.Append($"{FormatFloat2(ship.CurrentSpeed, treatZeroAsMissing: false)}/{FormatFloat2(ship.Stats.MaxSpeed, treatZeroAsMissing: false)}").Append('\n');
+            float speedLimit = ship.Warp.Phase == EShipWarpPhase.Warp
+                ? ShipSpeed.GetWarpSpeed(in ship)
+                : ShipSpeed.GetMetricMaxSpeed(in ship); // Сравниваем текущую скорость с пределом того же режима и в тех же единицах.
+            valueList.Append($"{FormatFloat2(ship.CurrentSpeed, treatZeroAsMissing: false)}/{FormatFloat2(speedLimit, treatZeroAsMissing: false)}").Append('\n');
 
             paramList.Append("agility:").Append('\n');
             valueList.Append(FormatFloat2(ship.Stats.Agility, treatZeroAsMissing: false)).Append('\n');

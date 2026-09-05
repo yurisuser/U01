@@ -49,7 +49,8 @@ namespace _Project.Scripts.Ships
             Vector3 position,             // мировая позиция
             Quaternion rotation,          // ориентация
             int hp,                       // здоровье
-            float maxSpeed,               // максимальная скорость
+            float warpSpeed,              // базовая варповая скорость
+            float metricSpeed,            // базовая метрическая скорость
             float agility,                // маневренность (сколько радиан за ход может повернуть корабль)
             bool isActive,                // активность
             float acceleration,           // ускорение/торможение
@@ -67,7 +68,8 @@ namespace _Project.Scripts.Ships
             Stats = new ShipStats         // сохраняем характеристики в отдельную структуру
             {
                 Hp = hp,                  // здоровье
-                MaxSpeed = maxSpeed,      // максимальная скорость берём из каталога
+                WarpSpeed = warpSpeed,    // варповую скорость берём из каталога
+                MetricSpeed = metricSpeed, // метрическую скорость берём из каталога
                 Agility = agility,        // маневренность берём из каталога
                 Acceleration = acceleration // ускорение/торможение берём из каталога
             };
