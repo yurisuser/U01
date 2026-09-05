@@ -24,6 +24,7 @@ namespace _Project.Scripts.Ships
         public float PrefabSize;          // масштаб префаба
         public string PrefabKey;          // ключ префаба
         public float CurrentSpeed;        // текущая скорость (ед/сек)
+        public ShipWarpState Warp;        // состояние внутрисистемного варпа
         public bool IsActive;             // активен ли корабль в мире
         public InstalledEquip Equipment;  // установленное оборудование корабля
         public ShipTaskStack TaskState;   // задачи корабля
@@ -71,6 +72,7 @@ namespace _Project.Scripts.Ships
                 Acceleration = acceleration // ускорение/торможение берём из каталога
             };
             CurrentSpeed = 0f;            // начальная скорость
+            Warp = default;               // корабль начинает в свободной метрике без назначения варпа
             IsActive = isActive;          // сохраняем активность
             PrefabSize = prefabSize;
             PrefabKey = prefabKey;
