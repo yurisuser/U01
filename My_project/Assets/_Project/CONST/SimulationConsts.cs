@@ -8,6 +8,8 @@ namespace _Project.Scripts.Const
         public const float SpawnRadius = 200f;
 
         // --- Ship tasks ---
+        public const float WarpSpeedMultiplier = 1f; // коэффициент скорости для прямолинейного варп-движения
+        public const float MetricSpaceSpeedMultiplier = 0.001f; // коэффициент скорости для манёвров в метрическом пространстве
         public const float DestinationPointTolerance = 10f; //допустимость неточности достижения координат
         public const float AccelerationOfAgility = 8; // умножить на агилити для получения разгона/торможения
         public const float AgilityTurnConeFactor = 10f; // множитель ширины конуса разворота
