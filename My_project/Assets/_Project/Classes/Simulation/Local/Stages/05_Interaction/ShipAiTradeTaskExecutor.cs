@@ -26,9 +26,16 @@ namespace _Project.Scripts.Simulation.Local.Stages.Interaction
                     execution.Status == EShipAiTaskStatus.Suspended)
                     continue;
 
-                if (Vector3.Distance(ship.Position, task.StationPosition) > task.Tolerance)
-                    continue;
+                if (ship.Warp.HasWarpDestination || ship.Warp.Phase != EShipWarpPhase.Metric)
+                    continue; // Во время подготовки и активного варпа сделки не выполняются.
 
+                if (Vector3.Distance(ship.Position, task.StationPosition) > task.Tolerance)
+                {
+                    execution.Complete(EShipAiTaskOutcome.Rejected); // Прибытие теперь обеспечивает отдельное поведение перемещения.
+                    continue;
+                }
+
+                execution.Start();
                 ship.Position = task.StationPosition;
                 ship.CurrentSpeed = 0f;
 

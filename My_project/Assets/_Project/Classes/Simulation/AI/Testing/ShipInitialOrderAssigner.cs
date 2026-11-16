@@ -9,8 +9,8 @@ namespace _Project.Scripts.Simulation.AI
     {
         public static void EnsureOrder(ref Ship ship, int systemIndex, float radius)
         {
-            if (ship.Ai.CurrentOrder.Type == EShipAiOrderType.TradeInSystem)
-                return;
+            if (!ship.Ai.CurrentOrder.IsEmpty || ship.Ai.TaskExecution != null || !ship.TopOrder.IsEmpty)
+                return; // Начальное назначение не должно перезаписывать действующий приказ или старый патруль.
 
             ship.TopOrder = default;
             ShipAiOrders.TradeInSystem(ref ship, SimulationConsts.DestinationPointTolerance);

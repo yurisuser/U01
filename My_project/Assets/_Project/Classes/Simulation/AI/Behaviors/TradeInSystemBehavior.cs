@@ -24,6 +24,8 @@ namespace _Project.Scripts.Simulation.AI
         private _Project.Scripts.Core.UID _buyerUid;
         private ItemKey _key;
         private int _desiredAmount;
+        private MoveToPointBehavior _travel;
+        private StationTradeTask _stationTask;
 
         public TradeInSystemBehavior(float tolerance)
         {
@@ -31,27 +33,56 @@ namespace _Project.Scripts.Simulation.AI
             _phase = Phase.FindRoute;
         }
 
-        public override bool TryCreateTask(in Ship ship, in StarSys system, out ShipAiTask task)
+        public override bool TryCreateTask(in Ship ship, in StarSys system, float movementStepSeconds, out ShipAiTask task)
         {
+            if (_travel != null)
+                return _travel.TryCreateTask(in ship, in system, movementStepSeconds, out task);
+            if (_stationTask != null)
+            {
+                task = _stationTask;
+                _stationTask = null; // Торговую задачу выдаём после успешного прибытия к станции.
+                return true;
+            }
+
+            bool created;
             switch (_phase)
             {
                 case Phase.FindRoute:
-                    return TryCreateBuyTask(in ship, in system, out task);
+                    created = TryCreateBuyTask(in ship, in system, out task);
+                    break;
 
                 case Phase.SellAtBuyer:
-                    return TryCreateSellTask(in ship, in system, out task);
+                    created = TryCreateSellTask(in ship, in system, out task);
+                    break;
 
                 case Phase.FindNextBuyer:
-                    return TryCreateNextBuyerTask(in ship, in system, out task);
+                    created = TryCreateNextBuyerTask(in ship, in system, out task);
+                    break;
 
                 default:
                     task = null;
                     return false;
             }
+
+            if (!created)
+                return false;
+            _stationTask = (StationTradeTask)task;
+            _travel = new MoveToPointBehavior(_stationTask.StationPosition, _stationTask.Tolerance, keepSpeed: false);
+            return _travel.TryCreateTask(in ship, in system, movementStepSeconds, out task);
         }
 
         public override bool IsCompletedBy(in ShipAiTaskResult result)
         {
+            if (_travel != null)
+            {
+                if (!_travel.IsCompletedBy(in result))
+                    return false; // Метрический подход ещё впереди.
+                _travel = null;
+                if (result.Outcome == EShipAiTaskOutcome.Succeeded)
+                    return false; // Теперь можно выдать сохранённую задачу покупки или продажи.
+                _stationTask = null; // Ошибка маршрута обрабатывается так же, как неудача соответствующего плеча сделки.
+            }
+
             if (_phase == Phase.WaitBuy)
             {
                 _phase = result.Outcome == EShipAiTaskOutcome.Succeeded && result.Amount > 0

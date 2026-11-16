@@ -543,7 +543,7 @@ namespace _Project.Scripts.UI
                 paramList.Append("amount:").Append('\n');
                 valueList.Append(tradeTask.Amount).Append('\n');
             }
-            else if (execution?.Task is _Project.Scripts.Simulation.AI.MoveToPointTask moveTask)
+            else if (execution?.Task is _Project.Scripts.Simulation.AI.FlyToPointTask moveTask)
             {
                 paramList.Append("target:").Append('\n');
                 valueList.Append(FormatFloat2(moveTask.Destination.x, false))

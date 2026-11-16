@@ -2,6 +2,7 @@ using _Project.Scripts.Simulation;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
 using _Project.Scripts.Stations;
+using _Project.Scripts.Simulation.Ships.Movement;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Ai
 {
@@ -21,12 +22,15 @@ namespace _Project.Scripts.Simulation.Local.Stages.Ai
             var system = context.ActiveSystem.Value;
             StationTickService.TickTurn(in system, context.Day);
             IndustryTradeOrderSynchronizer.Refresh(in system);
+            if (!context.IsTurnStart)
+                return; // Решения и новые задачи применяются только на границе хода.
             var ships = system.State.Ships;
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
+                ShipWarpTaskProcessor.BeginTurn(ref ship);
                 ShipAiLegacyOrderBridge.TryMigratePatrol(ref ship);
-                ShipAiController.Advance(ref ship, in system);
+                ShipAiController.Advance(ref ship, in system, context.DeltaTime);
                 ships[i] = ship;
             }
         }

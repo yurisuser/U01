@@ -7,7 +7,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
     public sealed class ShipMover : IMovementProcessor
     {
         private readonly ShipJumpProcessor _jumpProcessor = new(); // Перенос ship в continuum.
-        private readonly ShipMoveTaskProcessor _moveTaskProcessor = new(new CourseChanger(), new MoveChanger(), new SpeedChanger()); // Шаг локального MoveToPoint.
+        private readonly ShipMoveTaskProcessor _moveTaskProcessor = new(); // Шаг локального MoveToPoint на общей метрической модели.
 
         public void Run(in LocalSimulationContext context)
         {
@@ -22,7 +22,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship = ships[i];
-                if (ShipWarpProcessor.Process(ref ship, delta, context.IsTurnStart))
+                if (ShipWarpTaskProcessor.Process(ref ship, delta, context.IsTurnStart))
                 {
                     ships[i] = ship; // Активная фаза варпа полностью владеет движением корабля.
                     continue;

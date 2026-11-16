@@ -2,7 +2,7 @@ using UnityEngine;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Ships;
 
-namespace _Project.Scripts.Simulation.Local.Stages.Movement
+namespace _Project.Scripts.Simulation.Ships.Movement
 {
     /// <summary>Отвечает за расчёт нового курса корабля (ориентации/направления).</summary>
     public sealed class CourseChanger

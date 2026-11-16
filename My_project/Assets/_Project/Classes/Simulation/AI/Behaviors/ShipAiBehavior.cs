@@ -6,7 +6,7 @@ namespace _Project.Scripts.Simulation.AI
     /// <summary>Осмысленный шаг ИИ, который при необходимости выдаёт задачу Simulation.</summary>
     public abstract class ShipAiBehavior
     {
-        public abstract bool TryCreateTask(in Ship ship, in StarSys system, out ShipAiTask task);
+        public abstract bool TryCreateTask(in Ship ship, in StarSys system, float movementStepSeconds, out ShipAiTask task);
 
         public virtual bool IsCompletedBy(in ShipAiTaskResult result)
         {

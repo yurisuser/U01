@@ -2,6 +2,7 @@ using _Project.Scripts.Simulation.Core;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
 using _Project.Scripts.Stations;
+using _Project.Scripts.Simulation.Ships.Movement;
 
 namespace _Project.Scripts.Simulation.Global.Stages.Ai
 {
@@ -38,12 +39,13 @@ namespace _Project.Scripts.Simulation.Global.Stages.Ai
                 for (int i = 0; i < ships.Count; i++)
                 {
                     var ship = ships[i];
+                    ShipWarpTaskProcessor.BeginTurn(ref ship);
                     ShipInitialOrderAssigner.EnsureOrder(
                         ref ship,
                         systemIndex,
                         _Project.Scripts.Const.SimulationConsts.SpawnRadius);
                     ShipAiLegacyOrderBridge.TryMigratePatrol(ref ship);
-                    ShipAiController.Advance(ref ship, in system);
+                    ShipAiController.Advance(ref ship, in system, context.DeltaTime);
                     ships[i] = ship;
                 }
                 galaxy[systemIndex] = system;

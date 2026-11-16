@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace _Project.Scripts.Simulation.AI
 {
-    /// <summary>Задача перемещения к заданной точке.</summary>
-    public sealed class MoveToPointTask : ShipAiTask
+    /// <summary>Неизменяемая задача метрического полёта к точке.</summary>
+    public sealed class FlyToPointTask : ShipAiTask
     {
-        public MoveToPointTask(Vector3 destination, float tolerance, bool keepSpeed)
-            : base(EShipAiTaskType.MoveToPoint)
+        public FlyToPointTask(Vector3 destination, float tolerance, bool keepSpeed)
+            : base(EShipAiTaskType.FlyToPoint)
         {
             Destination = destination;
             Tolerance = tolerance;

@@ -20,7 +20,7 @@ namespace _Project.Scripts.Simulation.Ships.Movement
         public static bool Process(ref Ship ship, float deltaTime, bool isTurnStart)
         {
             if (isTurnStart)
-                AdvanceTurn(ref ship); // Переходы фаз разрешены только на границе игрового хода.
+                BeginTurn(ref ship); // Переходы фаз разрешены только на границе игрового хода.
 
             switch (ship.Warp.Phase)
             {
@@ -38,7 +38,8 @@ namespace _Project.Scripts.Simulation.Ships.Movement
             }
         }
 
-        private static void AdvanceTurn(ref Ship ship)
+        /// <summary>Применяет одну границу хода; пайплайн вызывает до принятия новых решений ИИ.</summary>
+        public static void BeginTurn(ref Ship ship)
         {
             switch (ship.Warp.Phase)
             {
@@ -82,25 +83,31 @@ namespace _Project.Scripts.Simulation.Ships.Movement
 
             var toDestination = ship.Warp.WarpDestination - ship.Position;
             float distance = toDestination.magnitude;
-            if (distance <= SimulationConsts.WarpExitRadiusMetric)
-                return; // Точка слишком близка: варп не даст полезного перемещения.
-
             float metricMaxSpeed = ShipSpeed.GetMetricMaxSpeed(in ship);
-            if (metricMaxSpeed <= 0f || Mathf.Abs(ship.CurrentSpeed - metricMaxSpeed) > 0.0001f)
-                return; // Заряд разрешён только на достигнутой метрической максимальной скорости.
+            float chargeDistance = metricMaxSpeed * SimulationConsts.GlobalStepSeconds * SimulationConsts.WarpChargeTurns;
+            if (distance - chargeDistance - SimulationConsts.WarpExitRadiusMetric <= SimulationConsts.MovementPositionEpsilon)
+                return; // За время заряда нельзя достичь или пролететь точку выхода.
 
-            var currentCourse = ship.Rotation * Vector3.up;
-            if (currentCourse.sqrMagnitude <= 0f)
-                return; // Без валидного курса нельзя зафиксировать траекторию варпа.
+            if (ShipSpeed.GetWarpSpeed(in ship) <= 0f)
+                return; // Нулевая варповая скорость не позволяет выполнить перелёт.
 
-            var direction = toDestination / distance;
-            if (Vector3.Angle(currentCourse, direction) > SimulationConsts.WarpCourseToleranceDegrees)
-                return; // Нос корабля ещё не выровнен с направлением к цели.
+            if (!IsAlignedAtMaxSpeed(in ship, ship.Warp.WarpDestination))
+                return; // Скорость и курс ещё не соответствуют условиям заряда.
 
             ship.Warp.Phase = EShipWarpPhase.Charging;
-            ship.Warp.LockedDirection = direction;
+            ship.Warp.LockedDirection = toDestination / distance;
             ship.Warp.RemainingTurns = SimulationConsts.WarpChargeTurns;
             ship.CurrentSpeed = metricMaxSpeed;
+        }
+
+        /// <summary>Общая проверка готовности скорости и курса для исполнения и прогноза.</summary>
+        public static bool IsAlignedAtMaxSpeed(in Ship ship, in Vector3 destination)
+        {
+            float metricMaxSpeed = ShipSpeed.GetMetricMaxSpeed(in ship);
+            var course = ship.Rotation * Vector3.up;
+            return metricMaxSpeed > 0f && course.sqrMagnitude > 0f
+                && Mathf.Abs(ship.CurrentSpeed - metricMaxSpeed) <= SimulationConsts.MovementSpeedEpsilon
+                && Vector3.Angle(course, destination - ship.Position) <= SimulationConsts.WarpCourseToleranceDegrees;
         }
 
         private static void MoveOnLockedCourse(ref Ship ship, float speed, float deltaTime)
@@ -114,7 +121,7 @@ namespace _Project.Scripts.Simulation.Ships.Movement
             var exitPoint = GetExitPoint(in ship);
             var toExit = exitPoint - ship.Position;
             float distance = toExit.magnitude;
-            if (distance <= 0.0001f)
+            if (distance <= SimulationConsts.MovementPositionEpsilon)
             {
                 ship.Position = exitPoint; // До границы следующего хода остаёмся в точке автоматического выхода.
                 return;
@@ -135,7 +142,7 @@ namespace _Project.Scripts.Simulation.Ships.Movement
 
         private static bool HasReachedExitPoint(in Ship ship)
         {
-            return Vector3.Distance(ship.Position, GetExitPoint(in ship)) <= 0.0001f;
+            return Vector3.Distance(ship.Position, GetExitPoint(in ship)) <= SimulationConsts.MovementPositionEpsilon;
         }
 
         private static Vector3 GetExitPoint(in Ship ship)

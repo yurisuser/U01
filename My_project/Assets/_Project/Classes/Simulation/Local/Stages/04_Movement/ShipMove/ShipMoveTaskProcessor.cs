@@ -2,96 +2,45 @@ using UnityEngine;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Ships;
 using _Project.Scripts.Simulation.AI;
+using _Project.Scripts.Simulation.Ships.Movement;
 
 namespace _Project.Scripts.Simulation.Local.Stages.Movement
 {
     /// <summary>Исполнение задачи MoveToPoint на один тик симуляции.</summary>
     internal sealed class ShipMoveTaskProcessor
     {
-        private readonly CourseChanger _courseChanger;
-        private readonly MoveChanger _moveChanger;
-        private readonly SpeedChanger _speedChanger;
-
-        public ShipMoveTaskProcessor(CourseChanger courseChanger, MoveChanger moveChanger, SpeedChanger speedChanger)
-        {
-            _courseChanger = courseChanger;
-            _moveChanger = moveChanger;
-            _speedChanger = speedChanger;
-        }
-
         public void ProcessMove(ref Ship ship, float deltaTime)
         {
             if (ProcessNewAiMove(ref ship, deltaTime))
                 return;
-            if (ProcessNewAiStationTradeMove(ref ship, deltaTime))
-                return;
+            if (ship.Ai?.TaskExecution != null)
+                return; // Другие задачи нового ИИ не должны запускать старый стек движения.
 
             if (!ship.TaskState.TryPeek(out var task) || task.Type != EShipTaskType.MoveToPoint)
                 return; // На вершине стека не MoveToPoint.
 
             var moveTaskParams = task.Params.MoveToPointParams;
-            var currentPosition = ship.Position;
-            var currentDirection = GetCurrentDirection(in ship);
-
-            var toTarget = moveTaskParams.Destination - currentPosition;
-            float distance = toTarget.magnitude;
-            if (distance <= moveTaskParams.Tolerance)
+            if (ShipMetricMotion.HasArrived(in ship, in moveTaskParams))
             {
                 CompleteTask(ref ship, in moveTaskParams); // Уже в зоне допуска.
                 return;
             }
 
-            var nextDirection = _courseChanger.GetDirection(
-                currentPosition,
-                currentDirection,
-                moveTaskParams.Destination,
-                ship.Stats.Agility,
-                deltaTime);
-            var nextSpeed = _speedChanger.GetSpeed(ref ship, moveTaskParams, deltaTime);
-            var stepShift = GetStepShift(nextDirection, nextSpeed, deltaTime, distance);
-            var nextPosition = _moveChanger.GetShift(in ship, stepShift);
-
-            Apply(ref ship, nextPosition, nextDirection, nextSpeed); // Применяем только после полного расчета шага.
+            ShipMetricMotion.Step(ref ship, in moveTaskParams, deltaTime);
 
             if (Vector3.Distance(ship.Position, moveTaskParams.Destination) <= moveTaskParams.Tolerance)
                 CompleteTask(ref ship, in moveTaskParams); // Дошли до цели на этом тике.
         }
 
-        private bool ProcessNewAiStationTradeMove(ref Ship ship, float deltaTime)
-        {
-            var execution = ship.Ai?.TaskExecution;
-            if (execution == null || !(execution.Task is StationTradeTask task) || execution.IsFinished ||
-                execution.Status == EShipAiTaskStatus.Suspended)
-                return false;
-
-            execution.Start();
-            var toTarget = task.StationPosition - ship.Position;
-            float distance = toTarget.magnitude;
-            if (distance <= task.Tolerance)
-                return true;
-
-            var moveParams = new MoveToPointParams
-            {
-                Destination = task.StationPosition,
-                Tolerance = task.Tolerance,
-                KeepSpeed = false,
-            };
-            var direction = _courseChanger.GetDirection(ship.Position, GetCurrentDirection(in ship), task.StationPosition, ship.Stats.Agility, deltaTime);
-            var speed = _speedChanger.GetSpeed(ref ship, moveParams, deltaTime);
-            Apply(ref ship, _moveChanger.GetShift(in ship, GetStepShift(direction, speed, deltaTime, distance)), direction, speed);
-            return true;
-        }
-
         private bool ProcessNewAiMove(ref Ship ship, float deltaTime)
         {
             var execution = ship.Ai?.TaskExecution;
-            if (execution == null || !(execution.Task is MoveToPointTask task) || execution.IsFinished ||
+            if (execution == null || !(execution.Task is FlyToPointTask task) || execution.IsFinished ||
                 execution.Status == EShipAiTaskStatus.Suspended)
                 return false;
 
             execution.Start();
             var currentPosition = ship.Position;
-            var currentDirection = GetCurrentDirection(in ship);
             var toTarget = task.Destination - currentPosition;
             float distance = toTarget.magnitude;
             if (distance <= task.Tolerance)
@@ -106,11 +55,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
                 Tolerance = task.Tolerance,
                 KeepSpeed = task.KeepSpeed,
             };
-            var nextDirection = _courseChanger.GetDirection(currentPosition, currentDirection, task.Destination, ship.Stats.Agility, deltaTime);
-            var nextSpeed = _speedChanger.GetSpeed(ref ship, moveParams, deltaTime);
-            var stepShift = GetStepShift(nextDirection, nextSpeed, deltaTime, distance);
-            var nextPosition = _moveChanger.GetShift(in ship, stepShift);
-            Apply(ref ship, nextPosition, nextDirection, nextSpeed);
+            ShipMetricMotion.Step(ref ship, in moveParams, deltaTime);
 
             if (Vector3.Distance(ship.Position, task.Destination) <= task.Tolerance)
                 CompleteNewAiTask(ref ship, task, execution);
@@ -118,35 +63,12 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             return true;
         }
 
-        private static void CompleteNewAiTask(ref Ship ship, MoveToPointTask task, ShipAiTaskExecution execution)
+        private static void CompleteNewAiTask(ref Ship ship, FlyToPointTask task, ShipAiTaskExecution execution)
         {
             if (!task.KeepSpeed)
                 ship.CurrentSpeed = 0f;
 
             execution.Complete(EShipAiTaskOutcome.Succeeded);
-        }
-
-        private static Vector3 GetCurrentDirection(in Ship ship)
-        {
-            var forward = ship.Rotation * Vector3.up;
-            return forward.sqrMagnitude > 0f ? forward.normalized : Vector3.up;
-        }
-
-        private static Vector3 GetStepShift(Vector3 direction, float speed, float deltaTime, float distance)
-        {
-            if (direction.sqrMagnitude <= 0f || speed <= 0f || deltaTime <= 0f)
-                return Vector3.zero; // Нет валидного шага.
-
-            float step = Mathf.Min(speed * deltaTime, distance);
-            return direction.normalized * step;
-        }
-
-        private static void Apply(ref Ship ship, in Vector3 nextPosition, in Vector3 nextDirection, float nextSpeed)
-        {
-            ship.Position = nextPosition;
-            ship.CurrentSpeed = nextSpeed;
-            if (nextDirection.sqrMagnitude > 0f)
-                ship.Rotation = Quaternion.LookRotation(Vector3.forward, nextDirection);
         }
 
         private static void CompleteTask(ref Ship ship, in MoveToPointParams moveTaskParams)

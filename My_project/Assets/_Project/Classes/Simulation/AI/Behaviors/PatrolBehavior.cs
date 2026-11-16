@@ -10,6 +10,7 @@ namespace _Project.Scripts.Simulation.AI
         private readonly float _tolerance;
         private readonly int _seed;
         private int _step;
+        private MoveToPointBehavior _travel;
 
         public PatrolBehavior(Vector3 center, float radius, float tolerance, int seed)
         {
@@ -19,14 +20,16 @@ namespace _Project.Scripts.Simulation.AI
             _seed = seed;
         }
 
-        public override bool TryCreateTask(in _Project.Scripts.Ships.Ship ship, in _Project.Scripts.Galaxy.Data.StarSys system, out ShipAiTask task)
+        public override bool TryCreateTask(in _Project.Scripts.Ships.Ship ship, in _Project.Scripts.Galaxy.Data.StarSys system, float movementStepSeconds, out ShipAiTask task)
         {
-            task = new MoveToPointTask(GetNextPoint(), _tolerance, keepSpeed: true);
-            return true;
+            _travel ??= new MoveToPointBehavior(GetNextPoint(), _tolerance, keepSpeed: true);
+            return _travel.TryCreateTask(in ship, in system, movementStepSeconds, out task);
         }
 
         public override bool IsCompletedBy(in ShipAiTaskResult result)
         {
+            if (_travel != null && _travel.IsCompletedBy(in result))
+                _travel = null; // Следующую точку выбираем после всего маршрута, а не после одного варпа.
             return false;
         }
 

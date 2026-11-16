@@ -3,49 +3,25 @@ using _Project.Scripts.Const;
 using _Project.Scripts.Ships;
 using _Project.Scripts.Simulation.Ships;
 
-namespace _Project.Scripts.Simulation.Local.Stages.Movement
+namespace _Project.Scripts.Simulation.Ships.Movement
 {
     /// <summary>Отвечает за расчёт целевой скорости и её изменение.</summary>
-    /// <summary>
-    /// 1. Определяем 
-    /// </summary>
     public sealed class SpeedChanger
     {
-        private static float CurrSpeed;
-        private static float NextSpeed;
-        private static float MaxSpeed;
-        private static float Agility;
-        private static float Acceleration;
-        private static float TargetSpeed;
-
+        /// <summary>Рассчитывает скорость одного корабля без общего изменяемого состояния.</summary>
         public float GetSpeed(ref Ship ship, in MoveToPointParams taskParams, float deltaTime)
         {
             if (deltaTime <= 0f)
                 return ship.CurrentSpeed; // нет времени — скорость не меняем
 
-            ClearLocalVariables();
-
-            MaxSpeed = GetMaxSpeed(in ship);   // физический потолок скорости
-            CurrSpeed = Mathf.Min(Mathf.Max(0f, ship.CurrentSpeed), MaxSpeed);
-            Agility = GetAgility(in ship);     // манёвренность поворота
-            Acceleration = GetAcceleration(in ship); // ускорение/торможение
-
-            TargetSpeed = GetTargetSpeed(ref ship, in taskParams, MaxSpeed, Acceleration);
-            TargetSpeed = AdjustSpeedByTurnPrediction(ref ship, in taskParams, TargetSpeed);
+            float maxSpeed = GetMaxSpeed(in ship);
+            float currentSpeed = Mathf.Clamp(ship.CurrentSpeed, 0f, maxSpeed);
+            float acceleration = GetAcceleration(in ship);
+            float targetSpeed = GetTargetSpeed(ref ship, in taskParams, maxSpeed, acceleration);
+            targetSpeed = AdjustSpeedByTurnPrediction(ref ship, in taskParams, targetSpeed);
 
             // плавно двигаем текущую скорость к целевой с учётом ускорения (манёвренность * коэффициент)
-            NextSpeed = ApplySpeed(ref ship, TargetSpeed, Acceleration, deltaTime);
-            return NextSpeed;
-        }
-
-        private static void ClearLocalVariables()
-        {
-            CurrSpeed = 0f;
-            NextSpeed = 0f;
-            MaxSpeed = 0f;
-            Agility = 0f;
-            Acceleration = 0f;
-            TargetSpeed = 0f;
+            return ApplySpeed(ref ship, currentSpeed, targetSpeed, acceleration, deltaTime);
         }
 
         private static float GetMaxSpeed(in Ship ship)
@@ -89,7 +65,7 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
                     forward.Normalize();
                     var desired = toDest / distance;
                     float angle = Vector3.Angle(forward, desired); // угол между носом и желаемым направлением
-                    float allowed = Agility * SimulationConsts.AgilityTurnConeFactor; // ширина допустимого конуса
+                    float allowed = GetAgility(in ship) * SimulationConsts.AgilityTurnConeFactor; // ширина допустимого конуса
                     if (allowed > 0f && angle > allowed)
                     {
                         float scale = Mathf.Clamp01(allowed / angle); // чем больше угол, тем сильнее режем скорость
@@ -134,10 +110,10 @@ namespace _Project.Scripts.Simulation.Local.Stages.Movement
             return targetSpeed;
         }
 
-        private static float ApplySpeed(ref Ship ship, float targetSpeed, float acceleration, float deltaTime)
+        private static float ApplySpeed(ref Ship ship, float currentSpeed, float targetSpeed, float acceleration, float deltaTime)
         {
             float newSpeed = Mathf.MoveTowards(
-                CurrSpeed,
+                currentSpeed,
                 targetSpeed,
                 acceleration * SimulationConsts.AccelerationOfAgility * deltaTime);
             ship.CurrentSpeed = newSpeed; // применяем к кораблю

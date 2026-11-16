@@ -6,7 +6,7 @@ namespace _Project.Scripts.Simulation.AI
     /// <summary>Продвигает поведения корабля до ожидания результата текущей задачи.</summary>
     public static class ShipAiController
     {
-        public static void Advance(ref Ship ship, in StarSys system)
+        public static void Advance(ref Ship ship, in StarSys system, float movementStepSeconds)
         {
             var runtime = ship.Ai;
             if (runtime == null)
@@ -28,7 +28,7 @@ namespace _Project.Scripts.Simulation.AI
             if (runtime.TaskExecution != null || !EnsureRootBehavior(runtime, ship.Uid.Id))
                 return;
 
-            if (!runtime.Behaviors.TryPeek(out var behavior) || !behavior.TryCreateTask(in ship, in system, out var task))
+            if (!runtime.Behaviors.TryPeek(out var behavior) || !behavior.TryCreateTask(in ship, in system, movementStepSeconds, out var task))
                 return;
 
             runtime.TaskExecution = new ShipAiTaskExecution(task);
